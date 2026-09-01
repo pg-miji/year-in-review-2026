@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>타로 카드 뽑기 - 작은 점술가게</title>
+  <meta name="description" content="22장의 메이저 아르카나 타로 카드 중에서 한 장을 골라 새해 운세와 조언을 확인하세요." />
+  <link rel="icon" href="../assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="152x152" href="../assets/icons/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <link rel="stylesheet" href="../assets/css/cards.css" />
+</head>
+
+<body>
+  <!-- Starry Atmosphere Backdrop -->
+  <div class="stars-bg" aria-hidden="true"></div>
+
+  <!-- Page Transition Curtain -->
+  <div id="transition-curtain" style="position: fixed; inset: 0; background: #0c0816; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; z-index: 9998;" aria-hidden="true"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="shop-header">
+      <a href="../index.html" class="shop-brand" title="홈으로 이동">
+        <img src="../assets/images/colorful_logo.svg" alt="작은모임연구소 로고" class="brand-logo-img" onerror="this.src='../assets/images/colorful_logo.png'" />
+      </a>
+      <h1 class="shop-title-main" style="font-size: 28px;">새해를 여는 타로</h1>
+      <p class="shop-tagline">다가올 시간을 생각하며 카드 한 장을 선택하세요</p>
+      
+      <div class="vintage-divider" style="margin: 12px auto 14px;">
+        <span>✦ ✧ ✦</span>
+      </div>
+    </header>
+
+    <!-- Tarot Deck Selection Section -->
+    <main class="tarot-spread-section" aria-label="타로 카드 22장 펼침대">
+      <!-- PC Fan Arc Table Layout -->
+      <section class="table-stage-desktop" aria-label="데스크톱 타로 펼침 아크">
+        <div id="desktop-deck-fan" class="deck-fan-container">
+          <!-- 22 Cards dynamically populated with fan math -->
+        </div>
+      </section>
+
+      <!-- Mobile Layered 3-Row Overlapping Spread -->
+      <section class="table-stage-mobile" aria-label="모바일 타로 3열 중첩 펼침">
+        <div id="mobile-cards-spread" class="mobile-cards-spread">
+          <!-- 3 Overlapping Rows populated dynamically -->
+        </div>
+      </section>
+
+      <!-- Bottom Navigation -->
+      <nav class="cards-bottom-nav">
+        <a href="../index.html" class="btn-vintage btn-velvet" title="메인 입구로 돌아가기">
+          <span class="btn-icon">🏠</span>
+          <span>홈</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <!-- Mystical Reading Transition Modal -->
+  <div id="reading-loading-modal" class="mystical-loading-modal" aria-hidden="true">
+    <div class="mystical-loading-card">
+      <div class="mystical-orb-wrap">
+        <div class="mystical-orb-pulse"></div>
+        <div class="mystical-orb-core">✧</div>
+      </div>
+      <h3 class="mystical-loading-title">카드의 기운을 읽는 중...</h3>
+      <p class="mystical-loading-sub">새해를 비추는 운명의 메시지를 펼치고 있습니다</p>
+    </div>
+  </div>
+
+  <script src="../assets/js/audio.js"></script>
+  <script src="../assets/js/tarot_data.js"></script>
+  <script src="../assets/js/cards.js"></script>
+</body>
+
+</html>

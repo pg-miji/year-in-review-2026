@@ -1,0 +1,318 @@
+/* ===================================================================
+   작은모임연구소의 작은 점술가게 - 22 Tarot Deck Spread Selection Styles
+   =================================================================== */
+
+.tarot-spread-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  width: 100%;
+  position: relative;
+}
+
+/* ==========================================
+   PC / LAPTOP SPREAD (Velvet Table Fan Arc)
+   ========================================== */
+.table-stage-desktop {
+  display: block;
+  position: relative;
+  width: 100%;
+  max-width: 1060px;
+  height: 440px;
+  margin: 10px auto 20px;
+  background: radial-gradient(ellipse at 50% 90%, rgba(65, 36, 95, 0.4) 0%, rgba(20, 14, 30, 0.15) 60%, transparent 80%);
+  border-radius: 50% 50% 0 0 / 20% 20% 0 0;
+  overflow: visible;
+}
+
+.deck-fan-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.tarot-card-fan-item {
+  position: absolute;
+  bottom: 85px;
+  width: 110px;
+  height: 190px;
+  border-radius: 12px;
+  background: #140d21;
+  border: 2px solid rgba(212, 175, 55, 0.6);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  transform-origin: 50% 160%;
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Subtle PC hover - only slight upward movement */
+.tarot-card-fan-item:hover {
+  border-color: #fff2c4;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+.tarot-card-fan-item.selected {
+  animation: cardPickSelect 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  z-index: 120 !important;
+}
+
+@keyframes cardPickSelect {
+  0% {
+    transform: translateY(-14px);
+  }
+  50% {
+    transform: translateY(-30px) scale(1.06) rotateY(90deg);
+    box-shadow: 0 0 35px rgba(212, 175, 55, 0.8);
+  }
+  100% {
+    transform: translateY(-30px) scale(1.06) rotateY(180deg);
+    opacity: 0.9;
+  }
+}
+
+/* Card Back Art */
+.card-back-art {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, #291a3c 0%, #120b1e 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.card-back-border {
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.card-back-inner-border {
+  position: absolute;
+  inset: 7px;
+  border: 1px dashed rgba(212, 175, 55, 0.25);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.card-back-center-crest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-light);
+}
+
+.card-back-symbol {
+  font-size: 22px;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+}
+
+.card-back-ornament {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--gold-primary);
+  margin-top: 3px;
+}
+
+/* ==========================================
+   MOBILE SPREAD (Compact 3-Row Overlapping Table)
+   ========================================== */
+.table-stage-mobile {
+  display: none;
+  width: 100%;
+  max-width: 440px;
+  margin: 10px auto 28px;
+}
+
+.mobile-cards-spread {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.mobile-card-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 4px 10px;
+}
+
+.mobile-card-item {
+  position: relative;
+  width: 62px;
+  height: 108px;
+  border-radius: 8px;
+  background: #140d21;
+  border: 1.5px solid rgba(212, 175, 55, 0.55);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  margin-left: -18px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, z-index 0.1s;
+  overflow: hidden;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.mobile-card-item:first-child {
+  margin-left: 0;
+}
+
+.mobile-card-item:active,
+.mobile-card-item:hover {
+  transform: translateY(-8px) scale(1.05);
+  border-color: var(--gold-light);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 15px rgba(212, 175, 55, 0.4);
+  z-index: 50 !important;
+}
+
+.mobile-card-item.selected {
+  animation: mobileCardSelect 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  z-index: 60 !important;
+}
+
+@keyframes mobileCardSelect {
+  0% { transform: translateY(-8px) scale(1.05); }
+  50% { transform: translateY(-16px) scale(1.1) rotateY(90deg); box-shadow: 0 0 25px rgba(212, 175, 55, 0.8); }
+  100% { transform: translateY(-16px) scale(1.1) rotateY(180deg); opacity: 0.9; }
+}
+
+/* Bottom Navigation */
+.cards-bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  width: 100%;
+}
+
+/* Mystical Reading Loading Modal */
+.mystical-loading-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 6, 18, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.mystical-loading-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mystical-loading-card {
+  text-align: center;
+  padding: 32px 28px;
+  background: radial-gradient(circle, #241638 0%, #130a21 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.55);
+  border-radius: 20px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85), 0 0 35px rgba(212, 175, 55, 0.3);
+  max-width: 340px;
+  width: 90%;
+  animation: mysticalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes mysticalPop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.mystical-orb-wrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mystical-orb-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed #d4af37;
+  animation: mysticalRotate 5s linear infinite;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+.mystical-orb-core {
+  font-size: 30px;
+  color: #fff4d0;
+  text-shadow: 0 0 16px rgba(212, 175, 55, 0.9);
+  animation: mysticalGlow 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes mysticalRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes mysticalGlow {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.15); opacity: 1; filter: drop-shadow(0 0 12px #d4af37); }
+}
+
+.mystical-loading-title {
+  font-family: var(--font-serif-ko);
+  font-size: 19px;
+  font-weight: 700;
+  color: #fff9ed;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.mystical-loading-sub {
+  font-family: var(--font-serif-ko);
+  font-size: 13.5px;
+  color: var(--gold-light);
+  line-height: 1.5;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 860px) {
+  .table-stage-desktop {
+    display: none;
+  }
+  
+  .table-stage-mobile {
+    display: block;
+  }
+}
+
+@media (max-width: 420px) {
+  .mobile-card-item {
+    width: 52px;
+    height: 92px;
+    margin-left: -15px;
+  }
+  
+  .mobile-card-item .card-back-symbol {
+    font-size: 17px;
+  }
+  
+  .mobile-card-item .card-back-ornament {
+    font-size: 7px;
+  }
+}

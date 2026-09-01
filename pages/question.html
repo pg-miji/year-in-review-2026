@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>질문 카드 - 작은 점술가게</title>
+  <meta name="description" content="한 해를 돌아보는 질문과 새해를 맞이하는 질문 카드" />
+  <link rel="icon" href="../assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="152x152" href="../assets/icons/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <link rel="stylesheet" href="../assets/css/question.css" />
+</head>
+
+<body>
+  <!-- Starry Background Backdrop -->
+  <div class="stars-bg" aria-hidden="true"></div>
+
+  <!-- Page Transition Curtain -->
+  <div id="transition-curtain" style="position: fixed; inset: 0; background: #0c0816; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; z-index: 9998;" aria-hidden="true"></div>
+
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="shop-header">
+      <a href="../index.html" class="shop-brand" title="홈으로 이동">
+        <img src="../assets/images/colorful_logo.svg" alt="작은모임연구소 로고" class="brand-logo-img" onerror="this.src='../assets/images/colorful_logo.png'" />
+      </a>
+      <h1 class="shop-title-main" style="font-size: 26px;">회고와 발견의 질문</h1>
+      <div class="vintage-divider" style="margin: 12px auto 16px;">
+        <span>✦ ✧ ✦</span>
+      </div>
+    </header>
+
+    <!-- Question Interaction Stage -->
+    <main class="question-workspace">
+      <!-- Tarot-Framed Question Card -->
+      <section class="card-stage" aria-live="polite">
+        <div id="question-card" class="tarot-question-card">
+          <!-- Card Header & Badge -->
+          <div class="card-header-crest">
+            <span id="card-category-ribbon" class="card-category-ribbon">🌿 올해를 돌아보는 질문</span>
+            <span class="card-celestial-symbol" aria-hidden="true">✦ ✧ ✦</span>
+          </div>
+
+          <!-- Main Question Text -->
+          <div id="card-question-text" class="card-question-text"></div>
+
+          <!-- Card Footer Info (No Count) -->
+          <div class="card-footer-info">
+            <span>작은 점술가게</span>
+            <span>✦</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom Action & Navigation Buttons -->
+      <nav class="question-bottom-nav" aria-label="질문 뽑기 및 네비게이션">
+        <button type="button" id="btn-draw-this-year" class="btn-vintage btn-gold">
+          <span class="btn-icon">🌿</span>
+          <span>올해의 질문 뽑기</span>
+        </button>
+        <button type="button" id="btn-draw-next-year" class="btn-vintage btn-velvet">
+          <span class="btn-icon">✨</span>
+          <span>내년의 질문 뽑기</span>
+        </button>
+        <a href="../index.html" class="btn-vintage btn-velvet btn-home" title="메인 입구로 돌아가기">
+          <span class="btn-icon">🏠</span>
+          <span>홈</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="../assets/js/audio.js"></script>
+  <script src="../assets/js/question_data.js"></script>
+  <script src="../assets/js/question.js"></script>
+</body>
+
+</html>

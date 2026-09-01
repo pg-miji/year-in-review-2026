@@ -1,0 +1,211 @@
+/* ===================================================================
+   작은모임연구소의 작은 점술가게 - Main Entrance Styles
+   =================================================================== */
+
+.main-hero {
+  text-align: center;
+  margin: 10px auto 36px;
+  max-width: 680px;
+}
+
+.vintage-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: radial-gradient(circle, rgba(50, 30, 75, 0.6) 0%, rgba(20, 14, 32, 0.8) 100%);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.vintage-crest img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.hero-prose {
+  font-size: 16px;
+  line-height: 1.75;
+  color: #eeddbf;
+  margin-top: 14px;
+  word-break: keep-all;
+}
+
+/* Two Main Gateway Doors / Cards */
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.portal-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  text-decoration: none;
+  background: linear-gradient(170deg, rgba(32, 23, 49, 0.95) 0%, rgba(20, 14, 32, 0.98) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: var(--radius-card);
+  padding: 40px 28px 36px;
+  color: var(--cream-text);
+  box-shadow: var(--shadow-deep), 0 0 20px rgba(0, 0, 0, 0.4);
+  transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.portal-card::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px dashed rgba(212, 175, 55, 0.25);
+  border-radius: calc(var(--radius-card) - 7px);
+  pointer-events: none;
+  transition: border-color 0.3s ease;
+}
+
+.portal-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--gold-light);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 30px rgba(212, 175, 55, 0.35);
+}
+
+.portal-card:hover::before {
+  border-color: rgba(212, 175, 55, 0.55);
+}
+
+.portal-card.question-card-portal:hover {
+  background: linear-gradient(170deg, rgba(46, 28, 56, 0.98) 0%, rgba(25, 17, 36, 0.98) 100%);
+}
+
+.portal-card.tarot-card-portal:hover {
+  background: linear-gradient(170deg, rgba(35, 26, 60, 0.98) 0%, rgba(20, 14, 38, 0.98) 100%);
+}
+
+.portal-icon-wrap {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.25) 0%, rgba(25, 18, 38, 0.4) 70%);
+  border: 1.5px solid rgba(212, 175, 55, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  margin-bottom: 22px;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.portal-card:hover .portal-icon-wrap {
+  transform: scale(1.08) rotate(3deg);
+  box-shadow: 0 0 28px rgba(212, 175, 55, 0.45);
+}
+
+.portal-badge {
+  font-family: var(--font-display-en);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  background: rgba(212, 175, 55, 0.15);
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  margin-bottom: 12px;
+}
+
+.portal-title {
+  font-family: var(--font-serif-ko);
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff9ed;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.portal-desc {
+  font-size: 15px;
+  color: var(--cream-muted);
+  line-height: 1.6;
+  margin-bottom: 24px;
+  flex-grow: 1;
+}
+
+.portal-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold-light);
+  padding: 8px 18px;
+  border-radius: 24px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  transition: all 0.25s ease;
+}
+
+.portal-card:hover .portal-action-btn {
+  background: var(--gold-primary);
+  color: #1a1005;
+  border-color: #ffe89f;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.4);
+}
+
+/* Footer Section */
+.shop-footer {
+  text-align: center;
+  margin-top: auto;
+  padding-top: 40px;
+  font-size: 13px;
+  color: #8c8199;
+}
+
+.footer-brand {
+  color: var(--gold-light);
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .portal-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    max-width: 420px;
+  }
+  
+  .portal-card {
+    padding: 30px 20px 26px;
+  }
+  
+  .portal-icon-wrap {
+    width: 76px;
+    height: 76px;
+    font-size: 34px;
+    margin-bottom: 16px;
+  }
+  
+  .portal-title {
+    font-size: 22px;
+  }
+  
+  .portal-desc {
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+  
+  .hero-prose {
+    font-size: 15px;
+  }
+}

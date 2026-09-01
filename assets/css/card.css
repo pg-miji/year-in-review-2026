@@ -1,0 +1,360 @@
+/* ===================================================================
+   작은모임연구소의 작은 점술가게 - Tarot Reading Result & Souvenir Export
+   =================================================================== */
+
+.result-workspace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+/* Reading Result Main Card Display */
+.reading-result-card {
+  position: relative;
+  width: 100%;
+  background: radial-gradient(circle at 50% 15%, #2a1b3f 0%, #171026 65%, #0f0a1c 100%);
+  border: 2px solid #d4af37;
+  border-radius: 20px;
+  padding: 30px 36px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.75), 0 0 35px rgba(212, 175, 55, 0.25);
+  margin-bottom: 20px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 36px;
+  align-items: center;
+}
+
+/* Inset Decorative Borders */
+.reading-result-card::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+.reading-result-card::after {
+  content: '';
+  position: absolute;
+  inset: 13px;
+  border: 1px dashed rgba(212, 175, 55, 0.2);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+/* Left Visual Pane: Unwrapped Pure Image */
+.result-visual-pane {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+.result-card-img {
+  width: 100%;
+  max-width: 230px;
+  height: auto;
+  aspect-ratio: 1 / 1.74;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8), 0 0 22px rgba(212, 175, 55, 0.3);
+  display: block;
+  object-fit: cover;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.result-card-img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.9), 0 0 28px rgba(212, 175, 55, 0.45);
+}
+
+/* Right Content Pane */
+.result-content-pane {
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+
+/* Result Header & Identity */
+.result-header {
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+.result-card-roman {
+  font-family: var(--font-display-en);
+  font-size: 13.5px;
+  letter-spacing: 2.5px;
+  color: var(--gold-light);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.result-card-title {
+  font-family: var(--font-display-en);
+  font-size: 30px;
+  font-weight: 800;
+  color: #fff9ed;
+  letter-spacing: 1.5px;
+  text-shadow: 0 2px 14px rgba(212, 175, 55, 0.4);
+  line-height: 1.2;
+}
+
+.result-card-subtitle {
+  font-family: var(--font-serif-ko);
+  font-size: 16px;
+  color: var(--cream-muted);
+  margin-top: 3px;
+}
+
+/* Keywords Ribbon */
+.result-keywords-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.keyword-badge {
+  font-family: var(--font-serif-ko);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold-light);
+  background: rgba(212, 175, 55, 0.15);
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  letter-spacing: 0.5px;
+}
+
+/* Reading Prose Body */
+.reading-text-body {
+  font-family: var(--font-serif-ko);
+  font-size: 15px;
+  line-height: 1.68;
+  color: #fff9ee;
+  text-align: left;
+  padding: 0;
+  margin-bottom: 20px;
+  word-break: keep-all;
+}
+
+.reading-para {
+  margin-bottom: 8px;
+  line-height: 1.68;
+}
+
+.reading-para:last-child {
+  margin-bottom: 0;
+}
+
+/* Advice Box */
+.advice-box {
+  position: relative;
+  background: rgba(36, 24, 48, 0.75);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 0;
+  text-align: left;
+}
+
+.advice-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display-en);
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--gold-light);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.advice-content {
+  font-family: var(--font-serif-ko);
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #f6e8cc;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+/* Action Buttons Navigation */
+.result-actions-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.result-actions-nav .btn-vintage {
+  flex: 1;
+  min-width: 180px;
+}
+
+/* ===================================================================
+   Hidden Souvenir Card Container for Crisp Export Generation
+   =================================================================== */
+#souvenir-canvas-source {
+  position: fixed;
+  left: -9999px;
+  top: -9999px;
+  width: 600px;
+  background: #120b1f;
+  color: #fdf8ee;
+  border-radius: 0;
+  padding: 40px;
+  box-sizing: border-box;
+  font-family: 'Gowun Batang', serif;
+}
+
+/* Mobile Preview Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 5, 14, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+.modal-card {
+  background: #171026;
+  border: 2px solid #d4af37;
+  border-radius: 16px;
+  max-width: 460px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.9);
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold-light);
+  margin-bottom: 8px;
+}
+
+.modal-desc {
+  font-size: 13px;
+  color: var(--cream-muted);
+  margin-bottom: 16px;
+}
+
+.modal-preview-img {
+  width: 100%;
+  max-height: 50vh;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  margin-bottom: 18px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 859px) {
+  .reading-result-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 22px 16px;
+  }
+  
+  .result-card-img {
+    max-width: 155px;
+  }
+  
+  .result-header,
+  .reading-text-body,
+  .advice-box {
+    text-align: center;
+  }
+  
+  .result-card-roman {
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+
+  .result-card-title {
+    font-size: 21px;
+    letter-spacing: 1px;
+  }
+
+  .result-card-subtitle {
+    font-size: 14.5px;
+  }
+
+  .result-keywords-container {
+    justify-content: center;
+    gap: 6px;
+    margin: 8px 0 12px;
+  }
+
+  .keyword-badge {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+  
+  .reading-text-body {
+    font-size: 14px;
+    line-height: 1.72;
+    margin-bottom: 18px;
+  }
+
+  .reading-para {
+    margin-bottom: 10px;
+  }
+
+  .reading-para:last-child {
+    margin-bottom: 0;
+  }
+
+  .advice-box {
+    padding: 14px 16px;
+    margin-top: 4px;
+  }
+
+  .advice-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    margin-bottom: 3px;
+  }
+
+  .advice-content {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  
+  .result-actions-nav .btn-vintage {
+    min-width: 100%;
+    font-size: 14px;
+    padding: 11px 16px;
+  }
+}
