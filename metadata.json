@@ -1,7 +1,9 @@
 {
   "name": "연말연시를 위한 작은 점술가게",
-  "description": "작은모임연구소에서 만든 연말연시를 위한 작은 점술가게 - 한 해를 돌아보고 새해를 맞이하는 질문 카드와 22장의 메이저 아르카나 타로 리딩",
-  "requestFramePermissions": [],
+  "description": "작은모임연구소에서 만든 연말연시를 위한 작은 점술가게 - 한 해를 돌아보고 새해를 맞이하는 질문 카드, 22장의 메이저 아르카나 타로 리딩, 연말연시 기념 포토부스",
+  "requestFramePermissions": [
+    "camera"
+  ],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]

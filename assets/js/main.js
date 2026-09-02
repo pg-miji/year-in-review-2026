@@ -5,12 +5,13 @@
 function initMainPage() {
   const questionBtn = document.getElementById('portal-question-btn');
   const tarotBtn = document.getElementById('portal-tarot-btn');
+  const photoboothBtn = document.getElementById('portal-photobooth-btn');
 
   if (questionBtn) {
     questionBtn.onclick = function (e) {
       e.preventDefault();
       window.MysticalAudio?.playCardFlip();
-      navigateTo('pages/question.html?fresh=1');
+      navigateTo('/pages/question.html?fresh=1');
     };
   }
 
@@ -18,7 +19,15 @@ function initMainPage() {
     tarotBtn.onclick = function (e) {
       e.preventDefault();
       window.MysticalAudio?.playCardFlip();
-      navigateTo('pages/cards.html');
+      navigateTo('/pages/cards.html');
+    };
+  }
+
+  if (photoboothBtn) {
+    photoboothBtn.onclick = function (e) {
+      e.preventDefault();
+      window.MysticalAudio?.playCardFlip();
+      navigateTo('/pages/photobooth.html');
     };
   }
 }

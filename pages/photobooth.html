@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>포토 부스 - 작은 점술가게</title>
+  <meta name="description" content="2026년을 보내고 2027년을 맞이하는 특별한 프레임으로 오늘의 순간을 사진으로 남겨보세요." />
+  <meta property="og:title" content="연말연시 포토 부스 - 작은 점술가게" />
+  <meta property="og:description" content="2026년을 보내고 2027년을 맞이하는 특별한 프레임으로 사진을 촬영하세요." />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="/assets/icons/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b0814" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Gowun+Batang:wght@400;700&family=Marcellus&family=Noto+Serif+KR:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Song+Myung&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <link rel="stylesheet" href="/assets/css/theme.css" />
+  <link rel="stylesheet" href="/assets/css/photobooth.css" />
+</head>
+
+<body>
+  <!-- Starry Background Backdrop -->
+  <div class="stars-bg" aria-hidden="true"></div>
+
+  <!-- Screen Flash Effect for Camera Shutter -->
+  <div id="camera-flash-overlay" class="camera-flash-overlay" aria-hidden="true"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="shop-header">
+      <a href="/index.html" class="shop-brand" title="홈으로 돌아가기">
+        <img src="/assets/images/colorful_logo.svg" alt="작은모임연구소 로고" class="brand-logo-img" width="54" height="54" />
+      </a>
+      <h1 class="shop-title-main">연말연시 포토 부스</h1>
+      <p class="shop-tagline">Capture the Memory, Embrace the Future</p>
+      <div class="vintage-divider" style="margin: 10px auto 16px;">
+        <span>✦ ✧ ✦</span>
+      </div>
+    </header>
+
+    <main class="photobooth-container">
+      <!-- ==============================================
+           STEP 1: Frame Selection Stage
+           ============================================== -->
+      <section id="stage-frame-select" class="frame-selection-stage">
+        <h2 class="selection-heading">원하시는 프레임을 선택해주세요</h2>
+        <p class="selection-subtext">마음에 드는 프레임을 선택하시면 즉시 카메라 부스가 열립니다.</p>
+
+        <div class="frame-card-grid" role="list">
+          <!-- Frame 1: 2026 Vintage Stamp -->
+          <article class="frame-pick-card" data-frame-id="2026" role="button" tabindex="0" aria-label="Good-bye 2026 빈티지 우표 프레임 선택" onclick="window.selectPhotoboothFrame('2026')">
+            <span class="frame-pick-badge">RED STAMP</span>
+            <div class="frame-preview-box">
+              <img src="/assets/images/2026.png" alt="2026 빈티지 우표 프레임 미리보기" class="frame-preview-svg" />
+            </div>
+            <h3 class="frame-pick-title">Good-bye 2026!</h3>
+            <p class="frame-pick-desc">따뜻한 와인 레드 톤의 우표 & 연말 감성 2컷 프레임</p>
+          </article>
+
+          <!-- Frame 2: 2027 Retro Desktop -->
+          <article class="frame-pick-card" data-frame-id="2027" role="button" tabindex="0" aria-label="2027 New Year 레트로 데스크톱 프레임 선택" onclick="window.selectPhotoboothFrame('2027')">
+            <span class="frame-pick-badge">Y2K DESKTOP</span>
+            <div class="frame-preview-box">
+              <img src="/assets/images/2027.png" alt="2027 레트로 데스크톱 프레임 미리보기" class="frame-preview-svg" />
+            </div>
+            <h3 class="frame-pick-title">2027 New Year</h3>
+            <p class="frame-pick-desc">선명한 코발트 블루 윈도우 그래픽의 신년 2컷 프레임</p>
+          </article>
+        </div>
+
+        <nav style="text-align:center; margin-top:20px;">
+          <a href="/index.html" class="btn-vintage btn-velvet" style="display:inline-flex;">
+            <span class="btn-icon">🏠</span>
+            <span>홈으로 돌아가기</span>
+          </a>
+        </nav>
+      </section>
+
+      <!-- ==============================================
+           STEP 2: Live Camera Shooting Booth Stage
+           ============================================== -->
+      <section id="stage-camera-booth" class="booth-stage-wrap" style="display: none;">
+        <div class="booth-layout">
+          <!-- Left: Frame Board with Cut Slots -->
+          <div id="booth-frame-board" class="booth-frame-board" aria-label="포토부스 프레임 촬영 화면">
+            <!-- Frame SVG & Slots dynamically inserted here -->
+          </div>
+
+          <!-- Right: Control Panel -->
+          <div class="booth-controls-panel">
+            <!-- Step Status -->
+            <div class="step-indicator-bar">
+              <span class="step-badge">PHOTO BOOTH</span>
+              <span id="booth-step-text" class="step-status-text">1번째 컷 촬영 중 (1/2)</span>
+            </div>
+
+            <!-- Shot Pips Progress -->
+            <div class="shots-progress-wrap" aria-label="촬영 진행률">
+              <div class="shot-pip active"></div>
+              <div class="shot-pip"></div>
+            </div>
+
+            <!-- Filters -->
+            <!-- Filters (None, Warm, B&W) -->
+            <div class="filter-options-wrap">
+              <span class="filter-label">🎨 필터 효과 선택</span>
+              <div class="filter-buttons">
+                <button type="button" class="filter-btn active" data-filter="none">기본</button>
+                <button type="button" class="filter-btn" data-filter="warm">웜톤</button>
+                <button type="button" class="filter-btn" data-filter="bw">흑백</button>
+              </div>
+            </div>
+
+            <!-- Intuitive Camera Shutter Button (No Korean text inside) -->
+            <div class="capture-action-zone">
+              <button type="button" id="btn-take-photo" class="shutter-btn" title="사진 촬영" aria-label="사진 촬영">
+                <div class="shutter-inner-circle"></div>
+              </button>
+            </div>
+
+            <!-- Aux Controls (5s Timer & Flip) -->
+            <div class="camera-aux-tools">
+              <button type="button" id="btn-toggle-timer" class="aux-btn active">
+                <span>⏱️</span>
+                <span class="aux-text">5초 타이머 ON</span>
+              </button>
+              <button type="button" id="btn-switch-camera" class="aux-btn">
+                <span>🔄</span>
+                <span>카메라 전환</span>
+              </button>
+            </div>
+
+            <!-- Bottom Navigation inside Booth (Centered) -->
+            <div class="booth-bottom-actions" style="display:flex; justify-content:center; align-items:center; gap:10px; margin-top:12px; width:100%;">
+              <button type="button" id="btn-retake-cut" class="aux-btn" style="display:none;">
+                <span>↩️</span>
+                <span>이전 컷 다시 찍기</span>
+              </button>
+              <button type="button" id="btn-change-frame" class="aux-btn">
+                <span>🖼️</span>
+                <span>프레임 변경</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==============================================
+           STEP 4: Final Result Stage
+           ============================================== -->
+      <section id="stage-final-result" class="result-stage-wrap" style="display: none;">
+        <div class="result-photo-display">
+          <img id="result-photo-img" src="" alt="완성된 연말연시 기념 네컷 사진" class="result-photo-canvas-img" />
+        </div>
+
+        <!-- Action Buttons as Requested by User -->
+        <nav class="photobooth-actions-nav" aria-label="결과 사진 작업">
+          <button type="button" id="btn-save-photo" class="btn-vintage btn-gold">
+            <span class="btn-icon">📥</span>
+            <span>사진 저장하기</span>
+          </button>
+          <button type="button" id="btn-retake-all" class="btn-vintage btn-velvet">
+            <span class="btn-icon">🔄</span>
+            <span>다시 찍기</span>
+          </button>
+          <a href="/index.html" class="btn-vintage btn-velvet btn-home" title="홈으로 돌아가기">
+            <span class="btn-icon">🏠</span>
+            <span>홈으로 가기</span>
+          </a>
+        </nav>
+      </section>
+    </main>
+  </div>
+
+  <!-- Shared Live Video Element for active slot feed -->
+  <div style="display:none;">
+    <video id="booth-live-video" class="booth-video-stream" autoplay playsinline muted></video>
+    <div id="countdown-overlay" class="countdown-overlay">5</div>
+  </div>
+
+  <!-- ==============================================
+       STEP 3: Printing Animation Simulation Modal
+       ============================================== -->
+  <div id="printing-stage-modal" class="printing-stage-modal" role="dialog" aria-modal="true" aria-label="사진 인쇄 중">
+    <div class="printer-mechanism-box">
+      <div class="printer-slot-header">
+        <span>✦ PHOTO BOOTH PRINTING ✦</span>
+      </div>
+      <div class="printer-light-laser"></div>
+      <div class="printing-photo-paper">
+        <img id="printing-photo-preview" src="" alt="인쇄 중인 사진" style="width:100%; height:100%; object-fit:contain;" />
+      </div>
+    </div>
+    <p class="printing-status-text">소중한 순간을 인쇄하는 중...</p>
+    <p class="printing-status-sub">잠시만 기다려주세요 ✦</p>
+  </div>
+
+  <!-- Scripts: Base64 Images, Audio, Frames, Logic -->
+  <script src="/assets/js/images_base64.js"></script>
+  <script src="/assets/js/audio.js"></script>
+  <script src="/assets/js/photobooth_frames.js"></script>
+  <script src="/assets/js/photobooth.js"></script>
+</body>
+
+</html>

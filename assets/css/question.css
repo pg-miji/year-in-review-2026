@@ -38,53 +38,22 @@
   justify-content: space-between;
   text-align: center;
   box-shadow: 0 16px 45px rgba(0, 0, 0, 0.7), 0 0 35px rgba(212, 175, 55, 0.25);
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  will-change: transform, opacity, box-shadow;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.tarot-question-card.flipping {
-  animation: cardDealFlip 0.88s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+.tarot-question-card .card-question-text {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  will-change: opacity, transform;
 }
 
-.tarot-question-card.text-fade-out .card-question-text,
-.tarot-question-card.text-fade-out .card-header-crest {
+.tarot-question-card.fading-out .card-question-text {
   opacity: 0;
-  transform: scale(0.96);
-  transition: opacity 0.22s ease, transform 0.22s ease;
+  transform: translateY(8px);
 }
 
-.tarot-question-card.text-fade-in .card-question-text,
-.tarot-question-card.text-fade-in .card-header-crest {
+.tarot-question-card.fading-in .card-question-text {
   opacity: 1;
-  transform: scale(1);
-  transition: opacity 0.35s ease 0.05s, transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s;
-}
-
-@keyframes cardDealFlip {
-  0% {
-    transform: perspective(1400px) rotateY(0deg) scale(1) translateY(0);
-    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.7), 0 0 35px rgba(212, 175, 55, 0.25);
-  }
-  46% {
-    transform: perspective(1400px) rotateY(90deg) scale(0.95) translateY(-12px);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 45px rgba(212, 175, 55, 0.45);
-    opacity: 0.8;
-  }
-  54% {
-    transform: perspective(1400px) rotateY(90deg) scale(0.95) translateY(-12px);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 45px rgba(212, 175, 55, 0.45);
-    opacity: 0.8;
-  }
-  88% {
-    transform: perspective(1400px) rotateY(-2deg) scale(1.01) translateY(-1px);
-  }
-  100% {
-    transform: perspective(1400px) rotateY(0deg) scale(1) translateY(0);
-    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.7), 0 0 35px rgba(212, 175, 55, 0.25);
-    opacity: 1;
-  }
+  transform: translateY(0);
 }
 
 /* Inner Ornate Gold Border Inset */
