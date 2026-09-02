@@ -472,19 +472,19 @@ class SeamlessSPARouter {
   async loadPage(url, push = true) {
     this.isNavigating = true;
 
-    let curtain = document.getElementById('transition-curtain');
-    if (!curtain) {
-      curtain = document.createElement('div');
-      curtain.id = 'transition-curtain';
-      curtain.style.cssText = 'position: fixed; inset: 0; background: #0c0816; opacity: 0; pointer-events: none; transition: opacity 0.22s ease; z-index: 9998;';
-      curtain.setAttribute('aria-hidden', 'true');
-      document.body.appendChild(curtain);
+    // Remove legacy transition curtain if any
+    const legacyCurtain = document.getElementById('transition-curtain');
+    if (legacyCurtain) {
+      legacyCurtain.remove();
+    }
+
+    const currentContainer = document.querySelector('.app-container');
+    if (currentContainer) {
+      currentContainer.classList.add('page-leaving');
+      currentContainer.classList.remove('page-entering');
     }
 
     try {
-      curtain.style.opacity = '1';
-      curtain.style.pointerEvents = 'all';
-
       // Fetch the destination page HTML
       const resp = await fetch(url);
       if (!resp.ok) {
@@ -516,12 +516,16 @@ class SeamlessSPARouter {
         }
       }
 
+      // Wait a tiny frame (120ms) for smooth fade out
+      await new Promise(r => setTimeout(r, 120));
+
       // Swap .app-container
-      const currentContainer = document.querySelector('.app-container');
       const newContainer = doc.querySelector('.app-container');
       if (currentContainer && newContainer) {
         currentContainer.innerHTML = newContainer.innerHTML;
         currentContainer.className = newContainer.className;
+        currentContainer.classList.add('page-entering');
+        currentContainer.classList.remove('page-leaving');
       }
 
       // Swap / Manage any modals (reading-loading-modal, preview-modal)
@@ -544,7 +548,7 @@ class SeamlessSPARouter {
       }
 
       // Scroll to top
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: 'instant' });
 
       // Load any external scripts in the fetched page that haven't been loaded yet
       const scriptTags = Array.from(doc.querySelectorAll('script[src]'));
@@ -572,15 +576,17 @@ class SeamlessSPARouter {
       this.runPageLifecycle(url);
 
       setTimeout(() => {
-        curtain.style.opacity = '0';
-        curtain.style.pointerEvents = 'none';
+        if (currentContainer) {
+          currentContainer.classList.remove('page-entering');
+        }
         this.isNavigating = false;
-      }, 180);
+      }, 200);
 
     } catch (e) {
       console.warn('Seamless navigation fallback to hard navigation:', e);
-      curtain.style.opacity = '0';
-      curtain.style.pointerEvents = 'none';
+      if (currentContainer) {
+        currentContainer.classList.remove('page-leaving');
+      }
       this.isNavigating = false;
       window.location.href = url;
     }

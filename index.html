@@ -5,32 +5,35 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>연말연시를 위한 작은 점술가게</title>
-  <meta name="description" content="작은모임연구소에서 만든 연말연시를 위한 작은 점술가게 - 한 해를 돌아보고 새해를 맞이하는 질문 카드와 22장의 메이저 아르카나 타로 리딩" />
+  <meta name="description" content="연말연시를 위한 작은 점술가게" />
   <meta property="og:title" content="연말연시를 위한 작은 점술가게" />
-  <meta property="og:description" content="작은모임연구소에서 만든 연말연시를 위한 작은 점술가게 - 한 해를 돌아보고 새해를 맞이하는 질문 카드와 22장의 메이저 아르카나 타로 리딩" />
+  <meta property="og:description" content="연말연시를 위한 작은 점술가게" />
   <meta property="og:type" content="website" />
-  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="alternate icon" href="assets/icons/favicon.ico" type="image/x-icon" />
-  <link rel="apple-touch-icon" sizes="152x152" href="assets/icons/favicon.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="/assets/icons/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b0814" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="작은 점술가게" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="assets/css/theme.css" />
-  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Gowun+Batang:wght@400;700&family=Marcellus&family=Noto+Serif+KR:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Pretendard:wght@300;400;500;600;700&family=Song+Myung&display=swap" />
+  <link rel="stylesheet" href="/assets/css/theme.css" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
 </head>
 
 <body>
   <!-- Starry Background Backdrop -->
   <div class="stars-bg" aria-hidden="true"></div>
 
-  <!-- Page Transition Curtain -->
-  <div id="transition-curtain" style="position: fixed; inset: 0; background: #0c0816; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 9999;" aria-hidden="true"></div>
-
   <div class="app-container">
     <!-- Shop Brand & Entrance Header -->
     <header class="shop-header">
-      <div class="shop-brand">
-        <img src="assets/images/colorful_logo.svg" alt="작은모임연구소 로고" class="brand-logo-img" onerror="this.src='assets/images/colorful_logo.png'" />
-      </div>
+      <a href="/index.html" class="shop-brand" title="홈으로 이동">
+        <img src="/assets/images/colorful_logo.svg" alt="작은모임연구소 로고" class="brand-logo-img" width="54" height="54" />
+      </a>
       <h1 class="shop-title-main">연말연시를 위한 작은 점술가게</h1>
       <p class="shop-tagline">A Year to Remember, A Year to Discover</p>
       
@@ -43,14 +46,14 @@
     <section class="main-hero" aria-label="점술가게 안내">
       <p class="hero-prose">
         작은 점술가게에 오신 것을 환영합니다.<br>
-        소중한 사람들과 지나온 계절을 돌아보고, 다가올 새해의 반짝이는 길을 카드로 비춰드립니다.
+        지나온 계절을 돌아보고, 다가올 새해를 카드로 미리 만나봅니다.
       </p>
     </section>
 
     <!-- Two Main Gateway Cards -->
     <main class="portal-grid" role="navigation" aria-label="점술가게 메뉴 선택">
       <!-- Question Portal -->
-      <a href="pages/question.html?fresh=1" id="portal-question-btn" class="portal-card question-card-portal" tabindex="0">
+      <a href="/pages/question.html?fresh=1" id="portal-question-btn" class="portal-card question-card-portal" tabindex="0">
         <div class="portal-badge">RETROSPECTIVE</div>
         <div class="portal-icon-wrap" aria-hidden="true">
           <span>📜</span>
@@ -62,7 +65,7 @@
       </a>
 
       <!-- Tarot Portal -->
-      <a href="pages/cards.html" id="portal-tarot-btn" class="portal-card tarot-card-portal" tabindex="0">
+      <a href="/pages/cards.html" id="portal-tarot-btn" class="portal-card tarot-card-portal" tabindex="0">
         <div class="portal-badge">NEW YEAR TAROT</div>
         <div class="portal-icon-wrap" aria-hidden="true">
           <span>🔮</span>
@@ -80,10 +83,10 @@
     </footer>
   </div>
 
-  <script src="assets/js/audio.js"></script>
-  <script src="assets/js/question_data.js"></script>
-  <script src="assets/js/tarot_data.js"></script>
-  <script src="assets/js/main.js"></script>
+  <script src="/assets/js/audio.js"></script>
+  <script src="/assets/js/question_data.js"></script>
+  <script src="/assets/js/tarot_data.js"></script>
+  <script src="/assets/js/main.js"></script>
 </body>
 
 </html>

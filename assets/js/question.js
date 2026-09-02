@@ -154,32 +154,53 @@
     saveDrawnHistory(cat, drawn);
 
     if (forceNewAnimation && cardEl) {
-      triggerFlip(cardEl, () => {
-        if (questionTextEl) {
-          questionTextEl.textContent = selectedQuestion;
-        }
-      });
+      triggerFlip(cardEl, selectedQuestion, cat);
     } else {
+      if (categoryRibbonEl) {
+        categoryRibbonEl.textContent = cat === 'this_year' ? '🌿 올해를 돌아보는 질문' : '✨ 새해를 맞이하는 질문';
+      }
       if (questionTextEl) {
         questionTextEl.textContent = selectedQuestion;
       }
     }
   }
 
-  function triggerFlip(element, midwayCallback) {
+  function triggerFlip(element, newQuestionText, cat) {
+    if (isAnimating) return;
     isAnimating = true;
-    element.classList.remove('flipping');
+
+    const questionTextEl = document.getElementById('card-question-text');
+    const ribbonEl = document.getElementById('card-category-ribbon');
+
+    // 1. Instantly fade out old question text
+    element.classList.remove('text-fade-in', 'flipping');
+    element.classList.add('text-fade-out');
     void element.offsetWidth;
+
+    // 2. Start card 3D flip animation
     element.classList.add('flipping');
 
+    // 3. At edge-on rotation (~400ms), swap text while turned
     setTimeout(() => {
-      if (midwayCallback) midwayCallback();
-    }, 240);
+      if (questionTextEl) {
+        questionTextEl.textContent = newQuestionText;
+      }
+      if (ribbonEl) {
+        ribbonEl.textContent = cat === 'this_year' ? '🌿 올해를 돌아보는 질문' : '✨ 새해를 맞이하는 질문';
+      }
+    }, 400);
 
+    // 4. As card faces forward (~580ms), fade in the new question text smoothly
     setTimeout(() => {
-      element.classList.remove('flipping');
+      element.classList.remove('text-fade-out');
+      element.classList.add('text-fade-in');
+    }, 580);
+
+    // 5. Complete animation sequence (~880ms)
+    setTimeout(() => {
+      element.classList.remove('flipping', 'text-fade-in');
       isAnimating = false;
-    }, 550);
+    }, 880);
   }
 
   // Initialize Question Page
