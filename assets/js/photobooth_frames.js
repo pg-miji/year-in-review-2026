@@ -9,8 +9,8 @@ window.PHOTOBOOTH_FRAMES = {
     "textColor": "#f8f2e4",
     "width": 1200,
     "height": 1800,
-    "imageSrc": "/assets/images/2026.png",
-    "overlaySrc": "/assets/images/2026_overlay.png",
+    "imageSrc": "../assets/images/2026.png",
+    "overlaySrc": "../assets/images/2026_overlay.png",
     "slots": [
       {
         "id": 0,
@@ -41,8 +41,8 @@ window.PHOTOBOOTH_FRAMES = {
     "textColor": "#ffffff",
     "width": 1200,
     "height": 1800,
-    "imageSrc": "/assets/images/2027.png",
-    "overlaySrc": "/assets/images/2027_overlay.png",
+    "imageSrc": "../assets/images/2027.png",
+    "overlaySrc": "../assets/images/2027_overlay.png",
     "slots": [
       {
         "id": 0,

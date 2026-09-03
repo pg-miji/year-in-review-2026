@@ -11,7 +11,7 @@ function initMainPage() {
     questionBtn.onclick = function (e) {
       e.preventDefault();
       window.MysticalAudio?.playCardFlip();
-      navigateTo('/pages/question.html?fresh=1');
+      navigateTo('pages/question.html?fresh=1');
     };
   }
 
@@ -19,7 +19,7 @@ function initMainPage() {
     tarotBtn.onclick = function (e) {
       e.preventDefault();
       window.MysticalAudio?.playCardFlip();
-      navigateTo('/pages/cards.html');
+      navigateTo('pages/cards.html');
     };
   }
 
@@ -27,7 +27,7 @@ function initMainPage() {
     photoboothBtn.onclick = function (e) {
       e.preventDefault();
       window.MysticalAudio?.playCardFlip();
-      navigateTo('/pages/photobooth.html');
+      navigateTo('pages/photobooth.html');
     };
   }
 }

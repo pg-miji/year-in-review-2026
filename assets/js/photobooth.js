@@ -279,7 +279,7 @@
     // 2. Frame PNG Transparent Overlay on TOP (z-index: 10, keeps overlapping stickers, bubbles, window bars intact!)
     const frameOverlay = document.createElement('img');
     frameOverlay.className = 'frame-background-svg';
-    frameOverlay.src = currentFrameData.overlaySrc || `/assets/images/${currentFrameId}_overlay.png`;
+    frameOverlay.src = currentFrameData.overlaySrc || `../assets/images/${currentFrameId}_overlay.png`;
     frameOverlay.alt = currentFrameData.title;
     frameOverlay.style.position = 'absolute';
     frameOverlay.style.inset = '0';
@@ -786,7 +786,7 @@
     }
 
     // 2. Draw Frame PNG Transparent Overlay on TOP (so stickers, bubbles, window bars overlap on top of photos!)
-    const overlaySrc = currentFrameData.overlaySrc || `/assets/images/${currentFrameId}_overlay.png`;
+    const overlaySrc = currentFrameData.overlaySrc || `../assets/images/${currentFrameId}_overlay.png`;
     const overlayImg = await loadImage(overlaySrc);
     if (overlayImg) {
       ctx.drawImage(overlayImg, 0, 0, canvas.width, canvas.height);

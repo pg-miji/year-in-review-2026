@@ -51,8 +51,7 @@
     // Image
     const imgEl = document.getElementById('card-image');
     if (imgEl) {
-      const b64 = window.MYSTICAL_IMAGES?.tarot?.[card.id];
-      imgEl.src = b64 || `/assets/images/tarot/${card.id}.png`;
+      imgEl.src = `../assets/images/tarot/${card.id}.png`;
       imgEl.alt = `${card.name} (${card.koreanName}) 타로 카드`;
     }
 
@@ -228,7 +227,7 @@
     ctx.setLineDash([]);
 
     // 3. Header: LOGO ONLY
-    const logoSrc = window.MYSTICAL_IMAGES?.logos?.colorful || '/assets/images/colorful_logo.svg';
+    const logoSrc = '../assets/images/colorful_logo.svg';
     const logoImg = await loadImage(logoSrc);
     if (logoImg) {
       const logoSize = 48;
@@ -259,7 +258,7 @@
     ctx.fillText(card.name.toUpperCase(), width / 2, 186);
 
     // 5. Card Image Artwork
-    const cardArtSrc = window.MYSTICAL_IMAGES?.tarot?.[card.id] || `/assets/images/tarot/${card.id}.png`;
+    const cardArtSrc = `../assets/images/tarot/${card.id}.png`;
     const cardArtImg = await loadImage(cardArtSrc);
 
     const imgW = 190;

@@ -168,9 +168,9 @@
     // Gentle mystical transition delay (~2.0s for an authentic, immersive reading experience)
     setTimeout(() => {
       if (window.MysticalRouter) {
-        window.MysticalRouter.navigate(`/pages/card.html?number=${cardId}`);
+        window.MysticalRouter.navigate(`card.html?number=${cardId}`);
       } else {
-        window.location.href = `/pages/card.html?number=${cardId}`;
+        window.location.href = `card.html?number=${cardId}`;
       }
     }, 2000);
   }
