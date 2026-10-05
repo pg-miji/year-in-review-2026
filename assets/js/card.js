@@ -1,5 +1,5 @@
 // ===================================================================
-// 작은모임연구소의 작은 점술가게 - Tarot Reading Result & Souvenir Generator
+// 작은 점술가게 - Tarot Reading Result & Souvenir Generator
 // ===================================================================
 
 (function () {
@@ -226,13 +226,11 @@
     ctx.strokeRect(36, 36, width - 72, height - 72);
     ctx.setLineDash([]);
 
-    // 3. Header: LOGO ONLY
-    const logoSrc = '../assets/images/colorful_logo.svg';
-    const logoImg = await loadImage(logoSrc);
-    if (logoImg) {
-      const logoSize = 48;
-      ctx.drawImage(logoImg, width / 2 - logoSize / 2, 50, logoSize, logoSize);
-    }
+    // 3. Header: Emblem
+    ctx.fillStyle = '#d4af37';
+    ctx.font = '700 22px "Cinzel", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('✦ ✧ ✦', width / 2, 78);
 
     // Divider Line with Star
     ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
@@ -345,11 +343,11 @@
     ctx.font = '600 15.5px "Gowun Batang", serif';
     wrapText(ctx, card.advice, width / 2, adviceBoxY + 60, 580, adviceLineHeight, 'center');
 
-    // 9. Footer: ONLY "작은모임연구소" (Seamlessly positioned right under advice box)
-    ctx.fillStyle = '#c9bfaf';
-    ctx.font = '13.5px "Gowun Batang", serif, sans-serif';
+    // 9. Footer: Subtle celestial motif
+    ctx.fillStyle = 'rgba(212, 175, 55, 0.45)';
+    ctx.font = '14px "Cinzel", serif';
     ctx.textAlign = 'center';
-    ctx.fillText('작은모임연구소', width / 2, height - 38);
+    ctx.fillText('✧ ✦ ✧', width / 2, height - 38);
 
     return canvas;
   }

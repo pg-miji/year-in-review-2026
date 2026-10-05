@@ -32,9 +32,6 @@
   <div class="app-container">
     <!-- Header -->
     <header class="shop-header">
-      <a href="../index.html" class="shop-brand" title="홈으로 돌아가기">
-        <img src="../assets/images/colorful_logo.svg" alt="작은모임연구소 로고" class="brand-logo-img" width="54" height="54" />
-      </a>
       <h1 class="shop-title-main">연말연시 포토 부스</h1>
       <p class="shop-tagline">Capture the Memory, Embrace the Future</p>
       <div class="vintage-divider" style="margin: 10px auto 16px;">
@@ -55,7 +52,7 @@
           <article class="frame-pick-card" data-frame-id="2026" role="button" tabindex="0" aria-label="2026 빈티지 우표 프레임 선택" onclick="window.selectPhotoboothFrame('2026')">
             <span class="frame-pick-badge">RED STAMP</span>
             <div class="frame-preview-box">
-              <img src="../assets/images/2026.png" alt="2026 빈티지 우표 프레임 미리보기" class="frame-preview-svg" />
+              <img src="../assets/images/photo_booth/2026.png?v=6" alt="2026 빈티지 우표 프레임 미리보기" class="frame-preview-svg" />
             </div>
             <p class="frame-pick-desc">따뜻한 와인 레드 톤의 우표 & 연말 감성 2컷 프레임</p>
           </article>
@@ -64,16 +61,25 @@
           <article class="frame-pick-card" data-frame-id="2027" role="button" tabindex="0" aria-label="2027 레트로 데스크톱 프레임 선택" onclick="window.selectPhotoboothFrame('2027')">
             <span class="frame-pick-badge">Y2K DESKTOP</span>
             <div class="frame-preview-box">
-              <img src="../assets/images/2027.png" alt="2027 레트로 데스크톱 프레임 미리보기" class="frame-preview-svg" />
+              <img src="../assets/images/photo_booth/2027.png?v=6" alt="2027 레트로 데스크톱 프레임 미리보기" class="frame-preview-svg" />
             </div>
             <p class="frame-pick-desc">선명한 코발트 블루 윈도우 그래픽의 신년 2컷 프레임</p>
+          </article>
+
+          <!-- Frame 3: Self Portrait -->
+          <article class="frame-pick-card" data-frame-id="self" role="button" tabindex="0" aria-label="Self Portrait 3컷 프레임 선택" onclick="window.selectPhotoboothFrame('self')">
+            <span class="frame-pick-badge">SELF PORTRAIT</span>
+            <div class="frame-preview-box">
+              <img src="../assets/images/photo_booth/self.png?v=6" alt="Self Portrait 프레임 미리보기" class="frame-preview-svg" />
+            </div>
+            <p class="frame-pick-desc">클래식 무드의 세로 3컷 셀프 포트레이트 프레임</p>
           </article>
         </div>
 
         <nav style="text-align:center; margin-top:20px;">
-          <a href="../index.html" class="btn-vintage btn-velvet" style="display:inline-flex;">
+          <a href="../index.html" class="btn-vintage btn-velvet btn-home" title="홈으로 돌아가기" style="display:inline-flex;">
             <span class="btn-icon">🏠</span>
-            <span>홈으로 돌아가기</span>
+            <span>홈</span>
           </a>
         </nav>
       </section>
@@ -133,7 +139,7 @@
             </div>
 
             <!-- Bottom Navigation inside Booth (Centered) -->
-            <div class="booth-bottom-actions" style="display:flex; justify-content:center; align-items:center; gap:10px; margin-top:12px; width:100%;">
+            <div class="booth-bottom-actions">
               <button type="button" id="btn-retake-cut" class="aux-btn" style="display:none;">
                 <span>↩️</span>
                 <span>이전 컷 다시 찍기</span>
@@ -142,6 +148,10 @@
                 <span>🖼️</span>
                 <span>프레임 변경</span>
               </button>
+              <a href="../index.html" id="btn-booth-home" class="aux-btn" title="홈으로 돌아가기">
+                <span>🏠</span>
+                <span>홈</span>
+              </a>
             </div>
           </div>
         </div>
@@ -151,8 +161,11 @@
            STEP 4: Final Result Stage
            ============================================== -->
       <section id="stage-final-result" class="result-stage-wrap" style="display: none;">
-        <div class="result-photo-display">
-          <img id="result-photo-img" src="" alt="완성된 연말연시 기념 네컷 사진" class="result-photo-canvas-img" />
+        <div class="result-showcase-box">
+          <div class="result-photo-display">
+            <img id="result-photo-img" src="" alt="완성된 연말연시 기념 네컷 사진" class="result-photo-canvas-img" />
+          </div>
+          <p class="mobile-save-guide">💡 사진을 길게 누르면 기기에 바로 저장할 수 있습니다</p>
         </div>
 
         <!-- Action Buttons as Requested by User -->
@@ -167,7 +180,7 @@
           </button>
           <a href="../index.html" class="btn-vintage btn-velvet btn-home" title="홈으로 돌아가기">
             <span class="btn-icon">🏠</span>
-            <span>홈으로 가기</span>
+            <span>홈</span>
           </a>
         </nav>
       </section>

@@ -1,5 +1,5 @@
 // ===================================================================
-// 작은모임연구소의 작은 점술가게 - Photo Booth Logic Engine
+// 작은 점술가게 - Photo Booth Logic Engine
 // ===================================================================
 
 (function () {
@@ -139,6 +139,12 @@
     if (boothStage) boothStage.style.display = stageName === 'booth' ? 'flex' : 'none';
     if (resultStage) resultStage.style.display = stageName === 'result' ? 'flex' : 'none';
 
+    document.body.setAttribute('data-stage', stageName);
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) {
+      appContainer.setAttribute('data-stage', stageName);
+    }
+
     try {
       window.scrollTo({ top: 0, behavior: 'instant' });
     } catch (e) {
@@ -192,6 +198,25 @@
     currentFrameData = selected;
     activeSlotIndex = 0;
     capturedSlots = [];
+
+    // Filter handling per frame:
+    // If self portrait frame is selected, lock to deep-contrast analog film B&W and hide filter buttons
+    const filterOptionsWrap = document.querySelector('.filter-options-wrap');
+    if (currentFrameId === 'self') {
+      activeFilter = 'film_bw';
+      if (filterOptionsWrap) {
+        filterOptionsWrap.style.display = 'none';
+      }
+    } else {
+      activeFilter = 'none';
+      if (filterOptionsWrap) {
+        filterOptionsWrap.style.display = 'flex';
+        const filterBtns = filterOptionsWrap.querySelectorAll('.filter-btn');
+        filterBtns.forEach(b => b.classList.remove('active'));
+        const defaultBtn = filterOptionsWrap.querySelector('[data-filter="none"]');
+        if (defaultBtn) defaultBtn.classList.add('active');
+      }
+    }
 
     try {
       window.MysticalAudio?.playCardFlip();
@@ -252,7 +277,7 @@
       slotEl.style.width = `${widthPct}%`;
       slotEl.style.height = `${heightPct}%`;
       slotEl.style.overflow = 'hidden';
-      slotEl.style.backgroundColor = '#000000';
+      slotEl.style.backgroundColor = '#0a0a0a';
       slotEl.style.display = 'flex';
       slotEl.style.alignItems = 'center';
       slotEl.style.justifyContent = 'center';
@@ -279,7 +304,7 @@
     // 2. Frame PNG Transparent Overlay on TOP (z-index: 10, keeps overlapping stickers, bubbles, window bars intact!)
     const frameOverlay = document.createElement('img');
     frameOverlay.className = 'frame-background-svg';
-    frameOverlay.src = currentFrameData.overlaySrc || `../assets/images/${currentFrameId}_overlay.png`;
+    frameOverlay.src = currentFrameData.overlaySrc || `../assets/images/photo_booth/${currentFrameId}_overlay.png`;
     frameOverlay.alt = currentFrameData.title;
     frameOverlay.style.position = 'absolute';
     frameOverlay.style.inset = '0';
@@ -465,6 +490,17 @@
       });
     }
 
+    // Tap on frame board directly to trigger photo capture (Thumb-friendly mobile feature)
+    const frameBoard = document.getElementById('booth-frame-board');
+    if (frameBoard) {
+      frameBoard.addEventListener('click', (e) => {
+        // Prevent accidental triggers if clicking any interactive elements inside
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        if (isCountingDown) return;
+        startCountdownAndCapture();
+      });
+    }
+
     // Timer toggle button
     const timerBtn = document.getElementById('btn-toggle-timer');
     let timerEnabled = true;
@@ -525,6 +561,7 @@
       changeFrameBtn.addEventListener('click', () => {
         if (mediaStream) {
           mediaStream.getTracks().forEach(t => t.stop());
+          mediaStream = null;
         }
         if (simulatedCanvasAnimId) {
           cancelAnimationFrame(simulatedCanvasAnimId);
@@ -533,14 +570,32 @@
         showStage('select');
       });
     }
+
+    // Booth Home button
+    const boothHomeBtn = document.getElementById('btn-booth-home');
+    if (boothHomeBtn) {
+      boothHomeBtn.addEventListener('click', () => {
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(t => t.stop());
+          mediaStream = null;
+        }
+        if (simulatedCanvasAnimId) {
+          cancelAnimationFrame(simulatedCanvasAnimId);
+          simulatedCanvasAnimId = null;
+        }
+      });
+    }
   }
 
   function applyFilterToVideo() {
     const video = getOrCreateVideoElement();
     if (!video) return;
 
-    if (activeFilter === 'bw') {
-      video.style.filter = 'grayscale(1) contrast(1.25) brightness(1.05)';
+    if (activeFilter === 'film_bw' || currentFrameId === 'self') {
+      // Authentic deep-contrast analog film photobooth filter
+      video.style.filter = 'grayscale(1) contrast(1.55) brightness(0.94)';
+    } else if (activeFilter === 'bw') {
+      video.style.filter = 'grayscale(1) contrast(1.42) brightness(0.98)';
     } else if (activeFilter === 'warm') {
       video.style.filter = 'sepia(0.2) saturate(1.35) hue-rotate(-10deg) brightness(1.08)';
     } else {
@@ -635,14 +690,33 @@
     }
 
     // Apply color filter to captured canvas
-    if (activeFilter === 'bw') {
-      ctx.filter = 'grayscale(1) contrast(1.25) brightness(1.05)';
+    if (activeFilter === 'film_bw' || currentFrameId === 'self') {
+      ctx.filter = 'grayscale(1) contrast(1.55) brightness(0.94)';
+    } else if (activeFilter === 'bw') {
+      ctx.filter = 'grayscale(1) contrast(1.42) brightness(0.98)';
     } else if (activeFilter === 'warm') {
       ctx.filter = 'sepia(0.2) saturate(1.35) hue-rotate(-10deg) brightness(1.08)';
+    } else {
+      ctx.filter = 'none';
     }
 
     ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
     ctx.restore();
+
+    // If film B&W / self portrait, apply subtle analog film grain
+    if (activeFilter === 'film_bw' || currentFrameId === 'self') {
+      try {
+        const imgData = ctx.getImageData(0, 0, targetW, targetH);
+        const data = imgData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          const noise = (Math.random() - 0.5) * 18;
+          data[i] = Math.min(255, Math.max(0, data[i] + noise));
+          data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+          data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+        }
+        ctx.putImageData(imgData, 0, 0);
+      } catch (e) {}
+    }
 
     // Store captured photo data URL
     const slotPhotoDataUrl = canvas.toDataURL('image/jpeg', 0.95);
@@ -703,6 +777,16 @@
         stepText.textContent = `${activeSlotIndex + 1}번째 컷 촬영 중 (${activeSlotIndex + 1}/${totalSlots})`;
       } else {
         stepText.textContent = '모든 컷 촬영 완료!';
+      }
+    }
+
+    const pipsWrap = document.querySelector('.shots-progress-wrap');
+    if (pipsWrap && pipsWrap.children.length !== totalSlots) {
+      pipsWrap.innerHTML = '';
+      for (let i = 0; i < totalSlots; i++) {
+        const pip = document.createElement('div');
+        pip.className = 'shot-pip';
+        pipsWrap.appendChild(pip);
       }
     }
 
@@ -786,7 +870,7 @@
     }
 
     // 2. Draw Frame PNG Transparent Overlay on TOP (so stickers, bubbles, window bars overlap on top of photos!)
-    const overlaySrc = currentFrameData.overlaySrc || `../assets/images/${currentFrameId}_overlay.png`;
+    const overlaySrc = currentFrameData.overlaySrc || `../assets/images/photo_booth/${currentFrameId}_overlay.png`;
     const overlayImg = await loadImage(overlaySrc);
     if (overlayImg) {
       ctx.drawImage(overlayImg, 0, 0, canvas.width, canvas.height);
