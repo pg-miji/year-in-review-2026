@@ -1,5 +1,8 @@
 // Question Data for Small Gathering Lab Vintage Tarot Shop
-const questionData = {
+(function () {
+  'use strict';
+
+  var questionDataObj = {
   this_year: [
     "올해 나에게 영향을 준 사람",
     "올해 새롭게 만난 사람",
@@ -48,8 +51,9 @@ const questionData = {
     "내년이 끝났을 때 가장 듣고 싶은 칭찬",
     "내년의 나에게 해주고 싶은 한마디",
   ]
-};
+  };
 
-if (typeof window !== 'undefined') {
-  window.questionData = questionData;
-}
+  if (typeof window !== 'undefined') {
+    window.questionData = questionDataObj;
+  }
+})();

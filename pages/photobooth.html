@@ -20,6 +20,15 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
   <link rel="stylesheet" href="../assets/css/theme.css" />
   <link rel="stylesheet" href="../assets/css/photobooth.css" />
+  <script>
+    window.selectPhotoboothFrame = function(frameId) {
+      if (typeof window._realSelectFrame === 'function') {
+        window._realSelectFrame(frameId);
+      } else {
+        window._pendingFrameSelection = frameId;
+      }
+    };
+  </script>
 </head>
 
 <body>
@@ -49,7 +58,7 @@
 
         <div class="frame-card-grid" role="list">
           <!-- Frame 1: 2026 Vintage Stamp -->
-          <article class="frame-pick-card" data-frame-id="2026" role="button" tabindex="0" aria-label="2026 빈티지 우표 프레임 선택" onclick="window.selectPhotoboothFrame('2026')">
+          <article class="frame-pick-card" data-frame-id="2026" role="button" tabindex="0" aria-label="2026 빈티지 우표 프레임 선택" onclick="window.selectPhotoboothFrame && window.selectPhotoboothFrame('2026')">
             <span class="frame-pick-badge">RED STAMP</span>
             <div class="frame-preview-box">
               <img src="../assets/images/photo_booth/2026.png?v=6" alt="2026 빈티지 우표 프레임 미리보기" class="frame-preview-svg" />
@@ -58,7 +67,7 @@
           </article>
 
           <!-- Frame 2: 2027 Retro Desktop -->
-          <article class="frame-pick-card" data-frame-id="2027" role="button" tabindex="0" aria-label="2027 레트로 데스크톱 프레임 선택" onclick="window.selectPhotoboothFrame('2027')">
+          <article class="frame-pick-card" data-frame-id="2027" role="button" tabindex="0" aria-label="2027 레트로 데스크톱 프레임 선택" onclick="window.selectPhotoboothFrame && window.selectPhotoboothFrame('2027')">
             <span class="frame-pick-badge">Y2K DESKTOP</span>
             <div class="frame-preview-box">
               <img src="../assets/images/photo_booth/2027.png?v=6" alt="2027 레트로 데스크톱 프레임 미리보기" class="frame-preview-svg" />
@@ -67,7 +76,7 @@
           </article>
 
           <!-- Frame 3: Self Portrait -->
-          <article class="frame-pick-card" data-frame-id="self" role="button" tabindex="0" aria-label="Self Portrait 3컷 프레임 선택" onclick="window.selectPhotoboothFrame('self')">
+          <article class="frame-pick-card" data-frame-id="self" role="button" tabindex="0" aria-label="Self Portrait 3컷 프레임 선택" onclick="window.selectPhotoboothFrame && window.selectPhotoboothFrame('self')">
             <span class="frame-pick-badge">SELF PORTRAIT</span>
             <div class="frame-preview-box">
               <img src="../assets/images/photo_booth/self.png?v=6" alt="Self Portrait 프레임 미리보기" class="frame-preview-svg" />

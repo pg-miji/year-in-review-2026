@@ -2,7 +2,10 @@
 // 작은 점술가게 - 22 Major Arcana Tarot Card Data
 // ===================================================================
 
-const tarotCards = [
+(function () {
+  'use strict';
+
+  var tarotCardsList = [
   {
     id: 0,
     number: "0",
@@ -245,9 +248,10 @@ const tarotCards = [
     advice: "지나온 모든 순간에 스스로 아낌없는 박수를 보내주세요. 모든 것이 완벽하게 순조롭습니다.",
     image: "../assets/images/tarot/21.png"
   }
-];
+  ];
 
-if (typeof window !== 'undefined') {
-  window.tarotCards = tarotCards;
-  window.tarotData = tarotCards;
-}
+  if (typeof window !== 'undefined') {
+    window.tarotCards = tarotCardsList;
+    window.tarotData = tarotCardsList;
+  }
+})();

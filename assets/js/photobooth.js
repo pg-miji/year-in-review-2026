@@ -17,6 +17,12 @@
   let simulatedCanvasAnimId = null;
   let sharedVideoEl = null;
 
+  // Early global registration so user or test runner clicks never fail
+  window._realSelectFrame = function (frameId) {
+    selectFrame(frameId);
+  };
+  window.selectPhotoboothFrame = window._realSelectFrame;
+
   // Refined sound effects generator using Web Audio API
   const PhotoAudio = {
     ctx: null,
@@ -128,6 +134,13 @@
     setupCameraControls();
     setupResultActions();
     showStage('select');
+
+    // Process any frame selection that was triggered before script finished loading
+    if (window._pendingFrameSelection) {
+      const pending = window._pendingFrameSelection;
+      window._pendingFrameSelection = null;
+      selectFrame(pending);
+    }
   }
 
   function showStage(stageName) {
@@ -643,6 +656,63 @@
   }
 
   // ----------------------------------------------------
+  // Pixel-level Filter Engine (100% Mobile & Safari Compatible)
+  // ----------------------------------------------------
+  function applyPixelFilter(ctx, width, height, filterType) {
+    if (!filterType || filterType === 'none') return;
+    try {
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const d = imgData.data;
+
+      if (filterType === 'film_bw') {
+        // Deep contrast vintage film black & white with rich darks and analog film grain
+        const lut = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) {
+          const val = (i - 128) * 1.52 + 120;
+          lut[i] = val < 0 ? 0 : (val > 255 ? 255 : (val | 0));
+        }
+        for (let i = 0; i < d.length; i += 4) {
+          const gray = (d[i] * 299 + d[i + 1] * 587 + d[i + 2] * 114) / 1000;
+          const baseVal = lut[gray | 0];
+          const noise = (Math.random() - 0.5) * 16;
+          const finalVal = Math.min(255, Math.max(0, baseVal + noise));
+          d[i] = finalVal;
+          d[i + 1] = finalVal;
+          d[i + 2] = finalVal;
+        }
+      } else if (filterType === 'bw') {
+        // Crisp, classic photobooth black & white with smooth gradient and punchy contrast
+        const lut = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) {
+          const val = (i - 128) * 1.38 + 125;
+          lut[i] = val < 0 ? 0 : (val > 255 ? 255 : (val | 0));
+        }
+        for (let i = 0; i < d.length; i += 4) {
+          const gray = (d[i] * 299 + d[i + 1] * 587 + d[i + 2] * 114) / 1000;
+          const finalVal = lut[gray | 0];
+          d[i] = finalVal;
+          d[i + 1] = finalVal;
+          d[i + 2] = finalVal;
+        }
+      } else if (filterType === 'warm') {
+        // Nostalgic warm tone (gentle sepia warmth + amber glow)
+        for (let i = 0; i < d.length; i += 4) {
+          const r = d[i];
+          const g = d[i + 1];
+          const b = d[i + 2];
+          d[i] = Math.min(255, Math.max(0, r * 1.1 + 14));
+          d[i + 1] = Math.min(255, Math.max(0, g * 1.03 + 6));
+          d[i + 2] = Math.min(255, Math.max(0, b * 0.86 - 8));
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+    } catch (err) {
+      console.warn('Pixel filter error:', err);
+    }
+  }
+
+  // ----------------------------------------------------
   // 3. Capturing Photo Slot
   // ----------------------------------------------------
   function captureCurrentSlot() {
@@ -689,34 +759,14 @@
       ctx.scale(-1, 1);
     }
 
-    // Apply color filter to captured canvas
-    if (activeFilter === 'film_bw' || currentFrameId === 'self') {
-      ctx.filter = 'grayscale(1) contrast(1.55) brightness(0.94)';
-    } else if (activeFilter === 'bw') {
-      ctx.filter = 'grayscale(1) contrast(1.42) brightness(0.98)';
-    } else if (activeFilter === 'warm') {
-      ctx.filter = 'sepia(0.2) saturate(1.35) hue-rotate(-10deg) brightness(1.08)';
-    } else {
-      ctx.filter = 'none';
-    }
-
+    // Draw unadulterated camera frame (clear ctx.filter to prevent mobile Safari issues or duplicate filters)
+    ctx.filter = 'none';
     ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
     ctx.restore();
 
-    // If film B&W / self portrait, apply subtle analog film grain
-    if (activeFilter === 'film_bw' || currentFrameId === 'self') {
-      try {
-        const imgData = ctx.getImageData(0, 0, targetW, targetH);
-        const data = imgData.data;
-        for (let i = 0; i < data.length; i += 4) {
-          const noise = (Math.random() - 0.5) * 18;
-          data[i] = Math.min(255, Math.max(0, data[i] + noise));
-          data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
-          data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
-        }
-        ctx.putImageData(imgData, 0, 0);
-      } catch (e) {}
-    }
+    // Reliably apply color filter directly to canvas pixel buffer on all mobile & desktop browsers
+    const filterToApply = (currentFrameId === 'self') ? 'film_bw' : activeFilter;
+    applyPixelFilter(ctx, targetW, targetH, filterToApply);
 
     // Store captured photo data URL
     const slotPhotoDataUrl = canvas.toDataURL('image/jpeg', 0.95);
