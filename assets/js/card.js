@@ -94,260 +94,305 @@
     });
   }
 
-  // Multi-line text wrapper for Canvas supporting paragraph newlines
-  function wrapText(ctx, text, x, y, maxWidth, lineHeight, align = 'center') {
-    ctx.textAlign = align;
+  // Multi-line text measurement & wrapper for Canvas supporting paragraph newlines
+  function measureWrappedText(ctx, text, maxWidth, lineHeight, font) {
+    if (font) ctx.font = font;
     const paragraphs = text.split('\n');
-    let currentY = y;
+    const linesToDraw = [];
+    let totalHeight = 0;
 
     for (let p = 0; p < paragraphs.length; p++) {
       const para = paragraphs[p].trim();
       if (!para) {
-        currentY += lineHeight * 0.5;
+        const gap = lineHeight * 0.4;
+        linesToDraw.push({ text: '', isBreak: true, height: gap });
+        totalHeight += gap;
         continue;
       }
       const words = para.split(' ');
       let line = '';
-
       for (let n = 0; n < words.length; n++) {
         const testLine = line + words[n] + ' ';
         const metrics = ctx.measureText(testLine);
         if (metrics.width > maxWidth && n > 0) {
-          ctx.fillText(line.trim(), x, currentY);
+          linesToDraw.push({ text: line.trim(), isBreak: false, height: lineHeight });
+          totalHeight += lineHeight;
           line = words[n] + ' ';
-          currentY += lineHeight;
         } else {
           line = testLine;
         }
       }
       if (line.trim()) {
-        ctx.fillText(line.trim(), x, currentY);
-        currentY += lineHeight;
+        linesToDraw.push({ text: line.trim(), isBreak: false, height: lineHeight });
+        totalHeight += lineHeight;
       }
+      if (p < paragraphs.length - 1) {
+        const gap = lineHeight * 0.35;
+        linesToDraw.push({ text: '', isBreak: true, height: gap });
+        totalHeight += gap;
+      }
+    }
+    return { totalHeight, linesToDraw };
+  }
+
+  function renderMeasuredLines(ctx, linesToDraw, x, startY, align = 'center') {
+    ctx.textAlign = align;
+    let currentY = startY;
+    for (const item of linesToDraw) {
+      if (!item.isBreak && item.text) {
+        ctx.fillText(item.text, x, currentY);
+      }
+      currentY += item.height;
     }
     return currentY;
   }
 
-  // Generate Souvenir Canvas Image
+  // Generate Souvenir Canvas Image (Instagram Feed Portrait 4:5: 1080 x 1350)
+  // Large typography, generous breathing room, dynamic content heights, pure tarot aesthetic
   async function generateSouvenirCanvas() {
     const card = currentCard;
-    const width = 800;
+    const width = 1080;
+    const height = 1350; // 4:5 Aspect Ratio
 
-    // Temporary measure canvas to calculate exact text heights
-    const measureCanvas = document.createElement('canvas');
-    const mCtx = measureCanvas.getContext('2d');
+    // 0. 텍스트 불필요한 개행/공백 완전 제거
+    const cleanReading = (card.reading || '').trim().replace(/\s+$/, '');
+    const cleanAdvice = (card.advice || '').trim().replace(/\s+$/, '');
 
-    // 1. Measure Reading Text Height with paragraph formatting
-    mCtx.font = '400 16.5px "Gowun Batang", "Noto Serif KR", serif';
-    const readingParagraphs = card.reading.split('\n');
-    let rLines = 0;
-    for (let p = 0; p < readingParagraphs.length; p++) {
-      const para = readingParagraphs[p].trim();
-      if (!para) {
-        rLines += 0.5;
-        continue;
-      }
-      const words = para.split(' ');
-      let rCurLine = '';
-      for (let n = 0; n < words.length; n++) {
-        const testLine = rCurLine + words[n] + ' ';
-        if (mCtx.measureText(testLine).width > 620 && n > 0) {
-          rLines++;
-          rCurLine = words[n] + ' ';
-        } else {
-          rCurLine = testLine;
-        }
-      }
-      if (rCurLine.trim()) rLines++;
+    if (document.fonts && document.fonts.ready) {
+      try {
+        await document.fonts.ready;
+      } catch (e) {}
     }
-    const readingLineHeight = 28;
-    const readingTotalHeight = rLines * readingLineHeight;
-
-    // 2. Measure Advice Text Height
-    mCtx.font = '600 15.5px "Gowun Batang", serif';
-    const adviceWords = card.advice.split(' ');
-    let aLines = 1;
-    let aCurLine = '';
-    for (let n = 0; n < adviceWords.length; n++) {
-      const testLine = aCurLine + adviceWords[n] + ' ';
-      if (mCtx.measureText(testLine).width > 580 && n > 0) {
-        aLines++;
-        aCurLine = adviceWords[n] + ' ';
-      } else {
-        aCurLine = testLine;
-      }
-    }
-    const adviceLineHeight = 26;
-    const adviceTextHeight = (aLines - 1) * adviceLineHeight;
-    const adviceBoxH = 68 + adviceTextHeight + 22;
-
-    // Y coordinates with refined margin between reading and advice
-    const readingStartY = 645;
-    const readingEndY = readingStartY + readingTotalHeight;
-    const adviceBoxY = readingEndY + 22;
-    const adviceBoxBottom = adviceBoxY + adviceBoxH;
-
-    // Canvas dynamic height without blank empty space
-    const height = Math.round(adviceBoxBottom + 64);
 
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
 
-    // 1. Background Velvet Gradient
+    // 1. Deep Space Velvet Gradient Background
     const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
-    bgGrad.addColorStop(0, '#100a1e');
-    bgGrad.addColorStop(0.4, '#1b112c');
-    bgGrad.addColorStop(1, '#0c0716');
+    bgGrad.addColorStop(0, '#090514');
+    bgGrad.addColorStop(0.3, '#160d28');
+    bgGrad.addColorStop(0.7, '#110820');
+    bgGrad.addColorStop(1, '#070310');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, width, height);
 
-    // Subtle star dots
+    // Celestial stardust stars
     ctx.fillStyle = 'rgba(243, 207, 122, 0.45)';
     const starCoords = [
-      [60, 80], [740, 120], [120, 300], [680, 420],
-      [90, 600], [720, 680], [80, Math.min(height - 120, 850)], [710, Math.min(height - 100, 890)]
+      [75, 75], [1005, 85], [110, 240], [970, 280],
+      [85, 660], [995, 700], [95, 1060], [985, 1100],
+      [130, 1270], [950, 1280]
     ];
     starCoords.forEach(([sx, sy]) => {
       ctx.beginPath();
-      ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+      ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
       ctx.fill();
     });
 
-    // 2. Vintage Double Border (Clean, No brackets)
+    // 2. Vintage Royal Double Border
     ctx.strokeStyle = '#d4af37';
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 3.5;
     ctx.strokeRect(26, 26, width - 52, height - 52);
 
-    ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 5]);
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([8, 6]);
     ctx.strokeRect(36, 36, width - 72, height - 72);
     ctx.setLineDash([]);
 
-    // 3. Header: Emblem
+    // 4 Corner Stars
     ctx.fillStyle = '#d4af37';
-    ctx.font = '700 22px "Cinzel", serif';
+    ctx.font = '24px serif';
     ctx.textAlign = 'center';
-    ctx.fillText('✦ ✧ ✦', width / 2, 78);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✦', 50, 50);
+    ctx.fillText('✦', width - 50, 50);
+    ctx.fillText('✦', 50, height - 50);
+    ctx.fillText('✦', width - 50, height - 50);
 
-    // Divider Line with Star
-    ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(width / 2 - 90, 114);
-    ctx.lineTo(width / 2 + 90, 114);
-    ctx.stroke();
+    // ==========================================
+    // [요소별 크기 및 정밀 간격 세팅]
+    // ==========================================
+    const majorH = 26;
+    const titleH = 48;
+    const imgH = 510;      // 이미지 크기 유지 (510px)
+    const imgW = 336;
+    const pillH = 46;
 
-    ctx.fillStyle = '#d4af37';
-    ctx.font = '13px serif';
+    // 운세 리딩 텍스트 & 박스 높이
+    const readingMeasure = measureWrappedText(
+      ctx,
+      cleanReading,
+      880,
+      40,
+      '500 27px "Gowun Batang", "Noto Serif KR", serif'
+    );
+    const readingBoxH = 26 + readingMeasure.totalHeight + 26;
+
+    // 점술가 조언 텍스트 & 박스 높이
+    const adviceText = `"${cleanAdvice}"`;
+    const adviceMeasure = measureWrappedText(
+      ctx,
+      adviceText,
+      880,
+      42,
+      '600 26px "Gowun Batang", "Pretendard", serif'
+    );
+    const advTitleH = 28;
+    const advTitleToTextGap = 56; 
+    const totalAdvContentH = advTitleH + advTitleToTextGap + adviceMeasure.totalHeight;
+    const advBoxPadding = 23;
+    const advBoxH = totalAdvContentH + advBoxPadding + 12;
+
+    // ==========================================
+    // [간격 수치 조정 - 하단 겹침 차단]
+    // ==========================================
+    const gapMajorToTitle = 14;   
+    const gapTitleToImg = 28;     
+    const gapImgToKw = 50;        
+    const gapKwToReading = 50;    
+    const gapReadingToAdv = 0;
+
+    // 전체 콘텐츠 총 세로 높이 계산
+    const totalContentHeight = 
+      majorH + gapMajorToTitle + 
+      titleH + gapTitleToImg + 
+      imgH + gapImgToKw + 
+      pillH + gapKwToReading + 
+      readingBoxH + gapReadingToAdv + 
+      advBoxH;
+
+    // 캔버스 세로 중앙 배치를 위한 시작 Y 좌표
+    const startY = Math.floor((height - totalContentHeight) / 2);
+
+    // Y축 절대 좌표 산출
+    const majorY = startY + majorH / 2;
+    const titleY = startY + majorH + gapMajorToTitle + titleH / 2;
+    const imgY = startY + majorH + gapMajorToTitle + titleH + gapTitleToImg;
+    const kwY = imgY + imgH + gapImgToKw;
+    const readingBoxY = kwY + pillH + gapKwToReading;
+    const advBoxY = readingBoxY + readingBoxH + gapReadingToAdv;
+
+    const imgX = (width - imgW) / 2;
+
+    // 3. Header Section
+    ctx.textBaseline = 'middle';
+    
+    ctx.fillStyle = '#e8c868';
+    ctx.font = '700 24px "Cinzel", serif, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('✦ ✧ ✦', width / 2, 118);
-
-    // 4. Card Roman Numeral & English Name
-    ctx.fillStyle = '#f3cf7a';
-    ctx.font = '600 14px "Cinzel", serif, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`MAJOR ARCANA · NO. ${card.roman}`, width / 2, 146);
+    ctx.fillText(`✦ MAJOR ARCANA · NO. ${card.roman} ✦`, width / 2, majorY);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 33px "Cinzel", "Playfair Display", serif';
-    ctx.fillText(card.name.toUpperCase(), width / 2, 186);
+    ctx.font = 'bold 46px "Cinzel", "Playfair Display", serif';
+    ctx.fillText((card.name || '').toUpperCase(), width / 2, titleY);
 
-    // 5. Card Image Artwork
+    // 4. Centerpiece Tarot Card Artwork (510px)
     const cardArtSrc = `../assets/images/tarot/${card.id}.png`;
     const cardArtImg = await loadImage(cardArtSrc);
 
-    const imgW = 190;
-    const imgH = 330;
-    const imgX = (width - imgW) / 2;
-    const imgY = 210;
-
-    // Image Gold Frame & Shadow
-    ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-    ctx.shadowBlur = 22;
-    ctx.shadowOffsetY = 8;
-    ctx.fillStyle = '#140c22';
-    ctx.fillRect(imgX, imgY, imgW, imgH);
-    ctx.restore();
-
     if (cardArtImg) {
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 8;
       ctx.drawImage(cardArtImg, imgX, imgY, imgW, imgH);
+      ctx.restore();
     }
 
-    ctx.strokeStyle = '#d4af37';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(imgX, imgY, imgW, imgH);
-
-    // 6. Keywords Pill Badges
-    const kwY = 570;
+    // 5. Keywords Badges
     const keywords = card.keywords || [];
-    const kwGap = 12;
-    const pillH = 30;
-    ctx.font = 'bold 14.5px "Gowun Batang", serif, sans-serif';
+    const kwGap = 16;
+    ctx.font = 'bold 26px "Gowun Batang", "Pretendard", serif, sans-serif';
+    ctx.textBaseline = 'alphabetic';
 
-    // Measure total width of keyword pills
-    const kwWidths = keywords.map(kw => ctx.measureText(kw).width + 26);
+    const kwWidths = keywords.map(kw => ctx.measureText(`# ${kw}`).width + 48);
     const totalKwWidth = kwWidths.reduce((a, b) => a + b, 0) + kwGap * (keywords.length - 1);
     let startKwX = (width - totalKwWidth) / 2;
 
     keywords.forEach((kw, i) => {
       const pW = kwWidths[i];
-      // Pill background
-      ctx.fillStyle = 'rgba(212, 175, 55, 0.15)';
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 3;
+
+      ctx.fillStyle = 'rgba(36, 20, 56, 0.96)';
       ctx.beginPath();
-      ctx.roundRect(startKwX, kwY, pW, pillH, 15);
+      ctx.roundRect(startKwX, kwY, pW, pillH, 24);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.fillStyle = 'rgba(212, 175, 55, 0.22)';
+      ctx.beginPath();
+      ctx.roundRect(startKwX, kwY, pW, pillH, 24);
       ctx.fill();
 
-      // Pill border
-      ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#f3cf7a';
+      ctx.lineWidth = 1.8;
       ctx.stroke();
 
-      // Pill text
-      ctx.fillStyle = '#f3cf7a';
+      ctx.fillStyle = '#fff6d6';
       ctx.textAlign = 'center';
-      ctx.fillText(kw, startKwX + pW / 2, kwY + 20);
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(`# ${kw}`, startKwX + pW / 2, kwY + 32);
 
       startKwX += pW + kwGap;
     });
 
-    // 7. Reading Body Prose
-    ctx.fillStyle = '#fdf8ee';
-    ctx.font = '400 16.5px "Gowun Batang", "Noto Serif KR", serif';
-    wrapText(ctx, card.reading, width / 2, readingStartY, 620, readingLineHeight, 'center');
+    // 6. Reading Body Glass Container Box
+    const readingBoxX = 52;
+    const readingBoxW = width - readingBoxX * 2;
 
-    // 8. Advice Box
-    const adviceBoxW = 640;
-    const adviceBoxX = (width - adviceBoxW) / 2;
-
-    ctx.fillStyle = 'rgba(35, 22, 50, 0.85)';
+    ctx.fillStyle = 'rgba(20, 12, 34, 0.94)';
     ctx.beginPath();
-    ctx.roundRect(adviceBoxX, adviceBoxY, adviceBoxW, adviceBoxH, 12);
+    ctx.roundRect(readingBoxX, readingBoxY, readingBoxW, readingBoxH, 18);
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
-    ctx.lineWidth = 1;
+    // Reading Body Prose
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '500 27px "Gowun Batang", "Noto Serif KR", serif';
+    renderMeasuredLines(ctx, cleanReading ? readingMeasure.linesToDraw : [], width / 2, readingBoxY + 24, 'center');
+
+    // 7. Advice Card Box
+    const advBoxX = 52;
+    const advBoxW = readingBoxW;
+
+    const advGrad = ctx.createLinearGradient(advBoxX, advBoxY, advBoxX, advBoxY + advBoxH);
+    advGrad.addColorStop(0, 'rgba(44, 28, 66, 0.96)');
+    advGrad.addColorStop(1, 'rgba(28, 16, 44, 0.98)');
+    ctx.fillStyle = advGrad;
+    ctx.beginPath();
+    ctx.roundRect(advBoxX, advBoxY, advBoxW, advBoxH, 16);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(243, 207, 122, 0.8)';
+    ctx.lineWidth = 1.8;
     ctx.stroke();
 
-    // Advice Tag
+    // Advice Header Title & Quote
+    const advContentStartY = advBoxY + (advBoxH - totalAdvContentH) / 2 + 4;
+    const advTitleY = advContentStartY + advTitleH;
+
     ctx.fillStyle = '#f3cf7a';
-    ctx.font = '600 12.5px "Cinzel", serif, sans-serif';
+    ctx.font = '700 26px "Gowun Batang", "Cinzel", serif';
     ctx.textAlign = 'center';
-    ctx.fillText('✧ NEW YEAR\'S ADVICE ✧', width / 2, adviceBoxY + 30);
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('✦ 점술가의 새해 조언 ✦', width / 2, advTitleY);
 
-    // Advice Content Text
-    ctx.fillStyle = '#fff4dc';
-    ctx.font = '600 15.5px "Gowun Batang", serif';
-    wrapText(ctx, card.advice, width / 2, adviceBoxY + 60, 580, adviceLineHeight, 'center');
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(width / 2 - 130, advTitleY + 12);
+    ctx.lineTo(width / 2 + 130, advTitleY + 12);
+    ctx.stroke();
 
-    // 9. Footer: Subtle celestial motif
-    ctx.fillStyle = 'rgba(212, 175, 55, 0.45)';
-    ctx.font = '14px "Cinzel", serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('✧ ✦ ✧', width / 2, height - 38);
+    const adviceStartY = advTitleY + advTitleToTextGap;
+    ctx.fillStyle = '#ffeaa7';
+    ctx.font = '600 26px "Gowun Batang", "Pretendard", serif';
+    renderMeasuredLines(ctx, cleanAdvice ? adviceMeasure.linesToDraw : [], width / 2, adviceStartY, 'center');
 
     return canvas;
   }
@@ -355,7 +400,7 @@
   // Trigger download / preview
   async function handleSaveSouvenir() {
     const saveBtn = document.getElementById('btn-save-souvenir');
-    const originalHtml = '<span class="btn-icon">📥</span><span>결과 카드 이미지 저장</span>';
+    const originalHtml = '<span class="btn-icon">📥</span><span>카드 이미지 저장</span>';
 
     try {
       if (saveBtn) {
@@ -365,7 +410,7 @@
 
       const canvas = await generateSouvenirCanvas();
       const dataUrl = canvas.toDataURL('image/png');
-      const filename = `small_gathering_tarot_${currentCard.name.toLowerCase().replace(/\s+/g, '_')}.png`;
+      const filename = `tarot_${currentCard.name.toLowerCase().replace(/\s+/g, '_')}_4x5.png`;
 
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
@@ -410,7 +455,7 @@
       window.MysticalAudio?.playMysticChime();
     }, 250);
 
-    // Save button event
+    // Save button event (Download 4:5 image)
     const saveBtn = document.getElementById('btn-save-souvenir');
     if (saveBtn) {
       saveBtn.addEventListener('click', () => {
@@ -419,7 +464,7 @@
       });
     }
 
-    // Modal close
+    // Modal close handlers
     const modalCloseBtn = document.getElementById('modal-close-btn');
     const modal = document.getElementById('preview-modal');
     if (modalCloseBtn && modal) {

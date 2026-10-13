@@ -73,34 +73,34 @@ window.PHOTOBOOTH_FRAMES = {
     "textColor": "#1a1a1a",
     "width": 1200,
     "height": 1800,
-    "imageSrc": "../assets/images/photo_booth/self.png?v=6",
-    "overlaySrc": "../assets/images/photo_booth/self_overlay.png?v=6",
+    "imageSrc": "../assets/images/photo_booth/self.png?v=7",
+    "overlaySrc": "../assets/images/photo_booth/self_overlay.png?v=7",
     "slots": [
       {
         "id": 0,
         "name": "첫 번째 컷",
-        "x": 400,
-        "y": 84,
-        "width": 400,
-        "height": 544,
+        "x": 405,
+        "y": 89,
+        "width": 390,
+        "height": 535,
         "label": "상단 컷"
       },
       {
         "id": 1,
         "name": "두 번째 컷",
-        "x": 400,
-        "y": 627,
-        "width": 400,
-        "height": 545,
+        "x": 405,
+        "y": 632,
+        "width": 390,
+        "height": 536,
         "label": "중간 컷"
       },
       {
         "id": 2,
         "name": "세 번째 컷",
-        "x": 400,
-        "y": 1171,
-        "width": 400,
-        "height": 544,
+        "x": 405,
+        "y": 1176,
+        "width": 390,
+        "height": 535,
         "label": "하단 컷"
       }
     ]

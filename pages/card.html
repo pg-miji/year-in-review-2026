@@ -73,11 +73,11 @@
       <nav class="result-actions-nav" aria-label="결과 카드 작업 및 네비게이션">
         <button type="button" id="btn-save-souvenir" class="btn-vintage btn-gold">
           <span class="btn-icon">📥</span>
-          <span>결과 카드 이미지 저장</span>
+          <span>카드 이미지 저장</span>
         </button>
         <a href="cards.html" class="btn-vintage btn-velvet">
           <span class="btn-icon">🔮</span>
-          <span>다른 카드 다시 뽑기</span>
+          <span>다른 카드 뽑기</span>
         </a>
         <a href="../index.html" class="btn-vintage btn-velvet btn-home" title="홈으로 돌아가기">
           <span class="btn-icon">🏠</span>
@@ -90,11 +90,14 @@
   <!-- Result Card Preview Modal (Long press to save on mobile/web) -->
   <div id="preview-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-heading">
     <div class="modal-card">
-      <h3 id="modal-heading" class="modal-title">✨ 새해 타로 카드 완성</h3>
-      <p class="modal-desc">이미지를 길게 누르면 사진 앱에 저장하실 수 있습니다.</p>
+      <h3 id="modal-heading" class="modal-title">✨ 인스타 공유용 타로 카드 (4:5)</h3>
+      <p class="modal-desc">이미지를 길게 누르거나 아래 다운로드 버튼을 눌러 사진첩에 저장하세요.</p>
       <img id="modal-preview-img" src="" alt="새해 타로 기념 카드" class="modal-preview-img" />
-      <div class="modal-actions">
-        <button type="button" id="modal-close-btn" class="btn-vintage btn-gold" style="font-size:15px; padding:12px 28px; width:100%; max-width:200px;">
+      <div class="modal-actions" style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <a id="modal-download-btn" href="#" download="" class="btn-vintage btn-gold" style="font-size:14.5px; padding:11px 22px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+          <span>📥</span><span>이미지 다운로드</span>
+        </a>
+        <button type="button" id="modal-close-btn" class="btn-vintage btn-velvet" style="font-size:14.5px; padding:11px 22px;">
           닫기
         </button>
       </div>

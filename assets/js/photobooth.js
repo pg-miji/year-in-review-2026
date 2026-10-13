@@ -13,6 +13,9 @@
   let currentFacingMode = 'user';
   let activeFilter = 'none'; // 'none' | 'bw' | 'warm'
   let isCountingDown = false;
+  let isCapturing = false;
+  let countdownIntervalId = null;
+  let isPhotoboothInitialized = false;
   let finalResultDataUrl = null;
   let simulatedCanvasAnimId = null;
   let sharedVideoEl = null;
@@ -130,6 +133,9 @@
   // Initialization & View Routing
   // ----------------------------------------------------
   function initPhotobooth() {
+    if (isPhotoboothInitialized) return;
+    isPhotoboothInitialized = true;
+
     setupFrameSelection();
     setupCameraControls();
     setupResultActions();
@@ -211,6 +217,20 @@
     currentFrameData = selected;
     activeSlotIndex = 0;
     capturedSlots = [];
+
+    if (countdownIntervalId) {
+      clearInterval(countdownIntervalId);
+      countdownIntervalId = null;
+    }
+    isCountingDown = false;
+    isCapturing = false;
+    const shutterInit = document.getElementById('btn-take-photo');
+    if (shutterInit) {
+      shutterInit.disabled = false;
+      shutterInit.classList.remove('disabled');
+      shutterInit.style.opacity = '1';
+      shutterInit.style.pointerEvents = 'auto';
+    }
 
     // Filter handling per frame:
     // If self portrait frame is selected, lock to deep-contrast analog film B&W and hide filter buttons
@@ -494,30 +514,25 @@
   }
 
   function setupCameraControls() {
-    // Shutter button
+    // Shutter button (Sole authoritative photo trigger)
     const shutterBtn = document.getElementById('btn-take-photo');
     if (shutterBtn) {
-      shutterBtn.addEventListener('click', () => {
-        if (isCountingDown) return;
+      shutterBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isCountingDown || isCapturing) return;
         startCountdownAndCapture();
       });
     }
 
-    // Tap on frame board directly to trigger photo capture (Thumb-friendly mobile feature)
-    const frameBoard = document.getElementById('booth-frame-board');
-    if (frameBoard) {
-      frameBoard.addEventListener('click', (e) => {
-        // Prevent accidental triggers if clicking any interactive elements inside
-        if (e.target.closest('button') || e.target.closest('a')) return;
-        if (isCountingDown) return;
-        startCountdownAndCapture();
-      });
-    }
-
-    // Timer toggle button
+    // Timer toggle button (Default OFF per user request)
     const timerBtn = document.getElementById('btn-toggle-timer');
-    let timerEnabled = true;
+    let timerEnabled = false;
     if (timerBtn) {
+      timerBtn.classList.remove('active');
+      const textEl = timerBtn.querySelector('.aux-text');
+      if (textEl) textEl.textContent = '타이머 OFF';
+
       timerBtn.addEventListener('click', () => {
         timerEnabled = !timerEnabled;
         timerBtn.classList.toggle('active', timerEnabled);
@@ -559,6 +574,27 @@
     const retakeCutBtn = document.getElementById('btn-retake-cut');
     if (retakeCutBtn) {
       retakeCutBtn.addEventListener('click', () => {
+        if (countdownIntervalId) {
+          clearInterval(countdownIntervalId);
+          countdownIntervalId = null;
+        }
+        isCountingDown = false;
+        isCapturing = false;
+
+        const overlay = document.getElementById('countdown-overlay');
+        if (overlay) {
+          overlay.innerHTML = '';
+          overlay.classList.remove('active');
+        }
+
+        const shutter = document.getElementById('btn-take-photo');
+        if (shutter) {
+          shutter.disabled = false;
+          shutter.classList.remove('disabled');
+          shutter.style.opacity = '1';
+          shutter.style.pointerEvents = 'auto';
+        }
+
         if (activeSlotIndex > 0) {
           activeSlotIndex--;
           capturedSlots.pop();
@@ -617,6 +653,8 @@
   }
 
   function startCountdownAndCapture() {
+    if (isCountingDown || isCapturing) return;
+
     const timerBtn = document.getElementById('btn-toggle-timer');
     const isTimerOn = timerBtn && timerBtn.classList.contains('active');
 
@@ -625,7 +663,6 @@
       return;
     }
 
-    if (isCountingDown) return;
     isCountingDown = true;
     const overlay = document.getElementById('countdown-overlay');
     let count = 5;
@@ -636,7 +673,12 @@
     }
     PhotoAudio.playCountdownTick(count);
 
-    const interval = setInterval(() => {
+    if (countdownIntervalId) {
+      clearInterval(countdownIntervalId);
+      countdownIntervalId = null;
+    }
+
+    countdownIntervalId = setInterval(() => {
       count--;
       if (count > 0) {
         if (overlay) {
@@ -644,7 +686,8 @@
         }
         PhotoAudio.playCountdownTick(count);
       } else {
-        clearInterval(interval);
+        clearInterval(countdownIntervalId);
+        countdownIntervalId = null;
         if (overlay) {
           overlay.innerHTML = '';
           overlay.classList.remove('active');
@@ -716,14 +759,32 @@
   // 3. Capturing Photo Slot
   // ----------------------------------------------------
   function captureCurrentSlot() {
+    if (isCapturing) return;
+    isCapturing = true;
+
     const video = getOrCreateVideoElement();
-    if (!video || !currentFrameData) return;
+    if (!video || !currentFrameData) {
+      isCapturing = false;
+      return;
+    }
+
+    const shutterBtn = document.getElementById('btn-take-photo');
+    if (shutterBtn) {
+      shutterBtn.disabled = true;
+      shutterBtn.classList.add('disabled');
+      shutterBtn.style.opacity = '0.5';
+      shutterBtn.style.pointerEvents = 'none';
+    }
 
     // Play Shutter sound & trigger flash
     PhotoAudio.playShutter();
     triggerFlash();
 
     const currentSlot = currentFrameData.slots[activeSlotIndex];
+    if (!currentSlot) {
+      isCapturing = false;
+      return;
+    }
     const targetW = currentSlot.width;
     const targetH = currentSlot.height;
 
@@ -801,11 +862,24 @@
     if (activeSlotIndex < currentFrameData.slots.length) {
       // Immediately move video to the next slot and resume playback
       attachVideoToSlot(activeSlotIndex);
+
+      // Enforce deliberate 1.2s pause between cuts so user sees cut 1 and gets ready for cut 2
+      setTimeout(() => {
+        isCapturing = false;
+        const shutter = document.getElementById('btn-take-photo');
+        if (shutter) {
+          shutter.disabled = false;
+          shutter.classList.remove('disabled');
+          shutter.style.opacity = '1';
+          shutter.style.pointerEvents = 'auto';
+        }
+      }, 1200);
     } else {
       // All slots filled! Run print animation and reveal final result
       setTimeout(() => {
+        isCapturing = false;
         runPrintAnimationAndComplete();
-      }, 300);
+      }, 400);
     }
   }
 
@@ -873,6 +947,9 @@
     // Build the final master composite high-res image
     const finalCanvas = await compositeFinalFrameCanvas();
     finalResultDataUrl = finalCanvas.toDataURL('image/png');
+
+    // Trigger high-speed background pre-upload while printing animation plays
+    triggerBackgroundUpload(finalCanvas);
 
     // Show Print Animation Modal
     const printModal = document.getElementById('printing-stage-modal');
@@ -946,13 +1023,237 @@
       resultImg.src = finalResultDataUrl;
     }
     PhotoAudio.playCompleteFanfare();
+
+    // QR Code button is shown ONLY on PC / Desktop
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    const qrBtn = document.getElementById('btn-share-mobile-qr');
+    if (qrBtn) {
+      qrBtn.style.display = isMobile ? 'none' : 'inline-flex';
+    }
   }
 
   // ----------------------------------------------------
-  // 5. Action Handlers (Save, Retake)
+  // 5. Action Handlers (Save, PC QR Share to Phone)
   // ----------------------------------------------------
+  let cachedPhotoUploadUrl = null;
+  let activeUploadPromise = null;
+  let cachedUploadBlob = null;
+  let currentQrUrl = null;
+
+  // Converts canvas into a crisp, high-resolution JPEG (quality 0.92, full 1200x1800)
+  // Balanced to prevent pixelation/blurriness while keeping file lightweight (~380KB) for fast upload
+  function getHighResPhotoBlob(canvas) {
+    if (cachedUploadBlob) return Promise.resolve(cachedUploadBlob);
+    return new Promise((resolve) => {
+      if (canvas && canvas.toBlob) {
+        canvas.toBlob((blob) => {
+          if (blob) cachedUploadBlob = blob;
+          resolve(blob);
+        }, 'image/jpeg', 0.92);
+      } else {
+        resolve(null);
+      }
+    });
+  }
+
+  // Uploads photo to fast temporary cloud hosts and returns direct image URL
+  async function uploadPhotoBlob(blob) {
+    if (!blob) return null;
+    const filename = `photobooth_${currentFrameId || 'photo'}_${Date.now()}.jpg`;
+
+    // Strategy 1: Catbox Litterbox (Direct raw image, 1h temporary hosting, fastest & completely free)
+    try {
+      const fd1 = new FormData();
+      fd1.append('reqtype', 'fileupload');
+      fd1.append('time', '1h');
+      fd1.append('fileToUpload', blob, filename);
+
+      const controller1 = new AbortController();
+      const timer1 = setTimeout(() => controller1.abort(), 4500);
+
+      const resp1 = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
+        method: 'POST',
+        body: fd1,
+        signal: controller1.signal
+      });
+      clearTimeout(timer1);
+
+      if (resp1.ok) {
+        const text = (await resp1.text()).trim();
+        if (text && text.startsWith('http')) {
+          return text;
+        }
+      }
+    } catch (e) {
+      console.warn('Litterbox upload failed, trying fallback:', e);
+    }
+
+    // Strategy 2: tmpfiles.org fallback
+    try {
+      const fd2 = new FormData();
+      fd2.append('file', blob, filename);
+
+      const controller2 = new AbortController();
+      const timer2 = setTimeout(() => controller2.abort(), 4500);
+
+      const resp2 = await fetch('https://tmpfiles.org/api/v1/upload', {
+        method: 'POST',
+        body: fd2,
+        signal: controller2.signal
+      });
+      clearTimeout(timer2);
+
+      if (resp2.ok) {
+        const json = await resp2.json();
+        if (json && json.data && json.data.url) {
+          return json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+        }
+      }
+    } catch (e) {
+      console.warn('tmpfiles fallback failed:', e);
+    }
+
+    return null;
+  }
+
+  // Background photo pre-upload: starts as soon as printing animation begins!
+  function triggerBackgroundUpload(canvas) {
+    cachedPhotoUploadUrl = null;
+    cachedUploadBlob = null;
+    activeUploadPromise = (async () => {
+      try {
+        const blob = await getHighResPhotoBlob(canvas);
+        if (!blob) return null;
+        const directUrl = await uploadPhotoBlob(blob);
+        if (directUrl) {
+          cachedPhotoUploadUrl = directUrl;
+          return directUrl;
+        }
+      } catch (err) {
+        console.warn('Background photo upload warning:', err);
+      }
+      return null;
+    })();
+  }
+
+  function showToast(message) {
+    let toast = document.getElementById('toast-notification');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'toast-notification';
+      toast.className = 'toast-notification';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('active');
+    setTimeout(() => {
+      toast.classList.remove('active');
+    }, 3200);
+  }
+
+  function closePhotoboothQrModal() {
+    const modal = document.getElementById('qr-modal');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.style.display = 'none';
+    }
+  }
+
+  async function openPhotoboothQrModal() {
+    if (!finalResultDataUrl) {
+      const resultImg = document.getElementById('result-photo-img');
+      if (resultImg && resultImg.src && resultImg.src.startsWith('data:')) {
+        finalResultDataUrl = resultImg.src;
+      }
+    }
+    if (!finalResultDataUrl) return;
+
+    const modal = document.getElementById('qr-modal');
+    const spinner = document.getElementById('qr-loading-spinner');
+    const boxContainer = document.getElementById('qr-box-container');
+    const subtitle = document.getElementById('qr-modal-subtitle');
+    const expiryNotice = document.getElementById('qr-expiry-notice');
+
+    if (!modal) return;
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+
+    // If pre-upload already completed in background, render INSTANTLY!
+    if (cachedPhotoUploadUrl) {
+      renderQrCode(cachedPhotoUploadUrl);
+      return;
+    }
+
+    if (spinner) spinner.style.display = 'block';
+    if (boxContainer) boxContainer.style.display = 'none';
+    if (expiryNotice) expiryNotice.style.display = 'none';
+
+    try {
+      let uploadUrl = null;
+      if (activeUploadPromise) {
+        uploadUrl = await activeUploadPromise;
+      }
+
+      if (!uploadUrl && !cachedPhotoUploadUrl) {
+        // Fallback: fast upload using cached crisp JPEG blob
+        let blob = cachedUploadBlob;
+        if (!blob) {
+          const resBlob = await fetch(finalResultDataUrl);
+          blob = await resBlob.blob();
+        }
+        uploadUrl = await uploadPhotoBlob(blob);
+      }
+
+      const finalUrl = uploadUrl || cachedPhotoUploadUrl;
+      if (finalUrl) {
+        cachedPhotoUploadUrl = finalUrl;
+        renderQrCode(finalUrl);
+      } else {
+        throw new Error('Upload fallback');
+      }
+    } catch (err) {
+      console.warn('Temporary cloud upload fallback:', err);
+      if (subtitle) {
+        subtitle.innerHTML = '스마트폰 카메라로 아래 QR 코드를 스캔하세요.';
+      }
+      renderQrCode(window.location.origin + window.location.pathname, true);
+    }
+  }
+
+  function renderQrCode(url, isFallback = false) {
+    const spinner = document.getElementById('qr-loading-spinner');
+    const boxContainer = document.getElementById('qr-box-container');
+    const canvas = document.getElementById('qr-canvas');
+    const expiryNotice = document.getElementById('qr-expiry-notice');
+
+    if (spinner) spinner.style.display = 'none';
+    if (boxContainer) boxContainer.style.display = 'flex';
+    if (expiryNotice) expiryNotice.style.display = isFallback ? 'none' : 'inline-block';
+    currentQrUrl = url;
+
+    if (canvas && window.QRCode) {
+      window.QRCode.toCanvas(canvas, url, {
+        width: 200,
+        margin: 1,
+        color: {
+          dark: '#120822',
+          light: '#ffffff'
+        }
+      }, function (err) {
+        if (err) console.error('QR code render error:', err);
+      });
+
+      canvas.style.cursor = 'pointer';
+      canvas.onclick = () => {
+        if (currentQrUrl) {
+          window.open(currentQrUrl, '_blank');
+        }
+      };
+    }
+  }
+
   function setupResultActions() {
-    // 1. Save (저장하기)
+    // 1. Save (PC 다운로드)
     const saveBtn = document.getElementById('btn-save-photo');
     if (saveBtn) {
       saveBtn.addEventListener('click', () => {
@@ -960,7 +1261,16 @@
       });
     }
 
-    // 2. Retake (다시 찍기)
+    // 2. Mobile QR Share Modal (PC only)
+    const qrShareBtn = document.getElementById('btn-share-mobile-qr');
+    if (qrShareBtn) {
+      qrShareBtn.addEventListener('click', () => {
+        window.MysticalAudio?.playCardFlip();
+        openPhotoboothQrModal();
+      });
+    }
+
+    // 3. Retake (다시 찍기)
     const retakeBtn = document.getElementById('btn-retake-all');
     if (retakeBtn) {
       retakeBtn.addEventListener('click', () => {
@@ -969,7 +1279,23 @@
         } catch (e) {}
         activeSlotIndex = 0;
         capturedSlots = [];
+        cachedPhotoUploadUrl = null;
+        activeUploadPromise = null;
         startBoothStage();
+      });
+    }
+
+    // QR Modal Controls
+    const qrModal = document.getElementById('qr-modal');
+    const closeQrBtn = document.getElementById('btn-close-qr-modal');
+    if (closeQrBtn && qrModal) {
+      closeQrBtn.addEventListener('click', () => {
+        closePhotoboothQrModal();
+      });
+      qrModal.addEventListener('click', (e) => {
+        if (e.target === qrModal) {
+          closePhotoboothQrModal();
+        }
       });
     }
   }
@@ -990,11 +1316,14 @@
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    showToast('✨ 사진 파일이 다운로드되었습니다!');
   }
 
   // Export to window
   window.initPhotobooth = initPhotobooth;
   window.selectPhotoboothFrame = selectFrame;
+  window.openPhotoboothQrModal = openPhotoboothQrModal;
+  window.closePhotoboothQrModal = closePhotoboothQrModal;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPhotobooth);

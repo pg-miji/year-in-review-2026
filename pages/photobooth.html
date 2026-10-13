@@ -60,8 +60,8 @@
           <!-- Frame 1: 2026 Vintage Stamp -->
           <article class="frame-pick-card" data-frame-id="2026" role="button" tabindex="0" aria-label="2026 빈티지 우표 프레임 선택" onclick="window.selectPhotoboothFrame && window.selectPhotoboothFrame('2026')">
             <span class="frame-pick-badge">RED STAMP</span>
-            <div class="frame-preview-box">
-              <img src="../assets/images/photo_booth/2026.png?v=6" alt="2026 빈티지 우표 프레임 미리보기" class="frame-preview-svg" />
+            <div class="frame-preview-box" style="width:100%; max-width:250px; aspect-ratio:2/3; margin:0 auto 20px; overflow:hidden; border-radius:12px; background:#0d0818; display:flex; align-items:center; justify-content:center;">
+              <img src="../assets/images/photo_booth/2026.png?v=7" alt="2026 빈티지 우표 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
             </div>
             <p class="frame-pick-desc">따뜻한 와인 레드 톤의 우표 & 연말 감성 2컷 프레임</p>
           </article>
@@ -69,8 +69,8 @@
           <!-- Frame 2: 2027 Retro Desktop -->
           <article class="frame-pick-card" data-frame-id="2027" role="button" tabindex="0" aria-label="2027 레트로 데스크톱 프레임 선택" onclick="window.selectPhotoboothFrame && window.selectPhotoboothFrame('2027')">
             <span class="frame-pick-badge">Y2K DESKTOP</span>
-            <div class="frame-preview-box">
-              <img src="../assets/images/photo_booth/2027.png?v=6" alt="2027 레트로 데스크톱 프레임 미리보기" class="frame-preview-svg" />
+            <div class="frame-preview-box" style="width:100%; max-width:250px; aspect-ratio:2/3; margin:0 auto 20px; overflow:hidden; border-radius:12px; background:#0d0818; display:flex; align-items:center; justify-content:center;">
+              <img src="../assets/images/photo_booth/2027.png?v=7" alt="2027 레트로 데스크톱 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
             </div>
             <p class="frame-pick-desc">선명한 코발트 블루 윈도우 그래픽의 신년 2컷 프레임</p>
           </article>
@@ -78,8 +78,8 @@
           <!-- Frame 3: Self Portrait -->
           <article class="frame-pick-card" data-frame-id="self" role="button" tabindex="0" aria-label="Self Portrait 3컷 프레임 선택" onclick="window.selectPhotoboothFrame && window.selectPhotoboothFrame('self')">
             <span class="frame-pick-badge">SELF PORTRAIT</span>
-            <div class="frame-preview-box">
-              <img src="../assets/images/photo_booth/self.png?v=6" alt="Self Portrait 프레임 미리보기" class="frame-preview-svg" />
+            <div class="frame-preview-box" style="width:100%; max-width:250px; aspect-ratio:2/3; margin:0 auto 20px; overflow:hidden; border-radius:12px; background:#0d0818; display:flex; align-items:center; justify-content:center;">
+              <img src="../assets/images/photo_booth/self_overlay.png?v=7" alt="Self Portrait 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
             </div>
             <p class="frame-pick-desc">클래식 무드의 세로 3컷 셀프 포트레이트 프레임</p>
           </article>
@@ -137,9 +137,9 @@
 
             <!-- Aux Controls (5s Timer & Flip) -->
             <div class="camera-aux-tools">
-              <button type="button" id="btn-toggle-timer" class="aux-btn active">
+              <button type="button" id="btn-toggle-timer" class="aux-btn">
                 <span>⏱️</span>
-                <span class="aux-text">5초 타이머 ON</span>
+                <span class="aux-text">타이머 OFF</span>
               </button>
               <button type="button" id="btn-switch-camera" class="aux-btn">
                 <span>🔄</span>
@@ -181,7 +181,11 @@
         <nav class="photobooth-actions-nav" aria-label="결과 사진 작업">
           <button type="button" id="btn-save-photo" class="btn-vintage btn-gold">
             <span class="btn-icon">📥</span>
-            <span>사진 저장하기</span>
+            <span>사진 다운로드</span>
+          </button>
+          <button type="button" id="btn-share-mobile-qr" class="btn-vintage btn-velvet" title="스마트폰으로 QR 스캔하여 저장" onclick="window.openPhotoboothQrModal && window.openPhotoboothQrModal()">
+            <span class="btn-icon">📱</span>
+            <span>스마트폰으로 전송 (QR)</span>
           </button>
           <button type="button" id="btn-retake-all" class="btn-vintage btn-velvet">
             <span class="btn-icon">🔄</span>
@@ -193,6 +197,33 @@
           </a>
         </nav>
       </section>
+
+      <!-- QR Code Modal (Scan with Phone to save photobooth photo - PC Only) -->
+      <div id="qr-modal" class="qr-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title" onclick="if(event.target===this)window.closePhotoboothQrModal&&window.closePhotoboothQrModal()">
+        <div class="qr-modal-card">
+          <h3 id="qr-modal-title" class="selection-heading" style="font-size: 20px; margin-bottom: 6px;">📱 스마트폰으로 사진 전송</h3>
+          <p class="selection-subtext" style="font-size: 13.5px; margin-bottom: 14px;" id="qr-modal-subtitle">휴대폰 기본 카메라로 QR 코드를 스캔하세요.</p>
+          
+          <div id="qr-loading-spinner" style="padding: 28px 0; color: var(--gold-light); display: none;">
+            <div style="font-size: 28px; margin-bottom: 8px;">⏳</div>
+            <span style="font-size: 14px;">모바일 전송 QR 코드 준비 중...</span>
+          </div>
+
+          <div id="qr-box-container" class="qr-content-container" style="display: flex; flex-direction: column; align-items: center;">
+            <div class="qr-canvas-card">
+              <canvas id="qr-canvas" class="qr-canvas" width="200" height="200" style="cursor:pointer;" title="클릭하면 사진 다운로드 페이지가 열립니다"></canvas>
+            </div>
+            <p class="qr-hint-text">💡 QR 코드를 클릭하면 새 탭에서 사진을 바로 열 수 있습니다</p>
+            <div class="qr-expiry-notice" id="qr-expiry-notice">⏱️ 모바일 전송 링크는 1시간 동안 유지됩니다</div>
+          </div>
+
+          <div style="display: flex; justify-content: center; margin-top: 18px;">
+            <button type="button" id="btn-close-qr-modal" class="btn-vintage btn-gold" style="font-size: 14px; padding: 10px 36px;" onclick="window.closePhotoboothQrModal && window.closePhotoboothQrModal()">
+              닫기
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -219,7 +250,10 @@
     <p class="printing-status-sub">잠시만 기다려주세요 ✦</p>
   </div>
 
-  <!-- Scripts: Audio, Frames, Logic -->
+  <div id="toast-notification" class="toast-notification" role="status" aria-live="polite"></div>
+
+  <!-- Scripts: QR, Audio, Frames, Logic -->
+  <script src="../assets/js/qrcode.min.js"></script>
   <script src="../assets/js/audio.js"></script>
   <script src="../assets/js/photobooth_frames.js"></script>
   <script src="../assets/js/photobooth.js"></script>

@@ -8,5 +8,9 @@
     "start": "node server.js",
     "build": "echo 'Static site ready for GitHub Pages'",
     "lint": "echo 'No lint errors'"
+  },
+  "dependencies": {
+    "pngjs": "^7.0.0",
+    "qrcode": "^1.5.4"
   }
 }

@@ -451,6 +451,13 @@ class SeamlessSPARouter {
         return;
       }
 
+      // If linking to photobooth or marked data-no-spa, allow clean native navigation
+      // This prevents image layout corruption and ensures camera stream initialization
+      if (link.getAttribute('data-no-spa') === 'true' || targetUrl.pathname.endsWith('photobooth.html')) {
+        window.MysticalAudio?.playCardFlip();
+        return;
+      }
+
       e.preventDefault();
       // Sound feedback
       window.MysticalAudio?.playCardFlip();
@@ -528,8 +535,8 @@ class SeamlessSPARouter {
         currentContainer.classList.remove('page-leaving');
       }
 
-      // Swap / Manage any modals (reading-loading-modal, preview-modal)
-      const modals = ['reading-loading-modal', 'preview-modal'];
+      // Swap / Manage any modals (reading-loading-modal, preview-modal, qr-modal, printing-stage-modal)
+      const modals = ['reading-loading-modal', 'preview-modal', 'qr-modal', 'printing-stage-modal'];
       modals.forEach(modalId => {
         const oldModal = document.getElementById(modalId);
         const newModal = doc.getElementById(modalId);
@@ -607,6 +614,10 @@ class SeamlessSPARouter {
     } else if (path.endsWith('card.html')) {
       if (window.initCardPage) {
         window.initCardPage();
+      }
+    } else if (path.endsWith('photobooth.html')) {
+      if (window.initPhotobooth) {
+        window.initPhotobooth();
       }
     } else {
       if (window.initMainPage) {

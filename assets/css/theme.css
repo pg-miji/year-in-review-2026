@@ -368,3 +368,91 @@ html, body {
     font-size: 14.5px;
   }
 }
+
+/* Toast Notification for Clipboard Copy */
+.toast-notification {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: rgba(22, 14, 36, 0.96);
+  border: 1.5px solid var(--gold-light);
+  color: #fffdf5;
+  padding: 14px 24px;
+  border-radius: 30px;
+  font-size: 14.5px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(212,175,55,0.4);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  white-space: pre-line;
+  text-align: center;
+  max-width: 90vw;
+}
+
+.toast-notification.active {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* Universal QR Modal */
+.qr-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 4, 12, 0.9);
+  backdrop-filter: blur(8px);
+  z-index: 120;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.qr-modal-overlay.active {
+  display: flex;
+}
+
+.qr-modal-card {
+  background: linear-gradient(170deg, #1f1433 0%, #120b20 100%);
+  border: 1.5px solid var(--gold-primary);
+  border-radius: var(--radius-card);
+  padding: 28px 24px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-deep), 0 0 35px rgba(212, 175, 55, 0.3);
+  position: relative;
+}
+
+.qr-box {
+  width: 220px;
+  height: 220px;
+  margin: 16px auto;
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.qr-url-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: #fff;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: monospace;
+}
+
