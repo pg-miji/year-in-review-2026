@@ -11,7 +11,7 @@
   let capturedSlots = []; // array of { slot, dataUrl, canvas }
   let mediaStream = null;
   let currentFacingMode = 'user';
-  let activeFilter = 'none'; // 'none' | 'bw' | 'warm'
+  let activeFilter = 'blurry'; // 'blurry' | 'ccd' | 'mono'
   let isCountingDown = false;
   let isCapturing = false;
   let countdownIntervalId = null;
@@ -19,6 +19,7 @@
   let finalResultDataUrl = null;
   let simulatedCanvasAnimId = null;
   let sharedVideoEl = null;
+  let simulatedCanvas = null;
 
   // Early global registration so user or test runner clicks never fail
   window._realSelectFrame = function (frameId) {
@@ -215,15 +216,47 @@
 
     currentFrameId = String(frameId);
     currentFrameData = selected;
+    resetBoothState();
+
+    // Default filter per frame (1: BLURRY, 2: CCD, 3: MONO)
+    if (currentFrameId === '2026') {
+      activeFilter = 'blurry';
+    } else if (currentFrameId === '2027') {
+      activeFilter = 'ccd';
+    } else if (currentFrameId === 'self') {
+      activeFilter = 'mono';
+    } else {
+      activeFilter = 'blurry';
+    }
+
+    updateFilterUI();
+
+    try {
+      window.MysticalAudio?.playCardFlip();
+    } catch (e) {}
+
+    startBoothStage();
+    applyFilterToVideo();
+
+    setTimeout(() => {
+      isSelectingFrame = false;
+    }, 400);
+  }
+
+  function resetBoothState() {
     activeSlotIndex = 0;
     capturedSlots = [];
-
+    isCountingDown = false;
+    isCapturing = false;
     if (countdownIntervalId) {
       clearInterval(countdownIntervalId);
       countdownIntervalId = null;
     }
-    isCountingDown = false;
-    isCapturing = false;
+    const overlay = document.getElementById('countdown-overlay');
+    if (overlay) {
+      overlay.innerHTML = '';
+      overlay.classList.remove('active');
+    }
     const shutterInit = document.getElementById('btn-take-photo');
     if (shutterInit) {
       shutterInit.disabled = false;
@@ -231,35 +264,6 @@
       shutterInit.style.opacity = '1';
       shutterInit.style.pointerEvents = 'auto';
     }
-
-    // Filter handling per frame:
-    // If self portrait frame is selected, lock to deep-contrast analog film B&W and hide filter buttons
-    const filterOptionsWrap = document.querySelector('.filter-options-wrap');
-    if (currentFrameId === 'self') {
-      activeFilter = 'film_bw';
-      if (filterOptionsWrap) {
-        filterOptionsWrap.style.display = 'none';
-      }
-    } else {
-      activeFilter = 'none';
-      if (filterOptionsWrap) {
-        filterOptionsWrap.style.display = 'flex';
-        const filterBtns = filterOptionsWrap.querySelectorAll('.filter-btn');
-        filterBtns.forEach(b => b.classList.remove('active'));
-        const defaultBtn = filterOptionsWrap.querySelector('[data-filter="none"]');
-        if (defaultBtn) defaultBtn.classList.add('active');
-      }
-    }
-
-    try {
-      window.MysticalAudio?.playCardFlip();
-    } catch (e) {}
-
-    startBoothStage();
-
-    setTimeout(() => {
-      isSelectingFrame = false;
-    }, 400);
   }
 
   // ----------------------------------------------------
@@ -267,8 +271,10 @@
   // ----------------------------------------------------
   function startBoothStage() {
     showStage('booth');
+    resetBoothState();
     setupFrameBoard();
     updateProgressUI();
+    applyFilterToVideo();
     
     initCamera().catch((err) => {
       console.warn('initCamera error handling:', err);
@@ -422,6 +428,24 @@
   async function initCamera() {
     const video = getOrCreateVideoElement();
 
+    // If mediaStream is already active with live video tracks, reuse it!
+    if (mediaStream && mediaStream.active) {
+      const liveTracks = mediaStream.getVideoTracks().filter(t => t.readyState === 'live');
+      if (liveTracks.length > 0) {
+        if (video.srcObject !== mediaStream) {
+          video.srcObject = mediaStream;
+        }
+        video.classList.toggle('no-mirror', currentFacingMode === 'environment');
+        applyFilterToVideo();
+        try {
+          await video.play();
+          return;
+        } catch (e) {
+          console.warn('Playback of active stream failed, re-acquiring:', e);
+        }
+      }
+    }
+
     // Stop previous simulation if running
     if (simulatedCanvasAnimId) {
       cancelAnimationFrame(simulatedCanvasAnimId);
@@ -430,9 +454,16 @@
 
     // Stop existing stream if any
     if (mediaStream) {
-      mediaStream.getTracks().forEach(track => track.stop());
+      try {
+        mediaStream.getTracks().forEach(track => track.stop());
+      } catch (e) {}
       mediaStream = null;
     }
+
+    try {
+      video.pause();
+    } catch (e) {}
+    video.srcObject = null;
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -451,6 +482,7 @@
       mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       video.srcObject = mediaStream;
       video.classList.toggle('no-mirror', currentFacingMode === 'environment');
+      applyFilterToVideo();
       await video.play();
     } catch (err) {
       console.warn('Camera access denied or unavailable, activating interactive simulated feed:', err);
@@ -462,6 +494,7 @@
     const canvas = document.createElement('canvas');
     canvas.width = 640;
     canvas.height = 640;
+    simulatedCanvas = canvas;
     const ctx = canvas.getContext('2d');
 
     let t = 0;
@@ -505,11 +538,25 @@
     draw();
 
     try {
-      const stream = canvas.captureStream(30);
-      video.srcObject = stream;
-      video.play().catch(() => {});
+      if (canvas.captureStream) {
+        const stream = canvas.captureStream(30);
+        video.srcObject = stream;
+        video.play().catch(() => {});
+      }
     } catch (e) {
       console.error('Simulated stream capture error:', e);
+    }
+  }
+
+  function updateFilterUI() {
+    const filterOptionsWrap = document.querySelector('.filter-options-wrap');
+    if (filterOptionsWrap) {
+      filterOptionsWrap.style.display = 'flex';
+      const filterBtns = filterOptionsWrap.querySelectorAll('.filter-btn');
+      filterBtns.forEach(b => {
+        const f = b.getAttribute('data-filter');
+        b.classList.toggle('active', f === activeFilter);
+      });
     }
   }
 
@@ -524,6 +571,23 @@
         startCountdownAndCapture();
       });
     }
+
+    // Global keyboard shortcut for shutter (Space key on PC)
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.key === ' ') {
+        const boothStage = document.getElementById('stage-camera-booth');
+        if (boothStage && boothStage.style.display !== 'none') {
+          const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+          if (activeTag !== 'input' && activeTag !== 'textarea') {
+            e.preventDefault();
+            const shutter = document.getElementById('btn-take-photo');
+            if (shutter && !shutter.disabled && !isCountingDown && !isCapturing) {
+              startCountdownAndCapture();
+            }
+          }
+        }
+      }
+    });
 
     // Timer toggle button (Default OFF per user request)
     const timerBtn = document.getElementById('btn-toggle-timer');
@@ -560,9 +624,8 @@
     const filterBtns = document.querySelectorAll('.filter-btn');
     filterBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        filterBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        activeFilter = btn.getAttribute('data-filter') || 'none';
+        activeFilter = btn.getAttribute('data-filter') || 'blurry';
+        updateFilterUI();
         applyFilterToVideo();
         try {
           window.MysticalAudio?.playCardFlip();
@@ -608,14 +671,7 @@
     const changeFrameBtn = document.getElementById('btn-change-frame');
     if (changeFrameBtn) {
       changeFrameBtn.addEventListener('click', () => {
-        if (mediaStream) {
-          mediaStream.getTracks().forEach(t => t.stop());
-          mediaStream = null;
-        }
-        if (simulatedCanvasAnimId) {
-          cancelAnimationFrame(simulatedCanvasAnimId);
-          simulatedCanvasAnimId = null;
-        }
+        resetBoothState();
         showStage('select');
       });
     }
@@ -625,13 +681,14 @@
     if (boothHomeBtn) {
       boothHomeBtn.addEventListener('click', () => {
         if (mediaStream) {
-          mediaStream.getTracks().forEach(t => t.stop());
+          try { mediaStream.getTracks().forEach(t => t.stop()); } catch (e) {}
           mediaStream = null;
         }
         if (simulatedCanvasAnimId) {
           cancelAnimationFrame(simulatedCanvasAnimId);
           simulatedCanvasAnimId = null;
         }
+        document.body.removeAttribute('data-stage');
       });
     }
   }
@@ -640,15 +697,17 @@
     const video = getOrCreateVideoElement();
     if (!video) return;
 
-    if (activeFilter === 'film_bw' || currentFrameId === 'self') {
-      // Authentic deep-contrast analog film photobooth filter
-      video.style.filter = 'grayscale(1) contrast(1.55) brightness(0.94)';
-    } else if (activeFilter === 'bw') {
-      video.style.filter = 'grayscale(1) contrast(1.42) brightness(0.98)';
-    } else if (activeFilter === 'warm') {
-      video.style.filter = 'sepia(0.2) saturate(1.35) hue-rotate(-10deg) brightness(1.08)';
+    if (activeFilter === 'blurry') {
+      // 1. BLURRY: Dreamy editorial soft focus, gentle pastel warmth, soft glow highlights
+      video.style.filter = 'brightness(1.09) contrast(0.92) saturate(1.05) sepia(0.06)';
+    } else if (activeFilter === 'ccd') {
+      // 2. CCD: 2000s compact digital camera flash style, punchy contrast, vivid saturation, crisp highlights
+      video.style.filter = 'contrast(1.15) saturate(1.22) brightness(1.04) hue-rotate(-2deg)';
+    } else if (activeFilter === 'mono') {
+      // 3. MONO: Deep contrast photo booth monochrome, rich blacks, preserved highlights
+      video.style.filter = 'grayscale(1) contrast(1.45) brightness(0.96)';
     } else {
-      video.style.filter = 'none';
+      video.style.filter = 'brightness(1.09) contrast(0.92) saturate(1.05) sepia(0.06)';
     }
   }
 
@@ -701,55 +760,151 @@
   // ----------------------------------------------------
   // Pixel-level Filter Engine (100% Mobile & Safari Compatible)
   // ----------------------------------------------------
-  function applyPixelFilter(ctx, width, height, filterType) {
-    if (!filterType || filterType === 'none') return;
+  function applyBlurryFilter(ctx, width, height) {
+    // 1. Soft Editorial Glow / Highlight Diffusion Pass
+    // Keeps facial contours, eyes, and mouth sharp while creating a soft-focus radiant glow
     try {
-      const imgData = ctx.getImageData(0, 0, width, height);
-      const d = imgData.data;
+      const glowCanvas = document.createElement('canvas');
+      glowCanvas.width = width;
+      glowCanvas.height = height;
+      const gCtx = glowCanvas.getContext('2d');
+      gCtx.drawImage(ctx.canvas, 0, 0);
 
-      if (filterType === 'film_bw') {
-        // Deep contrast vintage film black & white with rich darks and analog film grain
-        const lut = new Uint8Array(256);
-        for (let i = 0; i < 256; i++) {
-          const val = (i - 128) * 1.52 + 120;
-          lut[i] = val < 0 ? 0 : (val > 255 ? 255 : (val | 0));
-        }
-        for (let i = 0; i < d.length; i += 4) {
-          const gray = (d[i] * 299 + d[i + 1] * 587 + d[i + 2] * 114) / 1000;
-          const baseVal = lut[gray | 0];
-          const noise = (Math.random() - 0.5) * 16;
-          const finalVal = Math.min(255, Math.max(0, baseVal + noise));
-          d[i] = finalVal;
-          d[i + 1] = finalVal;
-          d[i + 2] = finalVal;
-        }
-      } else if (filterType === 'bw') {
-        // Crisp, classic photobooth black & white with smooth gradient and punchy contrast
-        const lut = new Uint8Array(256);
-        for (let i = 0; i < 256; i++) {
-          const val = (i - 128) * 1.38 + 125;
-          lut[i] = val < 0 ? 0 : (val > 255 ? 255 : (val | 0));
-        }
-        for (let i = 0; i < d.length; i += 4) {
-          const gray = (d[i] * 299 + d[i + 1] * 587 + d[i + 2] * 114) / 1000;
-          const finalVal = lut[gray | 0];
-          d[i] = finalVal;
-          d[i + 1] = finalVal;
-          d[i + 2] = finalVal;
-        }
-      } else if (filterType === 'warm') {
-        // Nostalgic warm tone (gentle sepia warmth + amber glow)
-        for (let i = 0; i < d.length; i += 4) {
-          const r = d[i];
-          const g = d[i + 1];
-          const b = d[i + 2];
-          d[i] = Math.min(255, Math.max(0, r * 1.1 + 14));
-          d[i + 1] = Math.min(255, Math.max(0, g * 1.03 + 6));
-          d[i + 2] = Math.min(255, Math.max(0, b * 0.86 - 8));
-        }
+      const smallW = Math.max(1, Math.floor(width / 4));
+      const smallH = Math.max(1, Math.floor(height / 4));
+      const smallCanvas = document.createElement('canvas');
+      smallCanvas.width = smallW;
+      smallCanvas.height = smallH;
+      const sCtx = smallCanvas.getContext('2d');
+      sCtx.drawImage(glowCanvas, 0, 0, smallW, smallH);
+
+      gCtx.clearRect(0, 0, width, height);
+      if ('filter' in gCtx) {
+        gCtx.filter = 'blur(6px) brightness(1.12)';
+        gCtx.drawImage(smallCanvas, 0, 0, width, height);
+        gCtx.filter = 'none';
+      } else {
+        gCtx.drawImage(smallCanvas, 0, 0, width, height);
       }
 
-      ctx.putImageData(imgData, 0, 0);
+      ctx.save();
+      ctx.globalAlpha = 0.26;
+      ctx.globalCompositeOperation = 'screen';
+      ctx.drawImage(glowCanvas, 0, 0);
+      ctx.restore();
+    } catch (e) {
+      console.warn('Blurry glow pass fallback:', e);
+    }
+
+    // 2. Pastel Tone Curve & Soft Focus Color Grading
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const d = imgData.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i];
+      const g = d[i + 1];
+      const b = d[i + 2];
+
+      // Soft contrast reduction (0.92) with lifted shadows for airy, dreamy feel
+      // Warm, creamy pastel highlight tint (gentle peach / rosy pastel tone)
+      const rSoft = (r - 128) * 0.92 + 128;
+      const gSoft = (g - 128) * 0.92 + 128;
+      const bSoft = (b - 128) * 0.92 + 128;
+
+      d[i] = Math.min(255, Math.max(0, rSoft * 1.05 + 10));
+      d[i + 1] = Math.min(255, Math.max(0, gSoft * 1.03 + 8));
+      d[i + 2] = Math.min(255, Math.max(0, bSoft * 1.01 + 10));
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  function applyCcdFilter(ctx, width, height) {
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const d = imgData.data;
+
+    // Compact digital camera tone curve with punchy S-curve and flash-like highlights
+    const ccdLut = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) {
+      let v = (i - 128) * 1.14 + 128;
+      if (i > 160) {
+        v += (i - 160) * 0.16; // 2000s flash pop in highlights
+      }
+      ccdLut[i] = Math.min(255, Math.max(0, Math.round(v)));
+    }
+
+    for (let i = 0; i < d.length; i += 4) {
+      let r = d[i];
+      let g = d[i + 1];
+      let b = d[i + 2];
+
+      // 1. Enhanced vivid saturation without fluorescence
+      const gray = (r * 299 + g * 587 + b * 114) / 1000;
+      r = gray + (r - gray) * 1.22;
+      g = gray + (g - gray) * 1.18;
+      b = gray + (b - gray) * 1.15;
+
+      // 2. Compact digicam tone reproduction (warm vibrant skin tones)
+      r = ccdLut[Math.min(255, Math.max(0, Math.round(r)))] + 4;
+      g = ccdLut[Math.min(255, Math.max(0, Math.round(g)))] + 2;
+      b = ccdLut[Math.min(255, Math.max(0, Math.round(b)))] - 2;
+
+      // 3. Subtle fine digital sensor noise (crisp 2000s sensor grain, keeps face details sharp)
+      const noise = (Math.random() - 0.5) * 7.5;
+      d[i] = Math.min(255, Math.max(0, Math.round(r + noise)));
+      d[i + 1] = Math.min(255, Math.max(0, Math.round(g + noise * 0.9)));
+      d[i + 2] = Math.min(255, Math.max(0, Math.round(b + noise)));
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  function applyMonoFilter(ctx, width, height) {
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const d = imgData.data;
+
+    // Photobooth silver-gelatin monochrome tone curve
+    // Deep velvety blacks, sculpted midtones for eye/nose/contour depth, preserved highlights
+    const monoLut = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) {
+      let v;
+      if (i < 48) {
+        // Deep rich shadow drop
+        v = i * 0.65;
+      } else if (i < 185) {
+        // Sculpted dimensional midtones (high contrast for facial features)
+        v = (i - 48) * 1.48 + 31;
+      } else {
+        // Smooth highlight shoulder to preserve highlight details
+        v = 233 + (i - 185) * 0.31;
+      }
+      monoLut[i] = Math.min(255, Math.max(0, Math.round(v)));
+    }
+
+    for (let i = 0; i < d.length; i += 4) {
+      // Natural perceptual luminance
+      const gray = (d[i] * 299 + d[i + 1] * 587 + d[i + 2] * 114) / 1000;
+      const baseTone = monoLut[Math.min(255, Math.max(0, Math.round(gray)))];
+
+      // Subtle silver-halide photo booth film grain
+      const grain = (Math.random() - 0.5) * 8.5;
+      const finalVal = Math.min(255, Math.max(0, Math.round(baseTone + grain)));
+
+      d[i] = finalVal;
+      d[i + 1] = finalVal;
+      d[i + 2] = finalVal;
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  function applyPixelFilter(ctx, width, height, filterType) {
+    try {
+      if (filterType === 'blurry') {
+        applyBlurryFilter(ctx, width, height);
+      } else if (filterType === 'ccd') {
+        applyCcdFilter(ctx, width, height);
+      } else if (filterType === 'mono') {
+        applyMonoFilter(ctx, width, height);
+      } else {
+        applyBlurryFilter(ctx, width, height);
+      }
     } catch (err) {
       console.warn('Pixel filter error:', err);
     }
@@ -762,124 +917,155 @@
     if (isCapturing) return;
     isCapturing = true;
 
-    const video = getOrCreateVideoElement();
-    if (!video || !currentFrameData) {
-      isCapturing = false;
-      return;
-    }
-
-    const shutterBtn = document.getElementById('btn-take-photo');
-    if (shutterBtn) {
-      shutterBtn.disabled = true;
-      shutterBtn.classList.add('disabled');
-      shutterBtn.style.opacity = '0.5';
-      shutterBtn.style.pointerEvents = 'none';
-    }
-
-    // Play Shutter sound & trigger flash
-    PhotoAudio.playShutter();
-    triggerFlash();
-
-    const currentSlot = currentFrameData.slots[activeSlotIndex];
-    if (!currentSlot) {
-      isCapturing = false;
-      return;
-    }
-    const targetW = currentSlot.width;
-    const targetH = currentSlot.height;
-
-    // Create off-screen canvas for high quality slot photo
-    const canvas = document.createElement('canvas');
-    canvas.width = targetW;
-    canvas.height = targetH;
-    const ctx = canvas.getContext('2d');
-
-    // Video aspect crop math (cover style)
-    const vw = video.videoWidth || 640;
-    const vh = video.videoHeight || 480;
-    const targetAspect = targetW / targetH;
-    const videoAspect = vw / vh;
-
-    let sx, sy, sWidth, sHeight;
-    if (videoAspect > targetAspect) {
-      sHeight = vh;
-      sWidth = vh * targetAspect;
-      sx = (vw - sWidth) / 2;
-      sy = 0;
-    } else {
-      sWidth = vw;
-      sHeight = vw / targetAspect;
-      sx = 0;
-      sy = (vh - sHeight) / 2;
-    }
-
-    ctx.save();
-    // Mirror front camera
-    if (currentFacingMode === 'user' && !video.classList.contains('no-mirror')) {
-      ctx.translate(targetW, 0);
-      ctx.scale(-1, 1);
-    }
-
-    // Draw unadulterated camera frame (clear ctx.filter to prevent mobile Safari issues or duplicate filters)
-    ctx.filter = 'none';
-    ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
-    ctx.restore();
-
-    // Reliably apply color filter directly to canvas pixel buffer on all mobile & desktop browsers
-    const filterToApply = (currentFrameId === 'self') ? 'film_bw' : activeFilter;
-    applyPixelFilter(ctx, targetW, targetH, filterToApply);
-
-    // Store captured photo data URL
-    const slotPhotoDataUrl = canvas.toDataURL('image/jpeg', 0.95);
-    capturedSlots[activeSlotIndex] = {
-      slot: currentSlot,
-      dataUrl: slotPhotoDataUrl,
-      canvas: canvas
-    };
-
-    // Detach video from current slot before setting static image
-    if (video.parentElement) {
-      video.parentElement.removeChild(video);
-    }
-
-    // Set static captured image in current slot element
-    const currentSlotEl = document.getElementById(`booth-slot-${activeSlotIndex}`);
-    if (currentSlotEl) {
-      currentSlotEl.innerHTML = '';
-      const img = document.createElement('img');
-      img.className = 'booth-slot-captured-img';
-      img.src = slotPhotoDataUrl;
-      img.style.width = '100%';
-      img.style.height = '100%';
-      img.style.objectFit = 'cover';
-      currentSlotEl.appendChild(img);
-    }
-
-    // Advance to next slot or complete
-    activeSlotIndex++;
-    updateProgressUI();
-
-    if (activeSlotIndex < currentFrameData.slots.length) {
-      // Immediately move video to the next slot and resume playback
-      attachVideoToSlot(activeSlotIndex);
-
-      // Enforce deliberate 1.2s pause between cuts so user sees cut 1 and gets ready for cut 2
-      setTimeout(() => {
+    try {
+      const video = getOrCreateVideoElement();
+      if (!video || !currentFrameData) {
         isCapturing = false;
-        const shutter = document.getElementById('btn-take-photo');
-        if (shutter) {
-          shutter.disabled = false;
-          shutter.classList.remove('disabled');
-          shutter.style.opacity = '1';
-          shutter.style.pointerEvents = 'auto';
+        return;
+      }
+
+      const shutterBtn = document.getElementById('btn-take-photo');
+      if (shutterBtn) {
+        shutterBtn.disabled = true;
+        shutterBtn.classList.add('disabled');
+        shutterBtn.style.opacity = '0.5';
+        shutterBtn.style.pointerEvents = 'none';
+      }
+
+      // Play Shutter sound & trigger flash
+      PhotoAudio.playShutter();
+      triggerFlash();
+
+      const currentSlot = currentFrameData.slots[activeSlotIndex];
+      if (!currentSlot) {
+        isCapturing = false;
+        if (shutterBtn) {
+          shutterBtn.disabled = false;
+          shutterBtn.classList.remove('disabled');
+          shutterBtn.style.opacity = '1';
+          shutterBtn.style.pointerEvents = 'auto';
         }
-      }, 1200);
-    } else {
-      // All slots filled! Run print animation and reveal final result
-      setTimeout(() => {
-        isCapturing = false;
-        runPrintAnimationAndComplete();
-      }, 400);
+        return;
+      }
+      const targetW = currentSlot.width;
+      const targetH = currentSlot.height;
+
+      // Create off-screen canvas for high quality slot photo
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+
+      let sourceForDraw = video;
+      let vw = video.videoWidth || 640;
+      let vh = video.videoHeight || 480;
+      if (simulatedCanvas && (!mediaStream || !video.videoWidth)) {
+        sourceForDraw = simulatedCanvas;
+        vw = simulatedCanvas.width;
+        vh = simulatedCanvas.height;
+      }
+
+      // Video aspect crop math (cover style)
+      const targetAspect = targetW / targetH;
+      const videoAspect = vw / vh;
+
+      let sx, sy, sWidth, sHeight;
+      if (videoAspect > targetAspect) {
+        sHeight = vh;
+        sWidth = vh * targetAspect;
+        sx = (vw - sWidth) / 2;
+        sy = 0;
+      } else {
+        sWidth = vw;
+        sHeight = vw / targetAspect;
+        sx = 0;
+        sy = (vh - sHeight) / 2;
+      }
+
+      ctx.save();
+      // Mirror front camera
+      if (currentFacingMode === 'user' && !video.classList.contains('no-mirror')) {
+        ctx.translate(targetW, 0);
+        ctx.scale(-1, 1);
+      }
+
+      // Draw unadulterated camera frame
+      ctx.filter = 'none';
+      ctx.drawImage(sourceForDraw, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
+      ctx.restore();
+
+      // Reliably apply color filter directly to canvas pixel buffer
+      const filterToApply = activeFilter || 'blurry';
+      applyPixelFilter(ctx, targetW, targetH, filterToApply);
+
+      // Store captured photo data URL
+      let slotPhotoDataUrl;
+      try {
+        slotPhotoDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      } catch (e) {
+        slotPhotoDataUrl = canvas.toDataURL();
+      }
+
+      capturedSlots[activeSlotIndex] = {
+        slot: currentSlot,
+        dataUrl: slotPhotoDataUrl,
+        canvas: canvas
+      };
+
+      // Detach video from current slot before setting static image
+      if (video.parentElement) {
+        video.parentElement.removeChild(video);
+      }
+
+      // Set static captured image in current slot element
+      const currentSlotEl = document.getElementById(`booth-slot-${activeSlotIndex}`);
+      if (currentSlotEl) {
+        currentSlotEl.innerHTML = '';
+        const img = document.createElement('img');
+        img.className = 'booth-slot-captured-img';
+        img.src = slotPhotoDataUrl;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        currentSlotEl.appendChild(img);
+      }
+
+      // Advance to next slot or complete
+      activeSlotIndex++;
+      updateProgressUI();
+
+      if (activeSlotIndex < currentFrameData.slots.length) {
+        // Immediately move video to the next slot and resume playback
+        attachVideoToSlot(activeSlotIndex);
+
+        // Enforce deliberate 1.2s pause between cuts so user sees cut 1 and gets ready for cut 2
+        setTimeout(() => {
+          isCapturing = false;
+          const shutter = document.getElementById('btn-take-photo');
+          if (shutter) {
+            shutter.disabled = false;
+            shutter.classList.remove('disabled');
+            shutter.style.opacity = '1';
+            shutter.style.pointerEvents = 'auto';
+          }
+        }, 1200);
+      } else {
+        // All slots filled! Run print animation and reveal final result
+        setTimeout(() => {
+          isCapturing = false;
+          runPrintAnimationAndComplete();
+        }, 400);
+      }
+    } catch (err) {
+      console.error('Fatal capture error:', err);
+      isCapturing = false;
+      const shutter = document.getElementById('btn-take-photo');
+      if (shutter) {
+        shutter.disabled = false;
+        shutter.classList.remove('disabled');
+        shutter.style.opacity = '1';
+        shutter.style.pointerEvents = 'auto';
+      }
     }
   }
 
@@ -1282,6 +1468,20 @@
         cachedPhotoUploadUrl = null;
         activeUploadPromise = null;
         startBoothStage();
+      });
+    }
+
+    // 4. Change Frame from Result (다른 프레임 선택)
+    const changeFrameFromResultBtn = document.getElementById('btn-change-frame-from-result');
+    if (changeFrameFromResultBtn) {
+      changeFrameFromResultBtn.addEventListener('click', () => {
+        try {
+          window.MysticalAudio?.playCardFlip();
+        } catch (e) {}
+        resetBoothState();
+        cachedPhotoUploadUrl = null;
+        activeUploadPromise = null;
+        showStage('select');
       });
     }
 

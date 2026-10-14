@@ -31,7 +31,7 @@
   </script>
 </head>
 
-<body>
+<body class="photobooth-page">
   <!-- Starry Background Backdrop -->
   <div class="stars-bg" aria-hidden="true"></div>
 
@@ -61,7 +61,7 @@
           <article class="frame-pick-card" data-frame-id="2026" role="button" tabindex="0" aria-label="2026 빈티지 우표 프레임 선택" onclick="window.selectPhotoboothFrame && window.selectPhotoboothFrame('2026')">
             <span class="frame-pick-badge">RED STAMP</span>
             <div class="frame-preview-box" style="width:100%; max-width:250px; aspect-ratio:2/3; margin:0 auto 20px; overflow:hidden; border-radius:12px; background:#0d0818; display:flex; align-items:center; justify-content:center;">
-              <img src="../assets/images/photo_booth/2026.png?v=7" alt="2026 빈티지 우표 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
+              <img src="../assets/images/photo_booth/2026.png" alt="2026 빈티지 우표 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
             </div>
             <p class="frame-pick-desc">따뜻한 와인 레드 톤의 우표 & 연말 감성 2컷 프레임</p>
           </article>
@@ -70,7 +70,7 @@
           <article class="frame-pick-card" data-frame-id="2027" role="button" tabindex="0" aria-label="2027 레트로 데스크톱 프레임 선택" onclick="window.selectPhotoboothFrame && window.selectPhotoboothFrame('2027')">
             <span class="frame-pick-badge">Y2K DESKTOP</span>
             <div class="frame-preview-box" style="width:100%; max-width:250px; aspect-ratio:2/3; margin:0 auto 20px; overflow:hidden; border-radius:12px; background:#0d0818; display:flex; align-items:center; justify-content:center;">
-              <img src="../assets/images/photo_booth/2027.png?v=7" alt="2027 레트로 데스크톱 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
+              <img src="../assets/images/photo_booth/2027.png" alt="2027 레트로 데스크톱 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
             </div>
             <p class="frame-pick-desc">선명한 코발트 블루 윈도우 그래픽의 신년 2컷 프레임</p>
           </article>
@@ -79,7 +79,7 @@
           <article class="frame-pick-card" data-frame-id="self" role="button" tabindex="0" aria-label="Self Portrait 3컷 프레임 선택" onclick="window.selectPhotoboothFrame && window.selectPhotoboothFrame('self')">
             <span class="frame-pick-badge">SELF PORTRAIT</span>
             <div class="frame-preview-box" style="width:100%; max-width:250px; aspect-ratio:2/3; margin:0 auto 20px; overflow:hidden; border-radius:12px; background:#0d0818; display:flex; align-items:center; justify-content:center;">
-              <img src="../assets/images/photo_booth/self_overlay.png?v=7" alt="Self Portrait 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
+              <img src="../assets/images/photo_booth/self.png" alt="Self Portrait 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
             </div>
             <p class="frame-pick-desc">클래식 무드의 세로 3컷 셀프 포트레이트 프레임</p>
           </article>
@@ -105,59 +105,75 @@
 
           <!-- Right: Control Panel -->
           <div class="booth-controls-panel">
-            <!-- Step Status -->
-            <div class="step-indicator-bar">
-              <span class="step-badge">PHOTO BOOTH</span>
-              <span id="booth-step-text" class="step-status-text">1번째 컷 촬영 중 (1/2)</span>
-            </div>
-
-            <!-- Shot Pips Progress -->
-            <div class="shots-progress-wrap" aria-label="촬영 진행률">
-              <div class="shot-pip active"></div>
-              <div class="shot-pip"></div>
-            </div>
-
-            <!-- Filters -->
-            <!-- Filters (None, Warm, B&W) -->
-            <div class="filter-options-wrap">
-              <span class="filter-label">🎨 필터 효과 선택</span>
-              <div class="filter-buttons">
-                <button type="button" class="filter-btn active" data-filter="none">기본</button>
-                <button type="button" class="filter-btn" data-filter="warm">웜톤</button>
-                <button type="button" class="filter-btn" data-filter="bw">흑백</button>
+            <!-- 1. Progress & Status Deck -->
+            <div class="control-deck progress-deck">
+              <div class="step-indicator-bar">
+                <span class="step-badge">PHOTO BOOTH</span>
+                <span id="booth-step-text" class="step-status-text">1번째 컷 촬영 중 (1/2)</span>
+              </div>
+              <div class="shots-progress-wrap" aria-label="촬영 진행률">
+                <div class="shot-pip active"></div>
+                <div class="shot-pip"></div>
               </div>
             </div>
 
-            <!-- Intuitive Camera Shutter Button (No Korean text inside) -->
-            <div class="capture-action-zone">
-              <button type="button" id="btn-take-photo" class="shutter-btn" title="사진 촬영" aria-label="사진 촬영">
-                <div class="shutter-inner-circle"></div>
-              </button>
+            <!-- 2. Filters Deck -->
+            <div class="control-deck filters-deck filter-options-wrap">
+              <div class="filter-deck-header">
+                <span class="filter-label">🎨 필터 스타일</span>
+              </div>
+              <div class="filter-buttons">
+                <button type="button" class="filter-btn active" data-filter="blurry">
+                  <span class="filter-name">BLURRY</span>
+                  <span class="filter-sub">소프트·글로우</span>
+                </button>
+                <button type="button" class="filter-btn" data-filter="ccd">
+                  <span class="filter-name">CCD</span>
+                  <span class="filter-sub">디카 플래시</span>
+                </button>
+                <button type="button" class="filter-btn" data-filter="mono">
+                  <span class="filter-name">MONO</span>
+                  <span class="filter-sub">클래식 흑백</span>
+                </button>
+              </div>
             </div>
 
-            <!-- Aux Controls (5s Timer & Flip) -->
-            <div class="camera-aux-tools">
-              <button type="button" id="btn-toggle-timer" class="aux-btn">
-                <span>⏱️</span>
-                <span class="aux-text">타이머 OFF</span>
-              </button>
-              <button type="button" id="btn-switch-camera" class="aux-btn">
-                <span>🔄</span>
-                <span>카메라 전환</span>
-              </button>
+            <!-- 3. Primary Shutter Console Deck -->
+            <div class="control-deck shutter-deck">
+              <div class="camera-console-row">
+                <!-- Aux Left: Timer Toggle -->
+                <button type="button" id="btn-toggle-timer" class="console-btn aux-btn" title="타이머 설정" aria-label="5초 타이머 토글">
+                  <span class="console-btn-icon">⏱️</span>
+                  <span class="aux-text">타이머 OFF</span>
+                </button>
+
+                <!-- Center: Tactile Shutter Button -->
+                <div class="capture-action-zone">
+                  <button type="button" id="btn-take-photo" class="shutter-btn" title="사진 촬영 (단축키: Space)" aria-label="사진 촬영">
+                    <div class="shutter-inner-circle"></div>
+                  </button>
+                </div>
+
+                <!-- Aux Right: Flip Camera -->
+                <button type="button" id="btn-switch-camera" class="console-btn aux-btn" title="전면/후면 카메라 전환" aria-label="카메라 전환">
+                  <span class="console-btn-icon">🔄</span>
+                  <span class="aux-text">카메라 전환</span>
+                </button>
+              </div>
+              <p class="shutter-helper-tip">Space 키 또는 셔터 버튼을 눌러 촬영하세요</p>
             </div>
 
-            <!-- Bottom Navigation inside Booth (Centered) -->
-            <div class="booth-bottom-actions">
-              <button type="button" id="btn-retake-cut" class="aux-btn" style="display:none;">
+            <!-- 4. Navigation & Retake Utility Deck -->
+            <div class="control-deck actions-deck booth-bottom-actions">
+              <button type="button" id="btn-retake-cut" class="aux-btn btn-retake-action" style="display:none;" title="이전 컷 다시 촬영">
                 <span>↩️</span>
                 <span>이전 컷 다시 찍기</span>
               </button>
-              <button type="button" id="btn-change-frame" class="aux-btn">
+              <button type="button" id="btn-change-frame" class="aux-btn btn-nav-action" title="다른 프레임 선택">
                 <span>🖼️</span>
                 <span>프레임 변경</span>
               </button>
-              <a href="../index.html" id="btn-booth-home" class="aux-btn" title="홈으로 돌아가기">
+              <a href="../index.html" id="btn-booth-home" class="aux-btn btn-nav-action" title="홈으로 돌아가기">
                 <span>🏠</span>
                 <span>홈</span>
               </a>
@@ -187,9 +203,13 @@
             <span class="btn-icon">📱</span>
             <span>스마트폰으로 전송 (QR)</span>
           </button>
-          <button type="button" id="btn-retake-all" class="btn-vintage btn-velvet">
+          <button type="button" id="btn-retake-all" class="btn-vintage btn-velvet" title="현재 프레임으로 다시 촬영">
             <span class="btn-icon">🔄</span>
             <span>다시 찍기</span>
+          </button>
+          <button type="button" id="btn-change-frame-from-result" class="btn-vintage btn-velvet" title="다른 프레임 선택하여 촬영">
+            <span class="btn-icon">🖼️</span>
+            <span>프레임 변경</span>
           </button>
           <a href="../index.html" class="btn-vintage btn-velvet btn-home" title="홈으로 돌아가기">
             <span class="btn-icon">🏠</span>

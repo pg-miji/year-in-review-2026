@@ -9,8 +9,8 @@ window.PHOTOBOOTH_FRAMES = {
     "textColor": "#f8f2e4",
     "width": 1200,
     "height": 1800,
-    "imageSrc": "../assets/images/photo_booth/2026.png?v=6",
-    "overlaySrc": "../assets/images/photo_booth/2026_overlay.png?v=6",
+    "imageSrc": "../assets/images/photo_booth/2026.png",
+    "overlaySrc": "../assets/images/photo_booth/2026_overlay.png",
     "slots": [
       {
         "id": 0,
@@ -41,8 +41,8 @@ window.PHOTOBOOTH_FRAMES = {
     "textColor": "#ffffff",
     "width": 1200,
     "height": 1800,
-    "imageSrc": "../assets/images/photo_booth/2027.png?v=6",
-    "overlaySrc": "../assets/images/photo_booth/2027_overlay.png?v=6",
+    "imageSrc": "../assets/images/photo_booth/2027.png",
+    "overlaySrc": "../assets/images/photo_booth/2027_overlay.png",
     "slots": [
       {
         "id": 0,
@@ -73,8 +73,8 @@ window.PHOTOBOOTH_FRAMES = {
     "textColor": "#1a1a1a",
     "width": 1200,
     "height": 1800,
-    "imageSrc": "../assets/images/photo_booth/self.png?v=7",
-    "overlaySrc": "../assets/images/photo_booth/self_overlay.png?v=7",
+    "imageSrc": "../assets/images/photo_booth/self.png",
+    "overlaySrc": "../assets/images/photo_booth/self_overlay.png",
     "slots": [
       {
         "id": 0,

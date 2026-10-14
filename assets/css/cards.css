@@ -2,6 +2,13 @@
    작은 점술가게 - 22 Tarot Deck Spread Selection Styles
    =================================================================== */
 
+.shop-header {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin-bottom: 20px !important;
+}
+
 .tarot-spread-section {
   display: flex;
   flex-direction: column;

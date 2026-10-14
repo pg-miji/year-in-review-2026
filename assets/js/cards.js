@@ -165,18 +165,25 @@
       modal.classList.add('active');
     }
 
-    // Gentle mystical transition delay (~2.0s for an authentic, immersive reading experience)
+    // Gentle mystical transition delay (~1.8s for an authentic, immersive reading experience)
     setTimeout(() => {
-      if (window.MysticalRouter) {
-        window.MysticalRouter.navigate(`card.html?number=${cardId}`);
-      } else {
-        window.location.href = `card.html?number=${cardId}`;
-      }
-    }, 2000);
+      window.location.href = `card.html?number=${cardId}`;
+    }, 1800);
   }
 
   function initCardsPage() {
     isSelected = false;
+
+    // Ensure clean state and visibility of header
+    document.body.removeAttribute('data-stage');
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) {
+      appContainer.removeAttribute('data-stage');
+    }
+    try {
+      window.scrollTo(0, 0);
+    } catch (e) {}
+
     const modal = document.getElementById('reading-loading-modal');
     if (modal) {
       modal.classList.remove('active');
