@@ -1,5 +1,5 @@
 // ===================================================================
-// 시간의 방 - Tarot Reading Result & Souvenir Generator
+// 시간 조각 상점 - Tarot Reading Result & Souvenir Generator
 // ===================================================================
 
 (function () {
@@ -231,7 +231,7 @@
     );
     const readingBoxH = 26 + readingMeasure.totalHeight + 26;
 
-    // 점술가 조언 텍스트 & 박스 높이
+    // 타로 조언 텍스트 & 박스 높이
     const adviceText = `"${cleanAdvice}"`;
     const adviceMeasure = measureWrappedText(
       ctx,
@@ -380,7 +380,7 @@
     ctx.font = '700 26px "Gowun Batang", "Cinzel", serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText('✦ 점술가의 새해 조언 ✦', width / 2, advTitleY);
+    ctx.fillText("✦  NEW YEAR'S ADVICE ✦", width / 2, advTitleY);
 
     ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
     ctx.lineWidth = 1;
@@ -410,7 +410,7 @@
 
       const canvas = await generateSouvenirCanvas();
       const dataUrl = canvas.toDataURL('image/png');
-      const filename = `tarot_${currentCard.name.toLowerCase().replace(/\s+/g, '_')}_4x5.png`;
+      const filename = `new_year_tarot_${currentCard.name.toLowerCase().replace(/\s+/g, '_')}.png`;
 
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
