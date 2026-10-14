@@ -1,5 +1,5 @@
 // ===================================================================
-// 작은 점술가게 - Lightweight Sound Effects Engine (BGM 기능 삭제됨)
+// 시간의 방 - Lightweight Sound Effects Engine (BGM 기능 삭제됨)
 // ===================================================================
 
 class MysticalAudioEngine {

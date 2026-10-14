@@ -4,10 +4,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>포토 부스 - 작은 점술가게</title>
-  <meta name="description" content="2026년을 보내고 2027년을 맞이하는 특별한 프레임으로 오늘의 순간을 사진으로 남겨보세요." />
-  <meta property="og:title" content="연말연시 포토 부스 - 작은 점술가게" />
-  <meta property="og:description" content="2026년을 보내고 2027년을 맞이하는 특별한 프레임으로 사진을 촬영하세요." />
+  <title>포토 부스 - 시간의 방</title>
+  <meta name="description" content="특별한 프레임으로 지금 이 순간을 사진으로 남겨보세요" />
+  <meta property="og:title" content="연말연시 포토 부스 - 시간의 방" />
+  <meta property="og:description" content="특별한 프레임으로 지금 이 순간을 사진으로 남겨보세요" />
   <link rel="icon" href="../assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="alternate icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-icon.png" />
@@ -53,8 +53,8 @@
            STEP 1: Frame Selection Stage
            ============================================== -->
       <section id="stage-frame-select" class="frame-selection-stage">
-        <h2 class="selection-heading">원하시는 프레임을 선택해주세요</h2>
-        <p class="selection-subtext">마음에 드는 프레임을 선택하시면 즉시 카메라 부스가 열립니다.</p>
+        <h2 class="selection-heading">원하는 프레임을 선택해주세요</h2>
+        <p class="selection-subtext">프레임을 선택하면 즉시 카메라 부스가 열립니다.</p>
 
         <div class="frame-card-grid" role="list">
           <!-- Frame 1: 2026 Vintage Stamp -->
@@ -63,7 +63,7 @@
             <div class="frame-preview-box" style="width:100%; max-width:250px; aspect-ratio:2/3; margin:0 auto 20px; overflow:hidden; border-radius:12px; background:#0d0818; display:flex; align-items:center; justify-content:center;">
               <img src="../assets/images/photo_booth/2026.png" alt="2026 빈티지 우표 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
             </div>
-            <p class="frame-pick-desc">따뜻한 와인 레드 톤의 우표 & 연말 감성 2컷 프레임</p>
+            <p class="frame-pick-desc">따뜻한 레드 톤의 우표 2컷 프레임</p>
           </article>
 
           <!-- Frame 2: 2027 Retro Desktop -->
@@ -72,7 +72,7 @@
             <div class="frame-preview-box" style="width:100%; max-width:250px; aspect-ratio:2/3; margin:0 auto 20px; overflow:hidden; border-radius:12px; background:#0d0818; display:flex; align-items:center; justify-content:center;">
               <img src="../assets/images/photo_booth/2027.png" alt="2027 레트로 데스크톱 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
             </div>
-            <p class="frame-pick-desc">선명한 코발트 블루 윈도우 그래픽의 신년 2컷 프레임</p>
+            <p class="frame-pick-desc">윈도우 그래픽의 신년 2컷 프레임</p>
           </article>
 
           <!-- Frame 3: Self Portrait -->
@@ -81,7 +81,7 @@
             <div class="frame-preview-box" style="width:100%; max-width:250px; aspect-ratio:2/3; margin:0 auto 20px; overflow:hidden; border-radius:12px; background:#0d0818; display:flex; align-items:center; justify-content:center;">
               <img src="../assets/images/photo_booth/self.png" alt="Self Portrait 프레임 미리보기" class="frame-preview-svg" width="250" height="375" style="width:100%; height:100%; object-fit:contain; display:block;" loading="eager" fetchpriority="high" />
             </div>
-            <p class="frame-pick-desc">클래식 무드의 세로 3컷 셀프 포트레이트 프레임</p>
+            <p class="frame-pick-desc">클래식 무드의 3컷 셀프 포트레이트 프레임</p>
           </article>
         </div>
 
@@ -129,7 +129,7 @@
                 </button>
                 <button type="button" class="filter-btn" data-filter="ccd">
                   <span class="filter-name">CCD</span>
-                  <span class="filter-sub">디카 플래시</span>
+                  <span class="filter-sub">디지털 카메라</span>
                 </button>
                 <button type="button" class="filter-btn" data-filter="mono">
                   <span class="filter-name">MONO</span>
@@ -190,7 +190,7 @@
           <div class="result-photo-display">
             <img id="result-photo-img" src="" alt="완성된 연말연시 기념 네컷 사진" class="result-photo-canvas-img" />
           </div>
-          <p class="mobile-save-guide">💡 사진을 길게 누르면 기기에 바로 저장할 수 있습니다</p>
+          <p class="mobile-save-guide">💡 사진을 길게 누르면 기기에 저장할 수 있습니다</p>
         </div>
 
         <!-- Action Buttons as Requested by User -->
@@ -201,7 +201,7 @@
           </button>
           <button type="button" id="btn-share-mobile-qr" class="btn-vintage btn-velvet" title="스마트폰으로 QR 스캔하여 저장" onclick="window.openPhotoboothQrModal && window.openPhotoboothQrModal()">
             <span class="btn-icon">📱</span>
-            <span>스마트폰으로 전송 (QR)</span>
+            <span>QR 코드</span>
           </button>
           <button type="button" id="btn-retake-all" class="btn-vintage btn-velvet" title="현재 프레임으로 다시 촬영">
             <span class="btn-icon">🔄</span>
@@ -226,7 +226,7 @@
           
           <div id="qr-loading-spinner" style="padding: 28px 0; color: var(--gold-light); display: none;">
             <div style="font-size: 28px; margin-bottom: 8px;">⏳</div>
-            <span style="font-size: 14px;">모바일 전송 QR 코드 준비 중...</span>
+            <span style="font-size: 14px;">QR 코드 준비 중...</span>
           </div>
 
           <div id="qr-box-container" class="qr-content-container" style="display: flex; flex-direction: column; align-items: center;">

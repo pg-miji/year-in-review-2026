@@ -1,5 +1,5 @@
 // ===================================================================
-// 작은 점술가게 - Tarot Reading Result & Souvenir Generator
+// 시간의 방 - Tarot Reading Result & Souvenir Generator
 // ===================================================================
 
 (function () {
