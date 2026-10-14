@@ -25,8 +25,8 @@
         name: "The Fool",
         koreanName: "바보",
         keywords: ["새로운 출발", "순수한 용기", "뜻밖의 행운"],
-        reading: "완벽하게 준비되지 않았다고 해서 멈춰있을 필요는 없습니다. 새해에는 계산을 내려놓고 가벼운 마음으로 미지의 길에 발을 디디게 되는데, 그 엉뚱하고 대담한 무모함이 오히려 생각지도 못한 행운의 문을 열어젖힐 거예요.",
-        advice: "지나친 염려는 잠시 내려두세요. 첫걸음을 떼는 그 자체만으로도 이미 반은 성공한 셈입니다.",
+        reading: "새로운 환경이나 낯선 경험을 마주할 기회가 찾아옵니다.\n\n익숙한 방식에서 벗어나면서 예상하지 못했던 즐거움을 발견하거나, 가벼운 호기심으로 시작한 일이 새로운 가능성으로 이어질 수 있습니다.",
+        advice: "시작하기도 전에 결과부터 걱정하며 가능성을 닫아두지 마세요. 관심이 생긴 일이 있다면 작은 규모로라도 직접 경험해 보세요.",
         image: "../assets/images/tarot/0.png"
       };
     }
@@ -217,7 +217,7 @@
     // ==========================================
     const majorH = 26;
     const titleH = 48;
-    const imgH = 510;      // 이미지 크기 유지 (510px)
+    const imgH = 510;
     const imgW = 336;
     const pillH = 46;
 
@@ -243,17 +243,17 @@
     const advTitleH = 28;
     const advTitleToTextGap = 56; 
     const totalAdvContentH = advTitleH + advTitleToTextGap + adviceMeasure.totalHeight;
-    const advBoxPadding = 23;
-    const advBoxH = totalAdvContentH + advBoxPadding + 12;
+    const advBoxPadding = 20;
+    const advBoxH = totalAdvContentH + advBoxPadding + 6;
 
     // ==========================================
     // [간격 수치 조정 - 하단 겹침 차단]
     // ==========================================
     const gapMajorToTitle = 14;   
     const gapTitleToImg = 28;     
-    const gapImgToKw = 50;        
-    const gapKwToReading = 50;    
-    const gapReadingToAdv = 0;
+    const gapImgToKw = 42;        
+    const gapKwToReading = 42;    
+    const gapReadingToAdv = -12;
 
     // 전체 콘텐츠 총 세로 높이 계산
     const totalContentHeight = 
