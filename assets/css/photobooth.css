@@ -953,7 +953,7 @@
 @media (max-width: 768px) {
   /* Slim down header on mobile during photobooth */
   .shop-header {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   /* When actively in camera booth on mobile:
