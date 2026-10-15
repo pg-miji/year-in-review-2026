@@ -119,7 +119,7 @@
     }
 
     if (categoryRibbonEl) {
-      categoryRibbonEl.textContent = cat === 'this_year' ? '🌿 올해를 돌아보는 질문' : '✨ 새해를 맞이하는 질문';
+      categoryRibbonEl.textContent = cat === 'this_year' ? '🧩 올해를 돌아보는 질문' : '☀️ 새해를 맞이하는 질문';
     }
 
     // Check if exhausted
@@ -157,7 +157,7 @@
       triggerFade(cardEl, selectedQuestion, cat);
     } else {
       if (categoryRibbonEl) {
-        categoryRibbonEl.textContent = cat === 'this_year' ? '🌿 올해를 돌아보는 질문' : '✨ 새해를 맞이하는 질문';
+        categoryRibbonEl.textContent = cat === 'this_year' ? '🧩 올해를 돌아보는 질문' : '☀️ 새해를 맞이하는 질문';
       }
       if (questionTextEl) {
         questionTextEl.textContent = selectedQuestion;
@@ -182,7 +182,7 @@
         questionTextEl.textContent = newQuestionText;
       }
       if (ribbonEl) {
-        ribbonEl.textContent = cat === 'this_year' ? '🌿 올해를 돌아보는 질문' : '✨ 새해를 맞이하는 질문';
+        ribbonEl.textContent = cat === 'this_year' ? '🧩 올해를 돌아보는 질문' : '☀️ 새해를 맞이하는 질문';
       }
 
       element.classList.remove('fading-out');
