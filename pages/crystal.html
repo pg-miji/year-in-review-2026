@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘의 묘한 처방 - 시간 조각 상점</title>
+  <meta name="description" content="마음속 고민을 들려주세요. 수정구슬이 당신에게 엉뚱한 한마디를 건넵니다." />
+  <meta property="og:title" content="오늘의 묘한 처방 - 시간 조각 상점" />
+  <meta property="og:description" content="마음속 고민을 들려주세요. 수정구슬이 당신에게 엉뚱한 한마디를 건넵니다." />
+  <link rel="icon" href="../assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-icon.png" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#0b0814" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Gowun+Batang:wght@400;700&family=Marcellus&family=Noto+Serif+KR:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Song+Myung&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <link rel="stylesheet" href="../assets/css/crystal.css" />
+</head>
+
+<body>
+  <!-- Starry Background Backdrop -->
+  <div class="stars-bg" aria-hidden="true"></div>
+
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="shop-header">
+      <h1 class="shop-title-main">오늘의 묘한 처방</h1>
+      <p class="shop-tagline">마음속 작은 고민을 수정구슬에 털어놓으세요. 예상치 못한 한마디가 기다리고 있을지도 모릅니다.</p>
+      <div class="vintage-divider" style="margin: 12px auto 20px;">
+        <span>✦ ✧ ✦</span>
+      </div>
+    </header>
+
+    <!-- Main Crystal Ball Workspace -->
+    <main class="crystal-workspace" role="main" aria-label="수정구슬 공간">
+      <!-- 1. The Interactive Crystal Ball Visual Centerpiece -->
+      <section id="crystal-ball-display" class="crystal-ball-display" aria-label="신비로운 수정구슬">
+        <div class="crystal-aura-wrap">
+          <div class="crystal-pulse-ring" aria-hidden="true"></div>
+          <div id="crystal-orb" class="crystal-orb" role="button" tabindex="0" title="수정구슬을 터치해 보세요" aria-label="수정구슬 오브젝트">
+            <div class="crystal-nebula" aria-hidden="true"></div>
+            <div class="crystal-core-sparkles" aria-hidden="true"></div>
+            <div class="crystal-specular" aria-hidden="true"></div>
+            <div class="crystal-specular-rim" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="crystal-pedestal" aria-hidden="true"></div>
+        <div class="crystal-shadow" aria-hidden="true"></div>
+      </section>
+
+      <!-- 2. State 1: Worry Input Panel -->
+      <section id="crystal-input-panel" class="crystal-panel" aria-label="고민 입력 영역">
+        <div class="panel-prompt-guide">
+          <h2 class="prompt-guide-title">수정구슬에게 고민 말하기</h2>
+        </div>
+
+        <!-- Clickable Example Chips (3 items) -->
+        <div class="example-chips-wrap">
+          <div class="example-chips-label">
+            <span>✦ 고민 예시</span>
+          </div>
+          <div class="example-chips-list" role="group" aria-label="고민 예시 목록">
+            <button type="button" class="worry-chip" data-prompt="내가 너무 게으른 것 같아">내가 너무 게으른 것 같아 🛌</button>
+            <button type="button" class="worry-chip" data-prompt="내년에 뭘 해야 할지 모르겠어">내년에 뭘 해야 할지 모르겠어 🧭</button>
+            <button type="button" class="worry-chip" data-prompt="요즘 아무것도 하기 싫어">요즘 아무것도 하기 싫어 🫠</button>
+          </div>
+        </div>
+
+        <!-- Worry Textarea Input -->
+        <div class="worry-input-box">
+          <textarea id="worry-textarea" class="crystal-textarea" maxlength="300" placeholder="고민을 적어보세요..." aria-label="고민 입력창"></textarea>
+          <div id="char-count" class="char-counter" aria-live="polite">0 / 300</div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="button" id="btn-ask-crystal" class="btn-ask-crystal">
+          <span class="btn-icon">🔮</span>
+          <span>구슬 들여다보기</span>
+        </button>
+
+        <!-- Home Navigation -->
+          <nav style="text-align: center; margin-top: 18px;" aria-label="상점 복귀">    
+          <a href="../index.html" class="btn-vintage btn-velvet btn-home" style="display: inline-flex; padding: 10px 20px; font-size: 14px;">
+            <span class="btn-icon">🚪</span>
+            <span>상점으로 돌아가기</span>
+          </a>
+        </nav>
+      </section>
+
+      <!-- 3. State 2: Thinking Animation Box -->
+      <section id="crystal-thinking-box" class="crystal-panel crystal-thinking-box" aria-live="polite" aria-label="답변 생성 중">
+        <div class="thinking-stardust-wave" aria-hidden="true">
+          <span class="stardust-pip">✦</span>
+          <span class="stardust-pip">✧</span>
+          <span class="stardust-pip">✦</span>
+        </div>
+        <h3 class="thinking-title">수정구슬이 빛을 모으고 있습니다</h3>
+        <p id="thinking-phrase" class="thinking-phrase">구슬 속 작은 우주를 들여다보는 중...</p>
+      </section>
+
+      <!-- 4. State 3: Result Box -->
+      <section id="crystal-result-box" class="crystal-panel crystal-result-box" aria-live="polite" aria-label="수정구슬의 답변">
+        <!-- Quote of User's Worry -->
+        <div class="user-worry-quote-wrap">
+          <span class="user-worry-badge">나의 고민</span>
+          <div id="user-worry-quote" class="user-worry-text"></div>
+        </div>
+
+        <!-- Crystal Ball Revelation Card -->
+        <div class="oracle-revelation-card">
+          <span class="revelation-crest" aria-hidden="true">✦ ✧ ✦ CRYSTAL REVELATION ✦ ✧ ✦</span>
+          <p id="revelation-answer-text" class="revelation-answer-text"></p>
+        </div>
+
+        <!-- Action Navigation Buttons -->
+        <nav class="result-actions-nav" aria-label="답변 후 선택">
+          <button type="button" id="btn-regenerate-answer" class="btn-crystal-action btn-crystal-gold">
+            <span class="btn-icon">🔄</span>
+            <span>다른 답변 받아보기</span>
+          </button>
+          <button type="button" id="btn-new-worry" class="btn-crystal-action btn-crystal-velvet">
+            <span class="btn-icon">🖍️</span>
+            <span>다른 고민 말하기</span>
+          </button>
+          <a href="../index.html" class="btn-crystal-action btn-crystal-velvet">
+            <span class="btn-icon">🚪</span>
+            <span>상점으로 돌아가기</span>
+          </a>
+        </nav>
+      </section>
+    </main>
+  </div>
+
+  <script src="../assets/js/audio.js"></script>
+  <script type="module" src="../assets/js/crystal.js"></script>
+</body>
+
+</html>

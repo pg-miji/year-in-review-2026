@@ -1,0 +1,720 @@
+/* ===================================================================
+   시간 조각 상점 - 수정구슬 (Crystal Ball) Styles
+   =================================================================== */
+
+.crystal-workspace {
+  max-width: 720px;
+  margin: 0 auto 50px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 10;
+}
+
+/* ===================================================================
+   1. The Mystical Crystal Ball Display
+   =================================================================== */
+.crystal-ball-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0 28px;
+  position: relative;
+}
+
+/* Outer Glow Ring & Aura */
+.crystal-aura-wrap {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The Glass Orb */
+.crystal-orb {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  position: relative;
+  background: radial-gradient(circle at 35% 30%, rgba(245, 230, 255, 0.45) 0%, rgba(168, 85, 247, 0.35) 45%, rgba(68, 22, 110, 0.75) 75%, rgba(20, 10, 40, 0.95) 100%);
+  box-shadow: 
+    0 0 30px rgba(168, 85, 247, 0.45),
+    inset 0 0 35px rgba(216, 180, 254, 0.5),
+    inset -8px -8px 25px rgba(0, 0, 0, 0.8),
+    inset 8px 8px 18px rgba(255, 255, 255, 0.4);
+  border: 1.5px solid rgba(220, 185, 255, 0.5);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
+  animation: crystalFloat 4.5s ease-in-out infinite alternate;
+}
+
+.crystal-orb:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 
+    0 0 45px rgba(192, 132, 252, 0.65),
+    inset 0 0 40px rgba(233, 213, 255, 0.6),
+    inset -8px -8px 25px rgba(0, 0, 0, 0.7),
+    inset 8px 8px 20px rgba(255, 255, 255, 0.5);
+}
+
+/* Inner Cosmic Nebula */
+.crystal-nebula {
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  background: 
+    radial-gradient(circle at 40% 60%, rgba(216, 180, 254, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 65% 35%, rgba(245, 158, 11, 0.25) 0%, transparent 45%),
+    conic-gradient(from 0deg, rgba(147, 51, 234, 0.3), rgba(212, 175, 55, 0.2), rgba(126, 34, 206, 0.35), rgba(147, 51, 234, 0.3));
+  border-radius: 50%;
+  filter: blur(8px);
+  animation: nebulaSpin 16s linear infinite;
+  pointer-events: none;
+}
+
+/* Star Sparkles inside the Orb */
+.crystal-core-sparkles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(1.5px 1.5px at 30% 40%, #ffffff, transparent),
+    radial-gradient(2px 2px at 70% 60%, #fef08a, transparent),
+    radial-gradient(1.5px 1.5px at 45% 75%, #e9d5ff, transparent),
+    radial-gradient(1px 1px at 60% 25%, #ffffff, transparent);
+  animation: sparkleTwinkle 3s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* Glass Specular Reflection Highlight */
+.crystal-specular {
+  position: absolute;
+  top: 14px;
+  left: 22px;
+  width: 52px;
+  height: 30px;
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.05) 80%);
+  border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
+  transform: rotate(-32deg);
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+/* Secondary Rim Light */
+.crystal-specular-rim {
+  position: absolute;
+  bottom: 12px;
+  right: 20px;
+  width: 44px;
+  height: 18px;
+  background: linear-gradient(0deg, rgba(216, 180, 254, 0.3) 0%, transparent 100%);
+  border-radius: 50%;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+/* Antique Golden Pedestal Stand */
+.crystal-pedestal {
+  width: 110px;
+  height: 26px;
+  background: linear-gradient(180deg, #d4af37 0%, #85691d 60%, #44320b 100%);
+  border-radius: 12px 12px 6px 6px;
+  border: 1px solid rgba(255, 235, 160, 0.5);
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.8),
+    0 0 14px rgba(212, 175, 55, 0.25);
+  position: relative;
+  margin-top: -12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crystal-pedestal::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  width: 70px;
+  height: 6px;
+  background: linear-gradient(90deg, #9e7d23 0%, #fef08a 50%, #9e7d23 100%);
+  border-radius: 4px;
+}
+
+.crystal-pedestal::after {
+  content: '✣ ✣ ✣';
+  font-size: 8px;
+  letter-spacing: 4px;
+  color: #fff4ce;
+  opacity: 0.85;
+}
+
+/* Ground Shadow */
+.crystal-shadow {
+  width: 140px;
+  height: 18px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 70%);
+  margin-top: 4px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ===================================================================
+   Active State: Shaking / Shining / Thinking Animation
+   =================================================================== */
+.crystal-ball-display.is-generating .crystal-orb {
+  animation: crystalRumble 0.18s ease-in-out infinite alternate, crystalGlowPulse 0.9s ease-in-out infinite alternate !important;
+  box-shadow: 
+    0 0 65px rgba(216, 180, 254, 0.9),
+    0 0 100px rgba(168, 85, 247, 0.7),
+    inset 0 0 50px rgba(255, 255, 255, 0.9),
+    inset -8px -8px 25px rgba(0, 0, 0, 0.7);
+}
+
+.crystal-ball-display.is-generating .crystal-nebula {
+  animation: nebulaSpinFast 2.5s linear infinite !important;
+  filter: blur(4px);
+}
+
+/* Pulsating Light Wave Rings */
+.crystal-pulse-ring {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 2px solid rgba(216, 180, 254, 0.6);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.crystal-ball-display.is-generating .crystal-pulse-ring {
+  animation: ringExpand 1.5s cubic-bezier(0.1, 0.7, 0.3, 1) infinite;
+}
+
+/* Keyframe Animations */
+@keyframes crystalFloat {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-7px); }
+}
+
+@keyframes nebulaSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes nebulaSpinFast {
+  0% { transform: rotate(0deg) scale(1.1); }
+  50% { transform: rotate(180deg) scale(1.25); }
+  100% { transform: rotate(360deg) scale(1.1); }
+}
+
+@keyframes sparkleTwinkle {
+  0% { opacity: 0.4; }
+  100% { opacity: 0.95; }
+}
+
+@keyframes crystalRumble {
+  0% { transform: translate(-1.5px, -6px) rotate(-1.5deg); }
+  50% { transform: translate(1.5px, -8px) rotate(1.2deg); }
+  100% { transform: translate(-1px, -5px) rotate(0.8deg); }
+}
+
+@keyframes crystalGlowPulse {
+  0% {
+    filter: brightness(1);
+    border-color: rgba(216, 180, 254, 0.6);
+  }
+  100% {
+    filter: brightness(1.35);
+    border-color: rgba(255, 240, 180, 0.9);
+  }
+}
+
+@keyframes ringExpand {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+/* ===================================================================
+   2. Main Container Panels (Input, Thinking, Result)
+   =================================================================== */
+.crystal-panel {
+  width: 100%;
+  background: linear-gradient(170deg, rgba(28, 20, 42, 0.95) 0%, rgba(18, 12, 28, 0.98) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: var(--radius-card);
+  padding: 28px 26px;
+  box-shadow: var(--shadow-deep), 0 0 24px rgba(147, 51, 234, 0.15);
+  position: relative;
+  transition: all 0.35s ease;
+}
+
+.crystal-panel::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px dashed rgba(212, 175, 55, 0.2);
+  border-radius: calc(var(--radius-card) - 6px);
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------
+   Panel 1: Worry Input
+   ---------------------------------------------------- */
+.panel-prompt-guide {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.prompt-guide-title {
+  font-family: var(--font-serif-ko);
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff8e8;
+  margin-bottom: 6px;
+}
+
+.prompt-guide-subtitle {
+  font-size: 14px;
+  color: var(--cream-muted);
+  line-height: 1.5;
+}
+
+/* Example Chips Container */
+.example-chips-wrap {
+  margin-bottom: 18px;
+}
+
+.example-chips-label {
+  font-size: 12px;
+  color: var(--gold-light);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.example-chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.worry-chip {
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #f5eedb;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  user-select: none;
+  font-family: var(--font-serif-ko);
+}
+
+.worry-chip:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--gold-light);
+  transform: translateY(-2px);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.25);
+}
+
+.worry-chip:active {
+  transform: translateY(0);
+}
+
+/* Textarea Input */
+.worry-input-box {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.crystal-textarea {
+  width: 100%;
+  min-height: 105px;
+  max-height: 200px;
+  background: rgba(12, 8, 20, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 12px;
+  padding: 14px 16px 32px 16px;
+  color: #ffffff;
+  font-family: var(--font-serif-ko);
+  font-size: 15px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.crystal-textarea::placeholder {
+  color: #8c8199;
+  font-size: 14px;
+}
+
+.crystal-textarea:focus {
+  border-color: var(--gold-light);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.25);
+  background: rgba(14, 9, 24, 0.85);
+}
+
+.crystal-textarea.shake-anim {
+  animation: inputShake 0.45s ease-in-out;
+  border-color: #f87171 !important;
+  box-shadow: 0 0 14px rgba(248, 113, 113, 0.4) !important;
+}
+
+@keyframes inputShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.char-counter {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  font-size: 12px;
+  color: #8c8199;
+  pointer-events: none;
+}
+
+/* Ask Button */
+.btn-ask-crystal {
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: 28px;
+  font-family: var(--font-serif-ko);
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1005;
+  background: linear-gradient(135deg, #fce5a3 0%, #d4af37 50%, #b88d22 100%);
+  border: 1px solid #fffae0;
+  box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.btn-ask-crystal:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(212, 175, 55, 0.55);
+  filter: brightness(1.06);
+}
+
+.btn-ask-crystal:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-ask-crystal:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+/* ----------------------------------------------------
+   Panel 2: Generating / Thinking State
+   ---------------------------------------------------- */
+.crystal-thinking-box {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.thinking-stardust-wave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.stardust-pip {
+  font-size: 18px;
+  color: var(--gold-light);
+  display: inline-block;
+  opacity: 0.35;
+  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.6));
+  animation: stardustBreath 1.6s ease-in-out infinite alternate;
+}
+
+.stardust-pip:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.stardust-pip:nth-child(2) {
+  font-size: 24px;
+  color: #fff4ce;
+  animation-delay: 0.3s;
+}
+
+.stardust-pip:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes stardustBreath {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.3;
+    filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.3));
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 1;
+    filter: drop-shadow(0 0 12px rgba(243, 207, 122, 0.95)) drop-shadow(0 0 20px rgba(168, 85, 247, 0.6));
+  }
+}
+
+.thinking-title {
+  font-family: var(--font-serif-ko);
+  font-size: 18px;
+  font-weight: 700;
+  color: #fef08a;
+  margin-bottom: 8px;
+}
+
+.thinking-phrase {
+  font-size: 14px;
+  color: var(--cream-muted);
+  min-height: 22px;
+  transition: opacity 0.3s ease;
+}
+
+/* ----------------------------------------------------
+   Panel 3: Result & Answer Display
+   ---------------------------------------------------- */
+.crystal-result-box {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* User Worry Quote Pill */
+.user-worry-quote-wrap {
+  width: 100%;
+  background: rgba(14, 9, 24, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.user-worry-badge {
+  font-size: 11px;
+  color: var(--gold-light);
+  letter-spacing: 1px;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.user-worry-text {
+  font-size: 14px;
+  color: var(--cream-muted);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* The Oracle Revelation Card */
+.oracle-revelation-card {
+  width: 100%;
+  background: linear-gradient(170deg, rgba(38, 22, 58, 0.85) 0%, rgba(20, 12, 34, 0.95) 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.5);
+  border-radius: 16px;
+  padding: 28px 22px 24px;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.6),
+    0 0 25px rgba(168, 85, 247, 0.25);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.oracle-revelation-card::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  border: 1px dashed rgba(212, 175, 55, 0.25);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.revelation-crest {
+  font-size: 16px;
+  color: var(--gold-light);
+  margin-bottom: 12px;
+  letter-spacing: 3px;
+  display: block;
+}
+
+.revelation-answer-text {
+  font-family: var(--font-title-ko);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.8;
+  color: #fffbf0;
+  margin: 10px 0 10px;
+  word-break: keep-all;
+  text-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+}
+
+.revelation-footnote {
+  font-size: 12px;
+  color: #a395b3;
+  margin-top: 8px;
+}
+
+/* Result Action Navigation Buttons */
+.result-actions-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-crystal-action {
+  flex: 1 1 180px;
+  padding: 12px 18px;
+  border-radius: 24px;
+  font-family: var(--font-serif-ko);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.btn-crystal-gold {
+  background: linear-gradient(135deg, #fce5a3 0%, #d4af37 50%, #b88d22 100%);
+  color: #1a1005;
+  border: 1px solid #fffae0;
+  box-shadow: 0 3px 12px rgba(212, 175, 55, 0.3);
+}
+
+.btn-crystal-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 18px rgba(212, 175, 55, 0.5);
+  filter: brightness(1.05);
+}
+
+.btn-crystal-velvet {
+  background: rgba(30, 20, 48, 0.85);
+  color: #eeddbf;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+.btn-crystal-velvet:hover {
+  background: rgba(45, 30, 70, 0.95);
+  border-color: var(--gold-light);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+/* ===================================================================
+   Mobile Optimization
+   =================================================================== */
+@media (max-width: 680px) {
+  .crystal-workspace {
+    margin-bottom: 30px;
+  }
+
+  .crystal-aura-wrap {
+    width: 150px;
+    height: 150px;
+  }
+
+  .crystal-orb {
+    width: 125px;
+    height: 125px;
+  }
+
+  .crystal-pedestal {
+    width: 95px;
+    height: 22px;
+    margin-top: -10px;
+  }
+
+  .crystal-shadow {
+    width: 115px;
+    height: 14px;
+  }
+
+  .crystal-panel {
+    padding: 22px 18px;
+  }
+
+  .prompt-guide-title {
+    font-size: 18px;
+  }
+
+  .prompt-guide-subtitle {
+    font-size: 13px;
+  }
+
+  .worry-chip {
+    padding: 5px 11px;
+    font-size: 12px;
+  }
+
+  .crystal-textarea {
+    font-size: 14px;
+    min-height: 95px;
+  }
+
+  .btn-ask-crystal {
+    font-size: 15px;
+    padding: 12px 20px;
+  }
+
+  .oracle-revelation-card {
+    padding: 22px 16px 18px;
+  }
+
+  .revelation-answer-text {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .result-actions-nav {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-crystal-action {
+    width: 100%;
+    flex: unset;
+  }
+}
