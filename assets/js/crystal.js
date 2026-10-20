@@ -76,21 +76,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const CATEGORY_MAP = {
     work: '💼 일과 회사',
     future: '🧭 진로와 미래',
-    relationship: '💬 인간관계와 연애',
+    relationship: '💬 사람과 관계',
     money: '🪙 돈과 소비',
-    self: '🌱 자기 자신',
-    condition: '🫠 의욕과 컨디션',
-    random: '💭 오늘의 잡생각'
+    self: '🌱 나 자신',
+    condition: '🫠 마음과 에너지',
+    random: '💭 그 밖의 고민'
   };
 
   const THINKING_PHRASES = [
-    '구슬아, 뭐라도 하나 알려줘...',
+    '구슬아, 뭐라도 보여줘...',
     '구슬 속 작은 우주를 들여다보는 중...',
     '미래와 교신을 시도하는 중...',
     '우주 고객센터에 문의하는 중...',
     '별들이 회의 중입니다. 안건은 당신의 고민...',
-    '그럴듯한 한마디를 떠올리는 중...',
-    '당신에게 어울리는 한마디를 고르는 중...'
+    '고민을 한 꼬집, 별가루를 두 꼬집...',
+    '구슬 속 안개가 걷히는 중...',
+    '흐릿한 운명의 실마리를 찾는 중...',
+    '구슬에 무언가 비치기 시작하는 중...',
+    '우주의 기밀문서를 열람하는 중...',
+    '미래를 불러오는 중... 잠시만요...',
   ];
 
   // 1. Character count listener
@@ -216,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check if daily quota is exhausted
     if (isQuotaExhausted()) {
-      showQuotaAlert('수정구슬의 오늘의 기운(일일 이용 한도: 1,500회)이 모두 소진되었습니다.<br>내일 자정 이후 다시 찾아와 주세요 🌙');
+      showQuotaAlert('수정구슬의 기운이 소진되었습니다.<br>내일 자정 이후 다시 찾아와 주세요 🌙');
       return;
     }
 

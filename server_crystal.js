@@ -6,13 +6,13 @@ const CRISIS_PATTERNS = [
 const CRISIS_RESPONSE = '지금 많이 버겁고 지치셨군요. 당신의 소중한 오늘은 여기서 끝나지 않아요. 힘들 땐 혼자 견디지 마시고 언제든 24시간 열려 있는 전문 상담(자살예방상담전화 109, 정신건강상담전화 1577-0199)에 손을 내밀어 보세요.';
 
 const CATEGORY_NAMES = {
-  work: '일 & 회사',
-  future: '진로 & 미래',
-  relationship: '인간관계 & 연애',
-  money: '돈 & 소비',
-  self: '자기 자신',
-  condition: '의욕 & 컨디션',
-  random: '기타'
+  work: '일과 회사',
+  future: '진로와 미래',
+  relationship: '사람과 관계',
+  money: '돈과 소비',
+  self: '나 자신',
+  condition: '마음과 에너지',
+  random: '그 밖의 고민'
 };
 
 // 7대 카테고리별 정제된 묘한 처방 카탈로그 (쉬운 단어, 이모지 0~1개)
