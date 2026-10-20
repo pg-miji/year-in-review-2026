@@ -29,7 +29,7 @@
     <!-- Top Header -->
     <header class="shop-header">
       <h1 class="shop-title-main">오늘의 묘한 처방</h1>
-      <p class="shop-tagline">마음속 고민을 수정구슬에 들려주세요. 뜻밖의 답변이 돌아올지도 모릅니다.</p>
+      <p class="shop-tagline">마음속 고민을 수정구슬에 들려주세요.<br>뜻밖의 답변이 돌아올지도 모릅니다.</p>
       <div class="vintage-divider" style="margin: 12px auto 20px;">
         <span>✦ ✧ ✦</span>
       </div>
@@ -181,6 +181,22 @@
         </nav>
       </section>
     </main>
+  </div>
+
+  <!-- Quota Limit Modal Dialog -->
+  <div id="crystal-quota-modal" class="crystal-modal-overlay" style="display: none;" role="alertdialog" aria-modal="true" aria-labelledby="quota-modal-title">
+    <div class="crystal-modal-card">
+      <div class="crystal-modal-icon">🌙</div>
+      <h3 id="quota-modal-title" class="crystal-modal-title">오늘의 처방이 마감되었습니다</h3>
+      <p id="quota-modal-desc" class="crystal-modal-desc">
+        수정구슬의 오늘의 기운(일일 무료 이용 한도)이 모두 소진되었습니다.<br>
+        내일 자정 이후 다시 찾아와 주세요.
+      </p>
+      <div class="crystal-modal-actions">
+        <button type="button" id="btn-close-quota-modal" class="btn-crystal-action btn-crystal-gold">확인</button>
+        <a href="../index.html" class="btn-crystal-action btn-crystal-velvet">상점으로 돌아가기</a>
+      </div>
+    </div>
   </div>
 
   <script src="../assets/js/audio.js"></script>

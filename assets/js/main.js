@@ -31,6 +31,18 @@ function initMainPage() {
       window.MysticalAudio?.playCardFlip();
     };
   }
+
+  // Quota check: If crystal quota was exhausted today, hide the crystal portal button
+  try {
+    const quotaDate = localStorage.getItem('crystal_quota_exhausted_date');
+    const today = new Date().toISOString().slice(0, 10);
+    if (quotaDate === today) {
+      const crystalBtn = document.getElementById('portal-crystal-btn');
+      if (crystalBtn) {
+        crystalBtn.style.display = 'none';
+      }
+    }
+  } catch (e) {}
 }
 
 window.initMainPage = initMainPage;

@@ -836,3 +836,62 @@
     flex: unset;
   }
 }
+
+/* ----------------------------------------------------
+   Quota Limit Modal Dialog
+   ---------------------------------------------------- */
+.crystal-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 4, 16, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.crystal-modal-card {
+  background: linear-gradient(180deg, #1d1430 0%, #100b1d 100%);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), 0 0 25px rgba(212, 175, 55, 0.3);
+  border-radius: 16px;
+  padding: 28px 24px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  animation: modalScaleIn 0.25s ease-out;
+}
+
+@keyframes modalScaleIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.crystal-modal-icon {
+  font-size: 38px;
+  margin-bottom: 12px;
+}
+
+.crystal-modal-title {
+  font-family: var(--font-serif-ko);
+  font-size: 18px;
+  color: #fef08a;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.crystal-modal-desc {
+  font-size: 14px;
+  color: var(--cream-muted);
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+
+.crystal-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
