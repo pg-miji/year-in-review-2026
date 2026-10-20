@@ -2,8 +2,8 @@
 // 시간 조각 상점 - 오늘의 묘한 처방 (수정구슬) Interactive Controller
 // ===================================================================
 
-import { getLocalCrystalAnswer } from './crystal_oracle.js';
-import { CRYSTAL_CONFIG } from './crystal_config.js';
+import { getLocalCrystalAnswer } from './crystal_oracle.js?v=2.3.0';
+import { CRYSTAL_CONFIG } from './crystal_config.js?v=2.3.0';
 
 document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
@@ -252,43 +252,64 @@ document.addEventListener('DOMContentLoaded', () => {
     let fetchedAnswer = '';
     let quotaHit = false;
 
-    // 1. Try server endpoint first (/api/crystal-ball)
-    let res = null;
-    try {
-      const responsePromise = fetch('/api/crystal-ball', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          worry: currentWorry,
-          category: selectedCategory,
-          previousAnswer: isRegen ? lastAnswer : ''
-        })
-      });
+    // Check if hosted on GitHub Pages or static host where /api/ does not exist
+    const isStaticHosting = window.location.hostname.includes('github.io') ||
+                            window.location.protocol === 'file:' ||
+                            (!window.location.origin.includes('localhost') && !window.location.origin.includes('run.app'));
 
-      // 8.5s timeout for network call
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('TIMEOUT')), 8500)
-      );
+    const clientKey = (CRYSTAL_CONFIG && CRYSTAL_CONFIG.geminiApiKey)
+      ? CRYSTAL_CONFIG.geminiApiKey.trim()
+      : '';
 
-      res = await Promise.race([responsePromise, timeoutPromise]);
-      if (res && res.status === 429) {
-        quotaHit = true;
-      } else if (res && res.ok) {
-        const data = await res.json();
-        if (data && data.answer) {
-          fetchedAnswer = data.answer.trim();
+    // On GitHub Pages: Call Gemini API directly (skipping non-existent /api/ route to save 3+ seconds on mobile)
+    if (isStaticHosting && clientKey) {
+      try {
+        const directRes = await callDirectClientGemini(
+          currentWorry,
+          selectedCategory,
+          isRegen ? lastAnswer : '',
+          clientKey
+        );
+        if (directRes && directRes.quotaExhausted) {
+          quotaHit = true;
+        } else if (typeof directRes === 'string' && directRes.length > 2) {
+          fetchedAnswer = directRes;
         }
+      } catch (e) {
+        fetchedAnswer = '';
       }
-    } catch (err) {
-      fetchedAnswer = '';
-    }
+    } else {
+      // 1. Try server endpoint first (/api/crystal-ball) on local/cloud dev servers
+      try {
+        const responsePromise = fetch('/api/crystal-ball', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            worry: currentWorry,
+            category: selectedCategory,
+            previousAnswer: isRegen ? lastAnswer : ''
+          })
+        });
 
-    // 2. If server endpoint failed or returned 404 (GitHub Pages static host)
-    if (!fetchedAnswer && !quotaHit) {
-      const clientKey = (CRYSTAL_CONFIG && CRYSTAL_CONFIG.geminiApiKey)
-        ? CRYSTAL_CONFIG.geminiApiKey.trim()
-        : '';
-      if (clientKey) {
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('TIMEOUT')), 8500)
+        );
+
+        const res = await Promise.race([responsePromise, timeoutPromise]);
+        if (res && res.status === 429) {
+          quotaHit = true;
+        } else if (res && res.ok) {
+          const data = await res.json();
+          if (data && data.answer) {
+            fetchedAnswer = data.answer.trim();
+          }
+        }
+      } catch (err) {
+        fetchedAnswer = '';
+      }
+
+      // 2. Client-side fallback if server endpoint fails
+      if (!fetchedAnswer && !quotaHit && clientKey) {
         try {
           const directRes = await callDirectClientGemini(
             currentWorry,
@@ -298,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
           );
           if (directRes && directRes.quotaExhausted) {
             quotaHit = true;
-          } else if (typeof directRes === 'string') {
+          } else if (typeof directRes === 'string' && directRes.length > 2) {
             fetchedAnswer = directRes;
           }
         } catch (e) {
@@ -358,39 +379,44 @@ document.addEventListener('DOMContentLoaded', () => {
 ${previousAnswer ? `\n이전에 제공했던 답변: "${previousAnswer}" 와는 다른 새로운 표현과 비유로 작성하세요.` : ''}`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    // 12 seconds timeout to accommodate mobile network latency
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-    const apiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: userPromptText }] }],
-          systemInstruction: {
-            parts: [{ text: systemPrompt }]
-          },
-          generationConfig: {
-            temperature: 0.85,
-            maxOutputTokens: 140
+    try {
+      const apiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: userPromptText }] }],
+            systemInstruction: {
+              parts: [{ text: systemPrompt }]
+            },
+            generationConfig: {
+              temperature: 0.85,
+              maxOutputTokens: 140
+            }
+          })
+        }
+      );
+      clearTimeout(timeoutId);
+
+      if (apiRes) {
+        if (apiRes.status === 429) {
+          return { quotaExhausted: true };
+        }
+        if (apiRes.ok) {
+          const data = await apiRes.json();
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (text && text.length > 2) {
+            return text;
           }
-        })
-      }
-    );
-    clearTimeout(timeoutId);
-
-    if (apiRes) {
-      if (apiRes.status === 429) {
-        return { quotaExhausted: true };
-      }
-      if (apiRes.ok) {
-        const data = await apiRes.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-        if (text && text.length > 2) {
-          return text;
         }
       }
+    } catch (err) {
+      console.warn('[Crystal Ball] Client Gemini error:', err);
     }
     return '';
   }
