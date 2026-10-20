@@ -37,6 +37,10 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/crystal-ball') {
     if (req.method === 'POST') {
       let body = '';
+      req.on('error', (err) => {
+        res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: false, error: 'Request stream error' }));
+      });
       req.on('data', chunk => {
         body += chunk;
         if (body.length > 50000) {
@@ -48,7 +52,8 @@ const server = http.createServer(async (req, res) => {
           const data = JSON.parse(body || '{}');
           const worry = data.worry || '';
           const previousAnswer = data.previousAnswer || '';
-          const answer = await generateCrystalBallAnswer(worry, previousAnswer);
+          const category = data.category || '';
+          const answer = await generateCrystalBallAnswer(worry, previousAnswer, category);
           res.writeHead(200, {
             'Content-Type': 'application/json; charset=utf-8',
             'Cache-Control': 'no-cache',

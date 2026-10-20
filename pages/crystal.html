@@ -5,9 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>오늘의 묘한 처방 - 시간 조각 상점</title>
-  <meta name="description" content="마음속 고민을 들려주세요. 수정구슬이 당신에게 엉뚱한 한마디를 건넵니다." />
+  <meta name="description" content="마음속 고민을 수정구슬에 들려주세요. 뜻밖의 답변이 돌아올지도 모릅니다." />
   <meta property="og:title" content="오늘의 묘한 처방 - 시간 조각 상점" />
-  <meta property="og:description" content="마음속 고민을 들려주세요. 수정구슬이 당신에게 엉뚱한 한마디를 건넵니다." />
+  <meta property="og:description" content="마음속 고민을 수정구슬에 들려주세요. 뜻밖의 답변이 돌아올지도 모릅니다." />
   <link rel="icon" href="../assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="alternate icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-icon.png" />
@@ -29,7 +29,7 @@
     <!-- Top Header -->
     <header class="shop-header">
       <h1 class="shop-title-main">오늘의 묘한 처방</h1>
-      <p class="shop-tagline">마음속 작은 고민을 수정구슬에 털어놓으세요. 예상치 못한 한마디가 기다리고 있을지도 모릅니다.</p>
+      <p class="shop-tagline">마음속 고민을 수정구슬에 들려주세요. 뜻밖의 답변이 돌아올지도 모릅니다.</p>
       <div class="vintage-divider" style="margin: 12px auto 20px;">
         <span>✦ ✧ ✦</span>
       </div>
@@ -58,22 +58,67 @@
           <h2 class="prompt-guide-title">수정구슬에게 고민 말하기</h2>
         </div>
 
-        <!-- Clickable Example Chips (3 items) -->
-        <div class="example-chips-wrap">
-          <div class="example-chips-label">
-            <span>✦ 고민 예시</span>
+        <!-- 1. Category Selection -->
+        <div class="category-select-wrap">
+          <div class="category-select-header" id="category-group-label">
+            <span class="category-title">✦ 카테고리 선택</span>
           </div>
-          <div class="example-chips-list" role="group" aria-label="고민 예시 목록">
-            <button type="button" class="worry-chip" data-prompt="내가 너무 게으른 것 같아">내가 너무 게으른 것 같아 🛌</button>
-            <button type="button" class="worry-chip" data-prompt="내년에 뭘 해야 할지 모르겠어">내년에 뭘 해야 할지 모르겠어 🧭</button>
-            <button type="button" class="worry-chip" data-prompt="요즘 아무것도 하기 싫어">요즘 아무것도 하기 싫어 🫠</button>
+          <div class="category-grid" role="radiogroup" aria-labelledby="category-group-label">
+            <button type="button" class="category-card" role="radio" aria-checked="false" data-category="work">
+              <span class="cat-icon" aria-hidden="true">💼</span>
+              <div class="cat-text-wrap">
+                <span class="cat-name">일 & 회사</span>
+              </div>
+            </button>
+            <button type="button" class="category-card" role="radio" aria-checked="false" data-category="future">
+              <span class="cat-icon" aria-hidden="true">🧭</span>
+              <div class="cat-text-wrap">
+                <span class="cat-name">진로 & 미래</span>
+              </div>
+            </button>
+            <button type="button" class="category-card" role="radio" aria-checked="false" data-category="relationship">
+              <span class="cat-icon" aria-hidden="true">💬</span>
+              <div class="cat-text-wrap">
+                <span class="cat-name">인간관계 & 연애</span>
+              </div>
+            </button>
+            <button type="button" class="category-card" role="radio" aria-checked="false" data-category="money">
+              <span class="cat-icon" aria-hidden="true">🪙</span>
+              <div class="cat-text-wrap">
+                <span class="cat-name">돈 & 소비</span>
+              </div>
+            </button>
+            <button type="button" class="category-card" role="radio" aria-checked="false" data-category="self">
+              <span class="cat-icon" aria-hidden="true">🌱</span>
+              <div class="cat-text-wrap">
+                <span class="cat-name">비교 & 자존감</span>
+              </div>
+            </button>
+            <button type="button" class="category-card" role="radio" aria-checked="false" data-category="condition">
+              <span class="cat-icon" aria-hidden="true">🫠</span>
+              <div class="cat-text-wrap">
+                <span class="cat-name">의욕 & 컨디션</span>
+              </div>
+            </button>
+            <button type="button" class="category-card" role="radio" aria-checked="false" data-category="random">
+              <span class="cat-icon" aria-hidden="true">💭</span>
+              <div class="cat-text-wrap">
+                <span class="cat-name">기타</span>
+              </div>
+            </button>
           </div>
         </div>
 
         <!-- Worry Textarea Input -->
         <div class="worry-input-box">
-          <textarea id="worry-textarea" class="crystal-textarea" maxlength="300" placeholder="고민을 적어보세요..." aria-label="고민 입력창"></textarea>
+          <textarea id="worry-textarea" class="crystal-textarea" maxlength="300" placeholder="고민이나 질문을 자유롭게 적어보세요..." aria-label="고민 입력창"></textarea>
           <div id="char-count" class="char-counter" aria-live="polite">0 / 300</div>
+        </div>
+
+        <!-- Inline Error Message (if any) -->
+        <div id="crystal-error-box" class="crystal-error-box" style="display: none;" role="alert">
+          <p id="crystal-error-text" class="crystal-error-text">수정구슬이 빛을 모으고 있습니다.</p>
+          <button type="button" id="btn-retry" class="btn-retry-action">다시 시도하기</button>
         </div>
 
         <!-- Submit Button -->
@@ -104,15 +149,18 @@
 
       <!-- 4. State 3: Result Box -->
       <section id="crystal-result-box" class="crystal-panel crystal-result-box" aria-live="polite" aria-label="수정구슬의 답변">
-        <!-- Quote of User's Worry -->
+        <!-- Quote of User's Worry & Category -->
         <div class="user-worry-quote-wrap">
-          <span class="user-worry-badge">나의 고민</span>
+          <div class="user-worry-meta">
+            <span class="user-worry-badge">► 나의 고민</span>
+            <span id="user-category-tag" class="user-category-tag" style="display: none;"></span>
+          </div>
           <div id="user-worry-quote" class="user-worry-text"></div>
         </div>
 
         <!-- Crystal Ball Revelation Card -->
         <div class="oracle-revelation-card">
-          <span class="revelation-crest" aria-hidden="true">✦ ✧ ✦ CRYSTAL REVELATION ✦ ✧ ✦</span>
+          <span class="revelation-crest" aria-hidden="true">✦ ✧ CRYSTAL BALL ✧ ✦</span>
           <p id="revelation-answer-text" class="revelation-answer-text"></p>
         </div>
 
