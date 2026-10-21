@@ -74,13 +74,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const CATEGORY_MAP = {
-    work: '💼 일과 회사',
-    future: '🧭 진로와 미래',
+    work: '💼 일과 진로',
     relationship: '💬 사람과 관계',
     money: '🪙 돈과 소비',
-    self: '🌱 나 자신',
-    condition: '🫠 마음과 에너지',
-    random: '💭 그 밖의 고민'
+    mind: '🌱 나와 마음',
+    rest: '🛌 건강과 휴식',
+    random: '💭 그 밖의 고민',
+    // Fallback aliases
+    future: '💼 일과 진로',
+    self: '🌱 나와 마음',
+    condition: '🛌 건강과 휴식'
   };
 
   const THINKING_PHRASES = [
