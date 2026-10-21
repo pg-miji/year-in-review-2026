@@ -438,9 +438,17 @@ ${previousAnswer ? `\n이전에 제공했던 답변: "${previousAnswer}" 와는 
       const phraseIdx = Math.floor(Math.random() * THINKING_PHRASES.length);
       thinkingPhrase.textContent = THINKING_PHRASES[phraseIdx];
 
-      // Scroll smoothly to thinking box on mobile
+      // Gently align viewport on mobile so crystal and loading stay comfortably visible
       setTimeout(() => {
-        thinkingBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (crystalDisplay) {
+          const rect = crystalDisplay.getBoundingClientRect();
+          if (rect.top < 10) {
+            window.scrollTo({
+              top: Math.max(0, window.pageYOffset + rect.top - 16),
+              behavior: 'smooth'
+            });
+          }
+        }
       }, 50);
     } else {
       if (btnAsk) btnAsk.disabled = false;
@@ -475,10 +483,18 @@ ${previousAnswer ? `\n이전에 제공했던 답변: "${previousAnswer}" 와는 
       window.MysticalAudio.playMysticChime();
     }
 
-    // Smoothly scroll to result box on mobile
+    // Gently align viewport on mobile so crystal and result stay naturally visible
     setTimeout(() => {
-      resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
+      if (crystalDisplay) {
+        const rect = crystalDisplay.getBoundingClientRect();
+        if (rect.top < 10) {
+          window.scrollTo({
+            top: Math.max(0, window.pageYOffset + rect.top - 16),
+            behavior: 'smooth'
+          });
+        }
+      }
+    }, 80);
   }
 
   function resetToInputState() {

@@ -455,10 +455,12 @@
   padding: 14px 16px 32px 16px;
   color: #ffffff;
   font-family: var(--font-serif-ko);
-  font-size: 15px;
+  font-size: 16px; /* Must be 16px to prevent mobile iOS Safari auto-zoom */
   line-height: 1.6;
   resize: vertical;
   outline: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -808,7 +810,7 @@
   }
 
   .crystal-textarea {
-    font-size: 14px;
+    font-size: 16px; /* Must remain 16px on mobile to avoid iOS Safari zoom */
     min-height: 95px;
   }
 
