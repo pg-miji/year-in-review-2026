@@ -521,15 +521,15 @@
       ctx.fillText('✨', 320 + Math.sin(t) * 15, 220 + Math.cos(t) * 10);
 
       // Camera feed guide
-      ctx.font = 'bold 22px "Pretendard", sans-serif';
+      ctx.font = 'bold 22px "Gowun Batang", serif';
       ctx.fillStyle = '#ffffff';
       ctx.fillText('실시간 프리뷰 모드', 320, 340);
 
-      ctx.font = '15px "Pretendard", sans-serif';
+      ctx.font = '15px "Gowun Batang", serif';
       ctx.fillStyle = '#eeddbf';
       ctx.fillText('📸 셔터를 눌러 촬영을 진행해주세요', 320, 380);
 
-      ctx.font = '13px "Pretendard", sans-serif';
+      ctx.font = '13px "Gowun Batang", serif';
       ctx.fillStyle = 'rgba(212, 175, 55, 0.8)';
       ctx.fillText('(카메라 권한 허용 시 실제 얼굴이 노출됩니다)', 320, 415);
 

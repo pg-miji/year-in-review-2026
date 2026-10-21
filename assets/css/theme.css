@@ -61,6 +61,10 @@ html, body {
   overflow-x: hidden;
 }
 
+button, input, textarea, select {
+  font-family: var(--font-serif-ko);
+}
+
 /* Starry Atmosphere Particles */
 .stars-bg {
   position: fixed;

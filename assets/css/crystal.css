@@ -688,7 +688,9 @@
 }
 
 .revelation-crest {
-  font-size: 16px;
+  font-family: var(--font-display-en);
+  font-size: 13px;
+  font-weight: 700;
   color: var(--gold-light);
   margin-bottom: 12px;
   letter-spacing: 3px;
@@ -696,7 +698,7 @@
 }
 
 .revelation-answer-text {
-  font-family: var(--font-title-ko);
+  font-family: var(--font-serif-ko);
   font-size: 19px;
   font-weight: 600;
   line-height: 1.8;

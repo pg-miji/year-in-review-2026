@@ -151,12 +151,14 @@
 }
 
 .exhausted-title {
+  font-family: var(--font-serif-ko);
   font-size: 22px;
   font-weight: 700;
   color: #fff9ed;
 }
 
 .exhausted-desc {
+  font-family: var(--font-serif-ko);
   font-size: 15px;
   color: var(--cream-muted);
   line-height: 1.6;
