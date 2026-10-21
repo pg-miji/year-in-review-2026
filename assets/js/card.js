@@ -415,16 +415,11 @@
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
       if (isMobile) {
-        // Show in clean overlay modal with easy save instructions & download button
+        // Show in clean overlay modal with easy long-press save instructions
         const modal = document.getElementById('preview-modal');
         const modalImg = document.getElementById('modal-preview-img');
-        const modalDownloadBtn = document.getElementById('modal-download-btn');
         if (modal && modalImg) {
           modalImg.src = dataUrl;
-          if (modalDownloadBtn) {
-            modalDownloadBtn.href = dataUrl;
-            modalDownloadBtn.download = filename;
-          }
           modal.classList.add('active');
         }
       } else {
