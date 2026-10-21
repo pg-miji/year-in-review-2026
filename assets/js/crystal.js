@@ -1,5 +1,5 @@
 // ===================================================================
-// 시간 조각 상점 - 오늘의 묘한 처방 (수정구슬) Interactive Controller
+// 시간 조각 상점 - 오늘의 사소한 처방 (수정구슬) Interactive Controller
 // ===================================================================
 
 import { getLocalCrystalAnswer } from './crystal_oracle.js?v=2.3.0';
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
       quotaModal.style.display = 'flex';
     } else {
       try {
-        window.alert(msg ? msg.replace(/<br>/g, '\n') : '수정구슬의 오늘의 기운(일일 이용 한도)이 모두 소진되었습니다. 내일 다시 찾아와 주세요.');
+        window.alert(msg ? msg.replace(/<br>/g, '\n') : '수정구슬도 잠시 쉬어갈 시간이에요. 내일 다시 찾아와 주세요.');
       } catch (e) {}
     }
   }
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check if daily quota is exhausted
     if (isQuotaExhausted()) {
-      showQuotaAlert('수정구슬의 기운이 소진되었습니다.<br>내일 자정 이후 다시 찾아와 주세요 🌙');
+      showQuotaAlert('수정구슬도 잠시 쉬어갈 시간이에요.<br>내일 다시 찾아와 주세요 🌙');
       return;
     }
 
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setQuotaExhausted();
       setGeneratingState(false);
       isSubmitting = false;
-      showQuotaAlert('수정구슬의 기운이 소진되었습니다.<br>내일 자정 이후 다시 찾아와 주세요 🌙');
+      showQuotaAlert('수정구슬도 잠시 쉬어갈 시간이에요.<br>내일 다시 찾아와 주세요 🌙');
       return;
     }
 
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         fetchedAnswer = getLocalCrystalAnswer(currentWorry, isRegen ? lastAnswer : '', selectedCategory);
       } catch (e) {
-        fetchedAnswer = '잠시 안개가 짙어졌네요. 이불 속에서 눈을 감고 숨을 고르다 다시 들여다보라는 처방을 내립니다 🌙';
+        fetchedAnswer = '앗, 구슬 속 안개가 걷히지 않네요. 잠시 후 다시 살펴봐 주세요 🫧';
       }
     }
 
@@ -367,19 +367,20 @@ document.addEventListener('DOMContentLoaded', () => {
       ? `[사용자가 고른 카테고리: ${categoryName}]\n고민/질문: "${worry}"`
       : `고민/질문: "${worry}"`;
 
-    const systemPrompt = `당신은 시간 조각 상점의 "오늘의 묘한 처방" 수정구슬입니다.
-사용자가 털어놓은 고민, 질문, 엉뚱한 생각에 대해 짧고 재치 있는 묘한 처방을 한마디 건넵니다.
+    const systemPrompt = `당신은 시간 조각 상점의 "오늘의 사소한 처방" 수정구슬입니다.
+사용자가 털어놓은 고민, 질문, 엉뚱한 생각에 대해 짧고 재치 있는 처방을 한마디 건넵니다.
 전문적인 심리 상담이나 정답 해결책을 주려는 것이 아니라, 고민을 바라보는 순간의 기분을 환기해 주는 가벼운 엔터테인먼트 콘텐츠입니다.
 
 [핵심 원칙]
 1. 입력 맥락 우선: 카테고리는 참고용일 뿐, 사용자가 실제로 쓴 글의 맥락과 감정을 최우선으로 해석하세요.
 2. 보통 1~2문장 (최대 3문장 이내)으로 짧고 명쾌하게 작성하세요.
-3. 능청스럽고 엉뚱하며 재치 있는 어조 (~네요, ~군요, ~해봅시다, ~인 셈 치죠, ~어떨까요?).
+3. 능청스럽고 엉뚱하며 재치 있는 어조를 사용하세요. (~네요, ~군요, ~해봅시다, ~인 셈 치죠, ~어떨까요?).
 4. 상투적인 위로, 뻔한 조언, 자기계발식 훈계, 진지한 분석은 피하세요.
-5. 사용자를 비난하거나 무시, 평가, 훈계하지 마세요. 상대를 낮잡아 보는 '~이나' (팝콘이나 등), 차가운 '~하지 마세요'는 절대 금지합니다.
-6. 어려운 전문 용어나 수식어 남발을 절대 금지합니다. 초등학생도 1초 만에 술술 읽히는 쉬운 일상 단어만 쓰세요.
-7. 이모지는 답변당 최대 0~1개만 (남발 금지).
+5. 사용자를 비난하거나 무시, 평가, 훈계하지 마세요. 상대를 낮잡아 보는 말투나, 차가운 '~하지 마세요'는 절대 금지합니다.
+6. 어려운 용어나 수식어 남발을 절대 금지합니다. 초등학생도 쉽게 읽히는 쉬운 일상 단어만 쓰세요.
+7. 이모지는 답변에 사용하지 않거나 1개까지만 사용하세요.
 8. 뻔한 접두사 금지: "구슬 속 은하수가...", "우주의 시계추가..." 같은 진부한 서두 없이 바로 산뜻하게 시작하세요.
+9. 고민/질문이 '진지하게'라는 문구로 시작한다면 진지하게 답해주세요.
 ${previousAnswer ? `\n이전에 제공했던 답변: "${previousAnswer}" 와는 다른 새로운 표현과 비유로 작성하세요.` : ''}`;
 
     const controller = new AbortController();
