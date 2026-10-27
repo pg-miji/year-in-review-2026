@@ -325,7 +325,7 @@
   .reading-text-body {
     font-size: 14px;
     line-height: 1.72;
-    margin-bottom: 18px;
+    margin-bottom: 15px;
   }
 
   .reading-para {
@@ -339,6 +339,8 @@
   .advice-box {
     padding: 14px 16px;
     margin-top: 4px;
+    margin-left: 4px;
+    margin-right: 4px;
   }
 
   .advice-label {

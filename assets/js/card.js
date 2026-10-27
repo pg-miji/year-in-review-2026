@@ -154,7 +154,6 @@
     const width = 1080;
     const height = 1350; // 4:5 Aspect Ratio
 
-    // 0. 텍스트 불필요한 개행/공백 완전 제거
     const cleanReading = (card.reading || '').trim().replace(/\s+$/, '');
     const cleanAdvice = (card.advice || '').trim().replace(/\s+$/, '');
 
@@ -217,9 +216,9 @@
     // ==========================================
     const majorH = 26;
     const titleH = 48;
-    const imgH = 510;
-    const imgW = 336;
-    const pillH = 46;
+    const imgH   = 510;
+    const imgW   = 336;
+    const pillH  = 46;
 
     // 운세 리딩 텍스트 & 박스 높이
     const readingMeasure = measureWrappedText(
@@ -240,20 +239,18 @@
       42,
       '600 26px "Gowun Batang", "Pretendard", serif'
     );
-    const advTitleH = 28;
+    const advTitleH         = 28;
     const advTitleToTextGap = 56; 
-    const totalAdvContentH = advTitleH + advTitleToTextGap + adviceMeasure.totalHeight;
-    const advBoxPadding = 20;
-    const advBoxH = totalAdvContentH + advBoxPadding + 6;
+    const totalAdvContentH  = advTitleH + advTitleToTextGap + adviceMeasure.totalHeight;
+    const advBoxPadding     = 8;
+    const advBoxH = totalAdvContentH + advBoxPadding;
 
-    // ==========================================
-    // [간격 수치 조정 - 하단 겹침 차단]
-    // ==========================================
+    // 요소 사이 간격 수치 조정
     const gapMajorToTitle = 14;   
-    const gapTitleToImg = 28;     
-    const gapImgToKw = 42;        
-    const gapKwToReading = 42;    
-    const gapReadingToAdv = -12;
+    const gapTitleToImg   = 28;     
+    const gapImgToKw      = 42;        
+    const gapKwToReading  = 42;    
+    const gapReadingToAdv = -15;
 
     // 전체 콘텐츠 총 세로 높이 계산
     const totalContentHeight = 
@@ -280,13 +277,13 @@
     // 3. Header Section
     ctx.textBaseline = 'middle';
     
-    ctx.fillStyle = '#e8c868';
-    ctx.font = '700 24px "Cinzel", serif, sans-serif';
+    ctx.fillStyle  = '#e8c868';
+    ctx.font      = '700 24px "Cinzel", serif, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(`✦ MAJOR ARCANA · NO. ${card.roman} ✦`, width / 2, majorY);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 46px "Cinzel", "Playfair Display", serif';
+    ctx.font     = 'bold 46px "Cinzel", "Playfair Display", serif';
     ctx.fillText((card.name || '').toUpperCase(), width / 2, titleY);
 
     // 4. Centerpiece Tarot Card Artwork (510px)
@@ -295,8 +292,8 @@
 
     if (cardArtImg) {
       ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
-      ctx.shadowBlur = 24;
+      ctx.shadowColor   = 'rgba(0, 0, 0, 0.75)';
+      ctx.shadowBlur    = 24;
       ctx.shadowOffsetY = 8;
       ctx.drawImage(cardArtImg, imgX, imgY, imgW, imgH);
       ctx.restore();
@@ -315,8 +312,8 @@
     keywords.forEach((kw, i) => {
       const pW = kwWidths[i];
       ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
-      ctx.shadowBlur = 10;
+      ctx.shadowColor   = 'rgba(0, 0, 0, 0.55)';
+      ctx.shadowBlur    = 10;
       ctx.shadowOffsetY = 3;
 
       ctx.fillStyle = 'rgba(36, 20, 56, 0.96)';
@@ -334,8 +331,8 @@
       ctx.lineWidth = 1.8;
       ctx.stroke();
 
-      ctx.fillStyle = '#fff6d6';
-      ctx.textAlign = 'center';
+      ctx.fillStyle     = '#fff6d6';
+      ctx.textAlign    = 'center';
       ctx.textBaseline = 'alphabetic';
       ctx.fillText(`# ${kw}`, startKwX + pW / 2, kwY + 32);
 
@@ -369,21 +366,21 @@
     ctx.fill();
 
     ctx.strokeStyle = 'rgba(243, 207, 122, 0.8)';
-    ctx.lineWidth = 1.8;
+    ctx.lineWidth   = 1.8;
     ctx.stroke();
 
     // Advice Header Title & Quote
     const advContentStartY = advBoxY + (advBoxH - totalAdvContentH) / 2 + 4;
     const advTitleY = advContentStartY + advTitleH;
 
-    ctx.fillStyle = '#f3cf7a';
-    ctx.font = '700 26px "Gowun Batang", "Cinzel", serif';
-    ctx.textAlign = 'center';
+    ctx.fillStyle     = '#f3cf7a';
+    ctx.font         = '700 26px "Gowun Batang", "Cinzel", serif';
+    ctx.textAlign    = 'center';
     ctx.textBaseline = 'alphabetic';
     ctx.fillText("✦  NEW YEAR'S ADVICE ✦", width / 2, advTitleY);
 
     ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
-    ctx.lineWidth = 1;
+    ctx.lineWidth   = 1;
     ctx.beginPath();
     ctx.moveTo(width / 2 - 130, advTitleY + 12);
     ctx.lineTo(width / 2 + 130, advTitleY + 12);

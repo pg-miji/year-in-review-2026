@@ -53,7 +53,7 @@
   justify-content: center;
   cursor: pointer;
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
-  animation: crystalFloat 4.5s ease-in-out infinite alternate;
+  animation: crystalFloat 2.6s ease-in-out infinite alternate;
 }
 
 .crystal-orb:hover {
@@ -202,7 +202,7 @@
 /* Keyframe Animations */
 @keyframes crystalFloat {
   0% { transform: translateY(0px); }
-  100% { transform: translateY(-7px); }
+  100% { transform: translateY(-8px); }
 }
 
 @keyframes nebulaSpin {
