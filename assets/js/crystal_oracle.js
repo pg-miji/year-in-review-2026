@@ -75,6 +75,41 @@ function resolveCategory(worryText, selectedCategory) {
   return 'random';
 }
 
+const SERIOUS_CATALOG = {
+  work: [
+    '길이 보이지 않을 때는 속도를 늦추고 발밑을 먼저 확인해 보세요. 지금 겪고 있는 혼란은 헤매는 것이 아니라, 나에게 진짜 맞는 방향을 신중하게 조율해 나가는 과정입니다.',
+    '모든 선택이 완벽할 수는 없지만, 스스로 내린 결정을 좋은 결과로 가꾸어 나갈 힘은 분명 당신 안에 있습니다. 조급해하지 말고 오늘 할 수 있는 작은 한 걸음부터 묵묵히 내디뎌 보세요.',
+    '남들의 속도에 맞추려다 보면 내 보폭을 잃어버리기 쉽습니다. 조금 늦어 보여도 나만의 리듬으로 쌓아 올린 시간은 결코 배신하지 않아요.'
+  ],
+  relationship: [
+    '모든 사람에게 좋은 사람일 수는 없고, 그럴 필요도 없습니다. 내 마음을 갉아먹는 관계에 에너지를 쏟기보다, 서로를 있는 그대로 아껴주는 사람들에게 온기를 나누세요.',
+    '상대방의 마음을 억지로 바꾸려 애쓰기보다, 내가 편안하게 머물 수 있는 거리를 찾아보세요. 건강한 관계는 적당한 거리와 존중에서 시작됩니다.',
+    '마음을 다 주어도 어긋나는 인연이 있습니다. 그것은 당신의 부족함 때문이 아니라 그저 서로의 시절이 달랐을 뿐이니, 너무 자책하지 마세요.'
+  ],
+  money: [
+    '불안할 때일수록 현재 내가 통제할 수 있는 것과 없는 것을 명확히 구분해 보세요. 작은 소비 습관 하나를 단정하게 정리하는 것부터 마음에 안정이 찾아올 수 있습니다.',
+    '돈은 삶을 지탱하는 중요한 도구이지만, 당신의 모든 가치를 매기는 잣대는 될 수 없습니다. 눈앞의 숫자에 압도되지 말고 차근차근 계획을 세워나가 보세요.'
+  ],
+  mind: [
+    '지금 느끼는 불안은 그만큼 내 삶을 소중히 여기고 잘 해내고 싶다는 간절한 마음의 반증입니다. 자책 대신, 그동안 애써온 스스로의 마음에 먼저 따뜻한 쉼을 건네주세요.',
+    '모든 짐을 한꺼번에 짊어지려 하지 마세요. 때로는 내려놓는 것도 용기이고, 잠시 멈춰 서서 숨을 고르는 것도 삶을 지키는 훌륭한 지혜입니다.',
+    '지나온 날들의 후회보다 앞으로 마주할 날들의 가능성에 시선을 두어보세요. 당신은 이미 수많은 계절을 견뎌내며 여기까지 온 단단한 사람입니다.'
+  ],
+  rest: [
+    '몸과 마음이 보내는 신호를 무시한 채 계속 달릴 수는 없습니다. 지금 당신에게 가장 필요한 것은 자책이나 걱정이 아니라, 아무런 죄책감 없는 온전한 휴식입니다.',
+    '에너지가 바닥났을 땐 억지로 힘을 내지 않아도 괜찮아요. 방전된 배터리처럼 그저 푹 쉬고 나면, 마음은 다시 스스로 일어설 힘을 채워 넣을 것입니다.'
+  ],
+  random: [
+    '마음이 복잡할 땐 가장 단순하고 본질적인 질문으로 돌아가 보세요. 지금 이 순간 나를 가장 편안하고 온전하게 만드는 선택이 무엇인지 조용히 귀 기울여 보세요.',
+    '지금 당장 답이 나오지 않는 고민이라면 억지로 결론짓지 말고 마음 한쪽에 묻어두세요. 일상을 성실하게 살아가다 보면 어느 날 자연스럽게 답이 찾아올 거예요.',
+    '인생의 변곡점마다 마주하는 혼란은 새로운 가능성을 열어두기 위한 빈 공간일 수 있습니다. 서두르지 말고 천천히 당신만의 해답을 찾아가세요.'
+  ]
+};
+
+SERIOUS_CATALOG.future = SERIOUS_CATALOG.work;
+SERIOUS_CATALOG.self = SERIOUS_CATALOG.mind;
+SERIOUS_CATALOG.condition = SERIOUS_CATALOG.rest;
+
 export function getLocalCrystalAnswer(worry, previousAnswer = '', category = '') {
   const trimmed = (worry || '').trim();
   if (!trimmed) {
@@ -85,6 +120,17 @@ export function getLocalCrystalAnswer(worry, previousAnswer = '', category = '')
     if (pattern.test(trimmed)) {
       return CRISIS_RESPONSE;
     }
+  }
+
+  // '진지하게'로 시작하는 경우 진지하고 사려 깊은 답변 반환
+  if (/^진지하게/i.test(trimmed)) {
+    const catKey = resolveCategory(trimmed, category);
+    let sPool = [...(SERIOUS_CATALOG[catKey] || []), ...SERIOUS_CATALOG.random];
+    if (previousAnswer) {
+      sPool = sPool.filter(a => a !== previousAnswer);
+    }
+    if (sPool.length === 0) sPool = SERIOUS_CATALOG.random;
+    return sPool[Math.floor(Math.random() * sPool.length)];
   }
 
   const catKey = resolveCategory(trimmed, category);
