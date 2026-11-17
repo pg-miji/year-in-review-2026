@@ -238,7 +238,7 @@
           </div>
           <div class="feature-guide-item">
             <strong>2. 풍등과 불꽃놀이</strong>
-            <span>풍등을 날리고 밤하늘을 수놓는 불꽃놀이를 즐겨보세요.</span>
+            <span>풍등을 날리고 하늘을 수놓는 불꽃놀이를 즐겨보세요.</span>
           </div>
           <div class="feature-guide-item">
             <strong>3. 특별한 시간 이벤트</strong>
@@ -246,7 +246,7 @@
           </div>
           <div class="feature-guide-item">
             <strong>4. 숨겨진 황금 티켓</strong>
-            <span>은하재 어딘가에 숨겨진 황금 티켓을 찾아 뜻밖의 행운을 만나보세요.</span>
+            <span>어딘가에 숨겨진 황금 티켓을 찾아 뜻밖의 행운을 만나보세요.</span>
           </div>
           <div class="feature-guide-item">
             <strong>5. 시간에 따라 달라지는 풍경</strong>
@@ -269,7 +269,7 @@
     <!-- Golden Ticket Discovery Modal -->
     <div id="golden-ticket-modal" class="ticket-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="ticket-modal-title">
       <div class="ticket-modal-card">
-        <div class="ticket-modal-icon" aria-hidden="true">🎫✨</div>
+        <div class="ticket-modal-icon" aria-hidden="true">🎫</div>
         <h2 id="ticket-modal-title" class="ticket-modal-title">작은 행운을 발견했어요!</h2>
         <p class="ticket-modal-body">
           축하해요! 숨겨진 황금 티켓의 주인공이 되었네요.<br>
@@ -282,7 +282,7 @@
     <!-- Bottom Compact Action Dock (Pure Real-Time Feature Buttons Only) -->
     <nav id="action-dock" class="action-dock" aria-label="은하재 주요 기능">
       <div class="action-dock-buttons">
-        <button type="button" id="btn-launch-firework" class="action-btn-gold">
+        <button type="button" id="btn-launch-firework" class="action-btn">
           <span>🎆</span>
           <span>불꽃</span>
         </button>
@@ -313,8 +313,8 @@
       <div class="webgl-fallback-card">
         <h2>은하재로 향하는 길이 잠시 닫혔어요</h2>
         <p id="webgl-fallback-msg">
-          지금은 은하재의 하늘을 열어둘 수 없는 상태예요.<br>
-          잠시 후 시간 조각 상점으로 다시 모셔다 드릴게요.
+          지금은 은하재의 문을 열어둘 수 없는 상태예요.<br>
+          잠시 후 상점으로 다시 안내해 드릴게요.
         </p>
         <a href="../index.html" class="btn-vintage btn-gold">상점으로 돌아가기</a>
       </div>
@@ -326,12 +326,12 @@
     window.__handleEunhajaeFailure = function (err, reason) {
       if (failureHandled) return;
       failureHandled = true;
-      console.log('[은하재] 공간 진입 실패 사유:', reason || 'unknown');
+      console.log('[은하재] 진입 실패 사유:', reason || 'unknown');
       if (err) console.error('[은하재] 상세 오류:', err);
       const fallbackEl = document.getElementById('webgl-fallback');
       const msgEl = document.getElementById('webgl-fallback-msg');
       if (msgEl) {
-        msgEl.innerHTML = '지금은 은하재의 밤하늘을 잠시 불러오지 못했어요.<br>잠시 후 시간 조각 상점으로 안내해 드릴게요.';
+        msgEl.innerHTML = '은하재로 향하는 길이 잠시 닫혔어요.<br>잠시 후 상점으로 안내해 드릴게요.';
       }
       if (fallbackEl) {
         fallbackEl.classList.add('is-visible');

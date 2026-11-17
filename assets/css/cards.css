@@ -6,7 +6,7 @@
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
-  margin-bottom: 16px !important;
+  margin-bottom: 8px !important;
 }
 
 .tarot-spread-section {
@@ -26,8 +26,8 @@
   position: relative;
   width: 100%;
   max-width: 1060px;
-  height: 440px;
-  margin: 10px auto 20px;
+  height: 380px;
+  margin: 4px auto 12px;
   background: radial-gradient(ellipse at 50% 90%, rgba(65, 36, 95, 0.4) 0%, rgba(20, 14, 30, 0.15) 60%, transparent 80%);
   border-radius: 50% 50% 0 0 / 20% 20% 0 0;
   overflow: visible;

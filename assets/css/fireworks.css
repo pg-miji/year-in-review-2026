@@ -894,8 +894,9 @@ html.fireworks-page body {
 
 .action-btn.is-active {
   border-color: var(--gold-light);
-  background: rgba(68, 46, 102, 0.96);
-  color: #ffe9a8;
+  background: linear-gradient(135deg, rgba(82, 52, 126, 0.98) 0%, rgba(122, 92, 42, 0.95) 100%);
+  color: #fff6df;
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.4);
 }
 
 .action-btn-compact {
@@ -938,11 +939,12 @@ html.fireworks-page body {
 .mobile-move-pad {
   display: none;
   position: fixed;
-  left: 12px;
-  bottom: calc(max(12px, env(safe-area-inset-bottom)) + 64px);
+  right: 14px;
+  left: auto;
+  bottom: calc(max(12px, env(safe-area-inset-bottom)) + 70px);
   z-index: 13;
-  width: 96px;
-  height: 96px;
+  width: 116px;
+  height: 116px;
   touch-action: none;
 }
 
@@ -1040,10 +1042,11 @@ html.fireworks-page body {
 
   .mobile-move-pad {
     display: block;
-    left: 10px;
-    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 66px);
-    width: 92px;
-    height: 92px;
+    right: 12px;
+    left: auto;
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 74px);
+    width: 112px;
+    height: 112px;
   }
 
   .dock-text-input {
@@ -1057,31 +1060,31 @@ html.fireworks-page body {
   }
 
   .hill-brand-link {
-    padding: 5px 9px;
-    min-height: 36px;
+    padding: 6px 11px;
+    min-height: 40px;
   }
 
   .hill-brand-title {
-    font-size: 12.5px;
+    font-size: 13.5px;
   }
 
   .hill-hud-chip {
-    min-height: 36px;
-    padding: 5px 8px;
-    font-size: 11px;
+    min-height: 40px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
 
   .hill-back-btn {
-    min-height: 36px;
-    padding: 5px 8px;
-    font-size: 11px;
+    min-height: 40px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
 
   .hill-sound-btn,
   .hill-top-btn {
-    height: 36px;
-    min-width: 36px;
-    padding: 0 8px;
+    height: 40px;
+    min-width: 40px;
+    padding: 0 10px;
   }
 
   .action-dock {

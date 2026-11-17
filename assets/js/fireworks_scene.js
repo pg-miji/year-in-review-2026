@@ -1187,14 +1187,14 @@ export async function initEunhajaeScene() {
     if (!btnToggleSit || !sitBtnLabel) return;
     btnToggleSit.classList.toggle('is-active', selfState.sitting);
     btnToggleSit.setAttribute('aria-pressed', String(selfState.sitting));
-    sitBtnLabel.textContent = selfState.sitting ? '일어서기' : '앉기';
+    sitBtnLabel.textContent = '앉기';
   }
 
   function updateDanceButtonUi() {
     if (!btnToggleDance || !danceBtnLabel) return;
     btnToggleDance.classList.toggle('is-active', selfState.dancing);
     btnToggleDance.setAttribute('aria-pressed', String(selfState.dancing));
-    danceBtnLabel.textContent = selfState.dancing ? '춤 멈춤' : '춤';
+    danceBtnLabel.textContent = '춤';
   }
 
   function stopDancing() {
@@ -2121,9 +2121,10 @@ export async function initEunhajaeScene() {
           ticketModalOpen = true;
           ticketModal?.classList.add('is-open');
           audio.ensureContext();
+          audio.playMysticChime();
         } else if (npcBubbleEl) {
           npcBubbleSpeakerEl.style.display = 'none';
-          npcBubbleTextEl.textContent = '반짝이는 무언가가 있어요. 더 가까이 다가가 볼까요? ✨';
+          npcBubbleTextEl.textContent = '반짝이는 무언가가 있어요. 가까이 다가가 볼까요?';
           activeBubbleNpc = {
             getWorldPos: () => ({ x: ticketSpot.x, y: ticketY + 0.55, z: ticketSpot.z })
           };
@@ -2155,18 +2156,13 @@ export async function initEunhajaeScene() {
       }
     }
 
-    // 2. Check Cliffside Dog (몽이) -> Puppy Bark + Excited Tail Wag + Bubble
+    // 2. Check Cliffside Dog (몽이) -> Puppy Bark + Excited Tail Wag (No dialogue)
     const dogHits = _raycaster.intersectObject(cliffDog, true);
     if (dogHits.length > 0) {
       audio.ensureContext();
       puppyExcitedUntilMs = performance.now() + 1800;
       audio.playPuppyBark();
       clickRipple.trigger(1.65, -9.15, 0xffd166);
-      showNpcDialogue('mongi', () => ({
-        x: 1.65,
-        y: groundHeightAt(1.65, -9.15) + 0.78,
-        z: -9.15
-      }));
       return;
     }
 

@@ -148,7 +148,7 @@ export class FireworksAudioEngine {
   }
 
   updateSpatialAmbient(stallDistance, stallPan = 0) {
-    if (!this.ctx || !this._sizzleGain || this.muted || !this.ambientEnabled || document.hidden) return;
+    return;
     try {
       const now = this.ctx.currentTime;
       const dist = Math.max(0, Number(stallDistance) || 0);
@@ -477,6 +477,28 @@ export class FireworksAudioEngine {
         gain.connect(this.sfxGain);
         osc.start(now + idx * 0.07);
         osc.stop(now + idx * 0.07 + 1.55);
+      });
+    } catch (e) {}
+  }
+
+  playMysticChime() {
+    const ctx = this.ensureContext();
+    if (!ctx || this.muted || !this.sfxEnabled) return;
+
+    try {
+      const now = ctx.currentTime;
+      [659.25, 830.61, 987.77, 1318.5].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+        gain.gain.setValueAtTime(0.0001, now + idx * 0.08);
+        gain.gain.linearRampToValueAtTime(0.14, now + idx * 0.08 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0005, now + idx * 0.08 + 1.6);
+        osc.connect(gain);
+        gain.connect(this.sfxGain);
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + 1.65);
       });
     } catch (e) {}
   }
