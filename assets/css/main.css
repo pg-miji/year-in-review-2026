@@ -241,17 +241,18 @@
   }
 
   .portal-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 12px;
     max-width: 460px;
     align-items: stretch;
   }
 
   .portal-card {
-    width: 100%;
+    flex: 0 0 calc(50% - 6px);
+    width: calc(50% - 6px);
     max-width: none;
-    flex: none;
     min-height: 158px;
     justify-content: center;
     padding: 18px 10px 16px;
@@ -285,30 +286,6 @@
   .portal-grid .portal-desc {
     display: none;
   }
-
-  .portal-card.fireworks-card-portal {
-    grid-column: 1 / -1;
-    min-height: 124px;
-    flex-direction: row;
-    justify-content: center;
-    gap: 14px;
-    padding: 16px 18px;
-    text-align: left;
-  }
-
-  .portal-card.fireworks-card-portal .portal-badge {
-    position: static;
-    margin-bottom: 4px;
-  }
-
-  .portal-card.fireworks-card-portal .portal-icon-wrap {
-    margin-bottom: 0;
-    flex-shrink: 0;
-  }
-
-  .portal-card.fireworks-card-portal .portal-title {
-    font-size: 18px;
-  }
 }
 
 @media (max-width: 380px) {
@@ -317,6 +294,8 @@
   }
 
   .portal-card {
+    flex: 0 0 calc(50% - 5px);
+    width: calc(50% - 5px);
     min-height: 146px;
     padding: 16px 8px 14px;
   }
