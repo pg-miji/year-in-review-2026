@@ -32,6 +32,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: crystalFloat 2.6s ease-in-out infinite alternate;
 }
 
 /* The Glass Orb */
@@ -48,12 +49,17 @@
     inset 8px 8px 18px rgba(255, 255, 255, 0.4);
   border: 1.5px solid rgba(220, 185, 255, 0.5);
   overflow: hidden;
+  clip-path: circle(50% at 50% 50%);
+  -webkit-clip-path: circle(50% at 50% 50%);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(circle, #ffffff 99%, transparent 100%);
+  isolation: isolate;
+  transform: translateZ(0);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
-  animation: crystalFloat 2.6s ease-in-out infinite alternate;
 }
 
 .crystal-orb:hover {
@@ -68,8 +74,9 @@
 /* Inner Cosmic Nebula */
 .crystal-nebula {
   position: absolute;
-  width: 120%;
-  height: 120%;
+  inset: -6%;
+  width: 112%;
+  height: 112%;
   background: 
     radial-gradient(circle at 40% 60%, rgba(216, 180, 254, 0.4) 0%, transparent 50%),
     radial-gradient(circle at 65% 35%, rgba(245, 158, 11, 0.25) 0%, transparent 45%),
@@ -652,6 +659,7 @@
   color: var(--cream-muted);
   line-height: 1.5;
   word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 /* The Oracle Revelation Card */
@@ -699,6 +707,7 @@
   color: #fffbf0;
   margin: 10px 0 10px;
   word-break: keep-all;
+  overflow-wrap: anywhere;
   text-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
 }
 

@@ -16,8 +16,7 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Gowun+Batang:wght@400;700&family=Marcellus&family=Noto+Serif+KR:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Song+Myung&display=swap" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Gowun+Batang:wght@400;700&display=swap" />
   <link rel="stylesheet" href="../assets/css/theme.css" />
   <link rel="stylesheet" href="../assets/css/photobooth.css" />
   <script>
@@ -56,7 +55,7 @@
            STEP 1: Frame Selection Stage
            ============================================== -->
       <section id="stage-frame-select" class="frame-selection-stage">
-        <h2 class="selection-heading">원하는 프레임을 선택해주세요</h2>
+        <h2 class="selection-heading">원하는 프레임을 선택하세요</h2>
         <p class="selection-subtext">프레임을 선택하면 즉시 촬영 부스가 열립니다.</p>
 
         <div class="frame-card-grid" role="list">
@@ -163,7 +162,7 @@
                   <span class="aux-text">카메라 전환</span>
                 </button>
               </div>
-              <p class="shutter-helper-tip">Space 키 또는 셔터 버튼을 눌러 촬영하세요</p>
+              <p class="shutter-helper-tip">스페이스 키 또는 셔터 버튼을 눌러 촬영하세요</p>
             </div>
 
             <!-- 4. Navigation & Retake Utility Deck -->
@@ -202,6 +201,10 @@
             <span class="btn-icon">📥</span>
             <span>사진 다운로드</span>
           </button>
+          <button type="button" id="btn-share-photo-mobile" class="btn-vintage btn-gold" style="display: none;">
+            <span class="btn-icon">📤</span>
+            <span>사진 저장 / 공유</span>
+          </button>
           <button type="button" id="btn-share-mobile-qr" class="btn-vintage btn-velvet" title="스마트폰으로 QR 스캔하여 저장" onclick="window.openPhotoboothQrModal && window.openPhotoboothQrModal()">
             <span class="btn-icon">📱</span>
             <span>QR 코드</span>
@@ -233,11 +236,18 @@
           </div>
 
           <div id="qr-box-container" class="qr-content-container" style="display: flex; flex-direction: column; align-items: center;">
-            <div class="qr-canvas-card">
-              <canvas id="qr-canvas" class="qr-canvas" width="200" height="200" style="cursor:pointer;" title="클릭하면 사진 다운로드 페이지가 열립니다"></canvas>
-            </div>
+            <a id="qr-direct-link" href="#" target="_blank" rel="noopener noreferrer" class="qr-canvas-card" title="클릭하면 사진 다운로드 페이지가 열립니다">
+              <canvas id="qr-canvas" class="qr-canvas" width="200" height="200"></canvas>
+            </a>
             <p class="qr-hint-text">💡 QR 코드를 클릭하면 새 탭에서 사진을 열 수 있습니다</p>
             <div class="qr-expiry-notice" id="qr-expiry-notice">⏱️ 모바일 전송 링크는 1시간 동안 유지됩니다</div>
+          </div>
+
+          <div id="qr-error-box" class="qr-error-box" style="display: none;">
+            <p class="qr-error-msg">임시 전송 링크 생성이 지연되고 있습니다.<br>'사진 다운로드' 버튼으로 기기에 직접 저장해 주세요.</p>
+            <button type="button" id="btn-qr-retry" class="btn-vintage btn-velvet" style="font-size: 13px; padding: 8px 18px; min-height: 38px;">
+              🔄 다시 시도
+            </button>
           </div>
 
           <div style="display: flex; justify-content: center; margin-top: 18px;">

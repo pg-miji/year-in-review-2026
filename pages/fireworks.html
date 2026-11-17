@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko" class="fireworks-page">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>은하재 - 시간 조각 상점</title>
+  <meta name="description" content="언덕 위에서 탁 트인 하늘을 바라보며 불꽃놀이와 소원 풍등을 즐겨보세요." />
+  <meta property="og:title" content="은하재 - 시간 조각 상점" />
+  <meta property="og:description" content="언덕 위에서 탁 트인 하늘을 바라보며 불꽃놀이와 소원 풍등을 즐겨보세요." />
+  <link rel="icon" href="../assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="../assets/icons/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-icon.png" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#0b0814" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Gowun+Batang:wght@400;700&display=swap" />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
+  <link rel="stylesheet" href="../assets/css/fireworks.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "../assets/vendor/three/build/three.module.js",
+        "three/addons/": "../assets/vendor/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <main class="hill-stage">
+    <!-- 3D WebGL Canvas -->
+    <canvas id="fireworks-canvas" aria-label="은하재 공간"></canvas>
+
+    <!-- Projected Nameplates & Floating Wish Bubbles -->
+    <div id="world-labels-layer" class="world-labels-layer" aria-hidden="true"></div>
+
+    <!-- Top Minimal HUD -->
+    <header class="hill-topbar">
+      <div class="hill-topbar-left">
+        <a href="../index.html" class="hill-brand-link" title="상점으로 돌아가기">
+          <img src="../assets/icons/favicon.svg" alt="" class="shop-header-icon" width="22" height="22" />
+          <span class="hill-brand-title">은하재</span>
+        </a>
+      </div>
+
+      <div class="hill-topbar-right">
+        <button type="button" id="btn-back-to-hill" class="hill-back-btn is-hidden" title="언덕 시점으로 돌아가기">⛰️ 언덕으로</button>
+        <button type="button" id="btn-toggle-guide" class="hill-top-btn" title="기능 및 조작 안내" aria-expanded="false" aria-label="기능 및 조작 안내 열기">
+          <span>🧭</span>
+          <span class="topbar-btn-label">안내</span>
+        </button>
+        <button type="button" id="btn-toggle-settings" class="hill-top-btn" title="환경 설정" aria-expanded="false" aria-label="환경 설정 열기">
+          <span>⚙️</span>
+          <span class="topbar-btn-label">설정</span>
+        </button>
+        <button type="button" id="btn-sound-toggle" class="hill-sound-btn" title="전체 소리 켜기/끄기" aria-pressed="false" aria-label="소리 켜기 또는 끄기">
+          <span id="sound-icon">🔊</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Subtle First-Visit Sky Interaction Prompt -->
+    <div id="sky-hint-banner" class="sky-hint-banner">
+      하늘을 터치하면 그 자리에 불꽃이 솟아오릅니다
+    </div>
+
+    <!-- Accessible Status Mirror for Midnight Countdown -->
+    <div id="midnight-countdown" class="sr-only" aria-live="polite"></div>
+
+    <!-- Mobile Compact Touch D-Pad -->
+    <div id="mobile-move-pad" class="mobile-move-pad" aria-label="언덕 이동 패드">
+      <div class="dpad-grid">
+        <div class="dpad-spacer"></div>
+        <button type="button" class="dpad-btn" data-dir="up" aria-label="앞으로 이동">▲</button>
+        <div class="dpad-spacer"></div>
+        <button type="button" class="dpad-btn" data-dir="left" aria-label="왼쪽으로 이동">◀</button>
+        <div class="dpad-spacer"></div>
+        <button type="button" class="dpad-btn" data-dir="right" aria-label="오른쪽으로 이동">▶</button>
+        <div class="dpad-spacer"></div>
+        <button type="button" class="dpad-btn" data-dir="down" aria-label="뒤로 이동">▼</button>
+        <div class="dpad-spacer"></div>
+      </div>
+    </div>
+
+    <!-- Separate Wish Lantern Sheet -->
+    <section id="wish-sheet" class="floating-sheet" aria-label="소원 풍등 띄우기">
+      <form id="wish-form" class="wish-drawer-form">
+        <input type="text" id="input-wish" class="dock-text-input" maxlength="36" placeholder="새해 소원을 적어 하늘로 띄워보세요 (최대 36자)" />
+        <button type="submit" class="action-btn-gold">띄우기</button>
+        <button type="button" id="btn-close-wish" class="sheet-close-btn" aria-label="닫기">✕</button>
+      </form>
+    </section>
+
+    <!-- Separate Left-Hill Bungeoppang Shop Sheet -->
+    <section id="bungeoppang-sheet" class="floating-sheet" aria-label="붕어빵 가게">
+      <div class="bungeoppang-sheet-header">
+        <div>
+          <strong class="bungeoppang-sheet-title">🐟 붕어빵 가게</strong>
+          <p class="bungeoppang-sheet-desc">갓 구운 따뜻한 붕어빵을 하나 골라 맛보며 불꽃을 구경해보세요.</p>
+        </div>
+        <button type="button" id="btn-close-bungeoppang" class="sheet-close-btn" aria-label="붕어빵 가게 닫기">✕</button>
+      </div>
+      <div class="bungeoppang-choices">
+        <button type="button" class="bungeoppang-choice-btn" data-flavor="redbean">
+          <span class="bungeoppang-choice-emoji">🫘</span>
+          <span class="bungeoppang-choice-text">
+            <strong>팥 붕어빵</strong>
+            <small>달콤하고 구수한 단팥 가득</small>
+          </span>
+        </button>
+        <button type="button" class="bungeoppang-choice-btn" data-flavor="custard">
+          <span class="bungeoppang-choice-emoji">🍮</span>
+          <span class="bungeoppang-choice-text">
+            <strong>슈크림 붕어빵</strong>
+            <small>부드럽고 고소한 바닐라 커스터드</small>
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Separate Tabbed Settings Sheet (Anchored under top-right bar) -->
+    <section id="settings-sheet" class="floating-sheet floating-sheet-top" aria-label="환경 설정">
+      <div class="settings-tabs-bar">
+        <div class="settings-tabs-list" role="tablist">
+          <button type="button" class="settings-tab-btn is-active" data-tab="firework" role="tab" aria-selected="true">🎆 불꽃</button>
+          <button type="button" class="settings-tab-btn" data-tab="avatar" role="tab" aria-selected="false">🧣 아바타</button>
+          <button type="button" class="settings-tab-btn" data-tab="audio" role="tab" aria-selected="false">🎵 분위기</button>
+        </div>
+        <button type="button" id="btn-close-settings" class="sheet-close-btn" aria-label="설정 닫기">✕</button>
+      </div>
+
+      <!-- Tab 1: Firework Style Settings -->
+      <div id="tab-panel-firework" class="settings-tab-panel is-active" role="tabpanel">
+        <div class="setting-row">
+          <span class="setting-label">불꽃 모양</span>
+          <div class="chip-row" role="group" aria-label="불꽃 모양 선택">
+            <button type="button" class="option-chip is-selected" data-burst="chrysanthemum">국화</button>
+            <button type="button" class="option-chip" data-burst="willow">버들</button>
+            <button type="button" class="option-chip" data-burst="ring">별고리</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">불꽃 색상</span>
+          <div class="chip-row" role="group" aria-label="불꽃 색상 견본 선택">
+            <button type="button" class="color-swatch-btn is-selected" data-palette="gold" style="background: linear-gradient(135deg, #fff2b2 0%, #ffd166 55%, #ff9f1c 100%);" title="황금빛 불꽃" aria-label="황금빛 불꽃" aria-pressed="true"></button>
+            <button type="button" class="color-swatch-btn" data-palette="aurora" style="background: linear-gradient(135deg, #64dfdf 0%, #80ffdb 50%, #9d75f0 100%);" title="오로라 불꽃" aria-label="오로라 불꽃" aria-pressed="false"></button>
+            <button type="button" class="color-swatch-btn" data-palette="rose" style="background: linear-gradient(135deg, #ffcad4 0%, #ff8fab 50%, #c77dff 100%);" title="로즈핑크 불꽃" aria-label="로즈핑크 불꽃" aria-pressed="false"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Avatar & Profile Settings -->
+      <div id="tab-panel-avatar" class="settings-tab-panel" role="tabpanel">
+        <div class="setting-row">
+          <span class="setting-label">닉네임</span>
+          <input type="text" id="input-nickname" class="dock-text-input" maxlength="14" placeholder="닉네임 (최대 14자)" />
+          <button type="button" id="btn-save-profile" class="action-btn">적용</button>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">외투 색상</span>
+          <div class="chip-row">
+            <button type="button" class="color-swatch-btn is-selected" data-coat="#c94c4c" style="background:#c94c4c;" aria-label="와인 레드 외투"></button>
+            <button type="button" class="color-swatch-btn" data-coat="#3c6e9c" style="background:#3c6e9c;" aria-label="미드나잇 블루 외투"></button>
+            <button type="button" class="color-swatch-btn" data-coat="#537a5a" style="background:#537a5a;" aria-label="포레스트 그린 외투"></button>
+            <button type="button" class="color-swatch-btn" data-coat="#7c5295" style="background:#7c5295;" aria-label="라벤더 퍼플 외투"></button>
+            <button type="button" class="color-swatch-btn" data-coat="#c88a36" style="background:#c88a36;" aria-label="앰버 골드 외투"></button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">풍등 색상</span>
+          <div class="chip-row">
+            <button type="button" class="color-swatch-btn is-selected" data-lantern="#ffd166" style="background:#ffd166;" aria-label="따뜻한 금빛 등불"></button>
+            <button type="button" class="color-swatch-btn" data-lantern="#ff9f1c" style="background:#ff9f1c;" aria-label="주홍빛 등불"></button>
+            <button type="button" class="color-swatch-btn" data-lantern="#90e0ef" style="background:#90e0ef;" aria-label="달빛 하늘 등불"></button>
+            <button type="button" class="color-swatch-btn" data-lantern="#ffafcc" style="background:#ffafcc;" aria-label="벚꽃빛 등불"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Audio, Environment Mode, Time-of-Day & Countdown Settings -->
+      <div id="tab-panel-audio" class="settings-tab-panel" role="tabpanel">
+        <div class="setting-row">
+          <span class="setting-label">분위기</span>
+          <div class="chip-row" role="group" aria-label="풍등 또는 설경 모드 선택">
+            <button type="button" class="option-chip is-selected" data-envmode="lantern" aria-pressed="true">🏮 풍등</button>
+            <button type="button" class="option-chip" data-envmode="snow" aria-pressed="false">❄️ 설경</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">시간대</span>
+          <div class="chip-row setting-chip-row-wrap" role="group" aria-label="하늘 시간대 선택">
+            <button type="button" class="option-chip is-selected" data-time="auto">자동</button>
+            <button type="button" class="option-chip" data-time="day">낮</button>
+            <button type="button" class="option-chip" data-time="sunset">노을</button>
+            <button type="button" class="option-chip" data-time="night">밤</button>
+            <span id="time-mode-status" class="countdown-status-text time-mode-status">실시간 맞춤</span>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">배경음악</span>
+          <div class="chip-row">
+            <button type="button" id="btn-bgm-toggle" class="option-chip is-selected" aria-pressed="true">BGM 켜짐</button>
+            <input type="range" id="range-bgm-volume" class="volume-range" min="0" max="100" value="34" aria-label="배경음악 음량" />
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">효과음</span>
+          <div class="chip-row">
+            <button type="button" id="btn-sfx-toggle" class="option-chip is-selected" aria-pressed="true">불꽃 소리 켜짐</button>
+            <button type="button" id="btn-ambient-toggle" class="option-chip is-selected" aria-pressed="true">환경음 켜짐</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">자정 행사</span>
+          <div class="chip-row" style="justify-content: space-between;">
+            <span id="next-midnight-timer" class="countdown-status-text">매일 23:59:50 자동 시작</span>
+            <button type="button" id="btn-preview-countdown" class="option-chip">미리보기</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Separate Feature & Controls Guide Sheet (Anchored under top-right bar) -->
+    <section id="guide-sheet" class="floating-sheet floating-sheet-top" aria-label="은하재 안내">
+      <div class="guide-sheet-header">
+        <strong class="guide-sheet-title">🧭 은하재 안내</strong>
+        <button type="button" id="btn-close-guide" class="sheet-close-btn" aria-label="안내 닫기">✕</button>
+      </div>
+
+      <div class="guide-section">
+        <h3 class="guide-section-heading">✨ 기능 안내</h3>
+        <div class="feature-guide-list">
+          <div class="feature-guide-item">
+            <strong>1. 다양한 캐릭터 만나기</strong>
+            <span>은하재 곳곳의 캐릭터들에게 다가가 말을 걸어보세요.</span>
+          </div>
+          <div class="feature-guide-item">
+            <strong>2. 풍등과 불꽃놀이</strong>
+            <span>풍등을 날리고 밤하늘을 수놓는 불꽃놀이를 즐겨보세요.</span>
+          </div>
+          <div class="feature-guide-item">
+            <strong>3. 특별한 시간 이벤트</strong>
+            <span>자정이 되기 전 시작되는 카운트다운을 경험해 보세요.</span>
+          </div>
+          <div class="feature-guide-item">
+            <strong>4. 숨겨진 황금 티켓</strong>
+            <span>은하재 어딘가에 숨겨진 황금 티켓을 찾아 뜻밖의 행운을 만나보세요.</span>
+          </div>
+          <div class="feature-guide-item">
+            <strong>5. 시간에 따라 달라지는 풍경</strong>
+            <span>낮과 노을, 밤으로 변하는 은하재의 모습을 감상해 보세요.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-section">
+        <h3 class="guide-section-heading">🕹️ 조작 안내</h3>
+        <div class="controls-guide-box">
+          <span>WASD · 방향키 / 패드: 언덕 이동</span>
+          <span>드래그 · 스크롤: 시점 회전 · 남산 줌인</span>
+          <span>캐릭터 · 보신각 · 벤치 · 붕어빵 클릭: 상호작용</span>
+          <span>하늘 터치 · 스페이스바: 불꽃 발사</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Golden Ticket Discovery Modal -->
+    <div id="golden-ticket-modal" class="ticket-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="ticket-modal-title">
+      <div class="ticket-modal-card">
+        <div class="ticket-modal-icon" aria-hidden="true">🎫✨</div>
+        <h2 id="ticket-modal-title" class="ticket-modal-title">작은 행운을 발견했어요!</h2>
+        <p class="ticket-modal-body">
+          축하해요! 숨겨진 황금 티켓의 주인공이 되었네요.<br>
+          어쩌면 좋은 일은 이렇게 예상하지 못한 순간에 찾아오는지도 몰라요.
+        </p>
+        <button type="button" id="btn-close-ticket-modal" class="action-btn-gold ticket-modal-btn">행운 받기</button>
+      </div>
+    </div>
+
+    <!-- Bottom Compact Action Dock (Pure Real-Time Feature Buttons Only) -->
+    <nav id="action-dock" class="action-dock" aria-label="은하재 주요 기능">
+      <div class="action-dock-buttons">
+        <button type="button" id="btn-launch-firework" class="action-btn-gold">
+          <span>🎆</span>
+          <span>불꽃</span>
+        </button>
+        <button type="button" id="btn-launch-finale" class="action-btn">
+          <span>✨</span>
+          <span>피날레</span>
+        </button>
+        <button type="button" id="btn-toggle-wish" class="action-btn" aria-expanded="false">
+          <span>🏮</span>
+          <span>풍등</span>
+        </button>
+        <button type="button" id="btn-toggle-sit" class="action-btn" aria-pressed="false">
+          <span>🪑</span>
+          <span id="sit-btn-label">앉기</span>
+        </button>
+        <button type="button" id="btn-toggle-dance" class="action-btn" aria-pressed="false">
+          <span>💃</span>
+          <span id="dance-btn-label">춤</span>
+        </button>
+      </div>
+      <button type="button" id="btn-hide-dock" class="action-btn action-btn-compact" title="하단 바 숨기기" aria-label="하단 바 숨기기">▾</button>
+    </nav>
+
+    <button type="button" id="btn-show-dock" class="zen-reopen-btn">▴ 메뉴</button>
+
+    <!-- WebGL / Module Failure Fallback Notice -->
+    <section id="webgl-fallback" class="webgl-fallback" aria-live="polite">
+      <div class="webgl-fallback-card">
+        <h2>은하재로 향하는 길이 잠시 닫혔어요</h2>
+        <p id="webgl-fallback-msg">
+          지금은 은하재의 하늘을 열어둘 수 없는 상태예요.<br>
+          잠시 후 시간 조각 상점으로 다시 모셔다 드릴게요.
+        </p>
+        <a href="../index.html" class="btn-vintage btn-gold">상점으로 돌아가기</a>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    let failureHandled = false;
+    window.__handleEunhajaeFailure = function (err, reason) {
+      if (failureHandled) return;
+      failureHandled = true;
+      console.log('[은하재] 공간 진입 실패 사유:', reason || 'unknown');
+      if (err) console.error('[은하재] 상세 오류:', err);
+      const fallbackEl = document.getElementById('webgl-fallback');
+      const msgEl = document.getElementById('webgl-fallback-msg');
+      if (msgEl) {
+        msgEl.innerHTML = '지금은 은하재의 밤하늘을 잠시 불러오지 못했어요.<br>잠시 후 시간 조각 상점으로 안내해 드릴게요.';
+      }
+      if (fallbackEl) {
+        fallbackEl.classList.add('is-visible');
+      }
+      setTimeout(() => {
+        window.location.replace('../index.html');
+      }, 2600);
+    };
+
+    try {
+      const mod = await import('../assets/js/fireworks_scene.js');
+      if (mod && typeof mod.initEunhajaeScene === 'function') {
+        const ok = await mod.initEunhajaeScene();
+        if (ok === false) {
+          window.__handleEunhajaeFailure(new Error('initEunhajaeScene returned false'), 'scene_init_false');
+        }
+      }
+    } catch (err) {
+      window.__handleEunhajaeFailure(err, 'module_load_error');
+    }
+  </script>
+</body>
+
+</html>

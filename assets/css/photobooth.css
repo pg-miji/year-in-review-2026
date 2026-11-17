@@ -245,7 +245,7 @@
   border-radius: 20px;
   padding: 4px 12px;
   text-align: center;
-  font-family: var(--font-title-ko);
+  font-family: var(--font-serif-ko);
   backdrop-filter: blur(2px);
   letter-spacing: 0.02em;
 }
@@ -891,6 +891,25 @@
   border-radius: 20px;
   display: inline-block;
   margin: 4px 0 8px;
+}
+
+.qr-error-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 14px;
+  margin: 8px 0;
+  border-radius: 12px;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px dashed rgba(212, 175, 55, 0.35);
+}
+
+.qr-error-msg {
+  font-size: 13.5px;
+  color: var(--cream-text);
+  line-height: 1.65;
+  word-break: keep-all;
 }
 
 .qr-url-input {

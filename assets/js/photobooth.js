@@ -130,6 +130,25 @@
     }
   };
 
+  function stopCameraStream() {
+    if (mediaStream) {
+      try {
+        mediaStream.getTracks().forEach(track => track.stop());
+      } catch (e) {}
+      mediaStream = null;
+    }
+    if (simulatedCanvasAnimId) {
+      cancelAnimationFrame(simulatedCanvasAnimId);
+      simulatedCanvasAnimId = null;
+    }
+    if (sharedVideoEl) {
+      try {
+        sharedVideoEl.pause();
+      } catch (e) {}
+      sharedVideoEl.srcObject = null;
+    }
+  }
+
   // ----------------------------------------------------
   // Initialization & View Routing
   // ----------------------------------------------------
@@ -141,6 +160,9 @@
     setupCameraControls();
     setupResultActions();
     showStage('select');
+
+    window.addEventListener('pagehide', stopCameraStream);
+    window.addEventListener('beforeunload', stopCameraStream);
 
     // Process any frame selection that was triggered before script finished loading
     if (window._pendingFrameSelection) {
@@ -671,6 +693,7 @@
     const changeFrameBtn = document.getElementById('btn-change-frame');
     if (changeFrameBtn) {
       changeFrameBtn.addEventListener('click', () => {
+        stopCameraStream();
         resetBoothState();
         showStage('select');
       });
@@ -680,14 +703,7 @@
     const boothHomeBtn = document.getElementById('btn-booth-home');
     if (boothHomeBtn) {
       boothHomeBtn.addEventListener('click', () => {
-        if (mediaStream) {
-          try { mediaStream.getTracks().forEach(t => t.stop()); } catch (e) {}
-          mediaStream = null;
-        }
-        if (simulatedCanvasAnimId) {
-          cancelAnimationFrame(simulatedCanvasAnimId);
-          simulatedCanvasAnimId = null;
-        }
+        stopCameraStream();
         document.body.removeAttribute('data-stage');
       });
     }
@@ -1210,11 +1226,16 @@
     }
     PhotoAudio.playCompleteFanfare();
 
-    // QR Code button is shown ONLY on PC / Desktop
+    // QR Code button is shown ONLY on PC / Desktop; Web Share button shown on mobile if supported
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
     const qrBtn = document.getElementById('btn-share-mobile-qr');
     if (qrBtn) {
       qrBtn.style.display = isMobile ? 'none' : 'inline-flex';
+    }
+    const mobileShareBtn = document.getElementById('btn-share-photo-mobile');
+    if (mobileShareBtn) {
+      const canNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+      mobileShareBtn.style.display = (isMobile && canNativeShare) ? 'inline-flex' : 'none';
     }
   }
 
@@ -1357,12 +1378,15 @@
     const modal = document.getElementById('qr-modal');
     const spinner = document.getElementById('qr-loading-spinner');
     const boxContainer = document.getElementById('qr-box-container');
+    const errorBox = document.getElementById('qr-error-box');
     const subtitle = document.getElementById('qr-modal-subtitle');
     const expiryNotice = document.getElementById('qr-expiry-notice');
 
     if (!modal) return;
     modal.style.display = 'flex';
     modal.classList.add('active');
+    if (subtitle) subtitle.textContent = '휴대폰 기본 카메라로 QR 코드를 스캔하세요.';
+    if (errorBox) errorBox.style.display = 'none';
 
     // If pre-upload already completed in background, render INSTANTLY!
     if (cachedPhotoUploadUrl) {
@@ -1381,7 +1405,6 @@
       }
 
       if (!uploadUrl && !cachedPhotoUploadUrl) {
-        // Fallback: fast upload using cached crisp JPEG blob
         let blob = cachedUploadBlob;
         if (!blob) {
           const resBlob = await fetch(finalResultDataUrl);
@@ -1395,27 +1418,36 @@
         cachedPhotoUploadUrl = finalUrl;
         renderQrCode(finalUrl);
       } else {
-        throw new Error('Upload fallback');
+        throw new Error('Upload failed');
       }
     } catch (err) {
-      console.warn('Temporary cloud upload fallback:', err);
+      console.warn('Temporary cloud upload failed:', err);
+      if (spinner) spinner.style.display = 'none';
+      if (boxContainer) boxContainer.style.display = 'none';
+      if (errorBox) errorBox.style.display = 'flex';
       if (subtitle) {
-        subtitle.innerHTML = '스마트폰 카메라로 아래 QR 코드를 스캔하세요.';
+        subtitle.textContent = '임시 링크 서버에 연결하지 못했습니다.';
       }
-      renderQrCode(window.location.origin + window.location.pathname, true);
     }
   }
 
-  function renderQrCode(url, isFallback = false) {
+  function renderQrCode(url) {
     const spinner = document.getElementById('qr-loading-spinner');
     const boxContainer = document.getElementById('qr-box-container');
+    const errorBox = document.getElementById('qr-error-box');
     const canvas = document.getElementById('qr-canvas');
+    const directLink = document.getElementById('qr-direct-link');
     const expiryNotice = document.getElementById('qr-expiry-notice');
 
     if (spinner) spinner.style.display = 'none';
+    if (errorBox) errorBox.style.display = 'none';
     if (boxContainer) boxContainer.style.display = 'flex';
-    if (expiryNotice) expiryNotice.style.display = isFallback ? 'none' : 'inline-block';
+    if (expiryNotice) expiryNotice.style.display = 'inline-block';
     currentQrUrl = url;
+
+    if (directLink) {
+      directLink.href = url;
+    }
 
     if (canvas && window.QRCode) {
       window.QRCode.toCanvas(canvas, url, {
@@ -1428,14 +1460,40 @@
       }, function (err) {
         if (err) console.error('QR code render error:', err);
       });
-
-      canvas.style.cursor = 'pointer';
-      canvas.onclick = () => {
-        if (currentQrUrl) {
-          window.open(currentQrUrl, '_blank');
-        }
-      };
     }
+  }
+
+  async function handleSharePhotoMobile() {
+    if (!finalResultDataUrl) return;
+    try {
+      window.MysticalAudio?.playCardFlip();
+    } catch (e) {}
+
+    try {
+      const res = await fetch(finalResultDataUrl);
+      const blob = await res.blob();
+      const filename = `photobooth_${currentFrameId || 'photo'}_${Date.now()}.png`;
+      const file = new File([blob], filename, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: '찰나 사진관 - 시간 조각 상점',
+          text: '시간 조각 상점에서 담은 순간'
+        });
+        return;
+      }
+      if (navigator.share) {
+        await navigator.share({
+          title: '찰나 사진관 - 시간 조각 상점',
+          text: '시간 조각 상점에서 담은 순간'
+        });
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+    }
+    showToast('사진을 길게 꾹 눌러 기기에 저장해 주세요!');
   }
 
   function setupResultActions() {
@@ -1447,11 +1505,29 @@
       });
     }
 
+    // 1-b. Mobile Web Share Save
+    const mobileShareBtn = document.getElementById('btn-share-photo-mobile');
+    if (mobileShareBtn) {
+      mobileShareBtn.addEventListener('click', () => {
+        handleSharePhotoMobile();
+      });
+    }
+
     // 2. Mobile QR Share Modal (PC only)
     const qrShareBtn = document.getElementById('btn-share-mobile-qr');
     if (qrShareBtn) {
       qrShareBtn.addEventListener('click', () => {
         window.MysticalAudio?.playCardFlip();
+        openPhotoboothQrModal();
+      });
+    }
+
+    // 2-b. QR Retry button
+    const qrRetryBtn = document.getElementById('btn-qr-retry');
+    if (qrRetryBtn) {
+      qrRetryBtn.addEventListener('click', () => {
+        activeUploadPromise = null;
+        cachedPhotoUploadUrl = null;
         openPhotoboothQrModal();
       });
     }
@@ -1467,6 +1543,7 @@
         capturedSlots = [];
         cachedPhotoUploadUrl = null;
         activeUploadPromise = null;
+        cachedUploadBlob = null;
         startBoothStage();
       });
     }
@@ -1481,6 +1558,7 @@
         resetBoothState();
         cachedPhotoUploadUrl = null;
         activeUploadPromise = null;
+        cachedUploadBlob = null;
         showStage('select');
       });
     }
@@ -1512,7 +1590,6 @@
     const link = document.createElement('a');
     link.download = filename;
     link.href = finalResultDataUrl;
-    link.target = '_blank';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

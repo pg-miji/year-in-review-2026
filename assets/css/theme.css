@@ -3,9 +3,6 @@
    Global Theme & Vintage Mystical Design System
    =================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Gowun+Batang:wght@400;700&family=Marcellus&family=Noto+Serif+KR:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Song+Myung&display=swap');
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-
 :root {
   /* Color Palette */
   --bg-space: #0b0814;
@@ -26,10 +23,10 @@
   --ink-dark: #1c1524;
   
   /* Fonts */
-  --font-title-ko: 'Gowun Batang', 'Song Myung', 'Noto Serif KR', 'AppleMyungjo', 'Batang', serif;
-  --font-serif-ko: 'Gowun Batang', 'Noto Serif KR', 'AppleMyungjo', 'Batang', serif;
-  --font-display-en: 'Cinzel', 'Cormorant Garamond', 'Playfair Display', serif;
-  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+  --font-title-ko: 'Gowun Batang', 'AppleMyungjo', 'Batang', serif;
+  --font-serif-ko: 'Gowun Batang', 'AppleMyungjo', 'Batang', serif;
+  --font-display-en: 'Cinzel', Georgia, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
   
   /* Radii & Shadows */
   --radius-card: 16px;
@@ -63,6 +60,20 @@ html, body {
 
 button, input, textarea, select {
   font-family: var(--font-serif-ko);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stars-bg,
+  .crystal-orb,
+  .crystal-nebula,
+  .crystal-core-sparkles {
+    animation: none !important;
+  }
 }
 
 /* Starry Atmosphere Particles */
@@ -171,7 +182,7 @@ button, input, textarea, select {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 8px auto;
+  margin: 0 auto 6px auto;
 }
 
 .shop-header-icon {
@@ -192,7 +203,7 @@ button, input, textarea, select {
   letter-spacing: 0.5px;
   color: #fff9eb;
   text-shadow: 0 2px 14px rgba(212, 175, 55, 0.4);
-  margin-top: 16px;
+  margin-top: 4px;
   line-height: 1.35;
   word-break: keep-all;
 }

@@ -2,8 +2,8 @@
 // 시간 조각 상점 - 오늘의 사소한 처방 (수정구슬) Interactive Controller
 // ===================================================================
 
-import { getLocalCrystalAnswer } from './crystal_oracle.js?v=2.3.0';
-import { CRYSTAL_CONFIG } from './crystal_config.js?v=2.3.0';
+import { getLocalCrystalAnswer } from './crystal_oracle.js';
+import { CRYSTAL_CONFIG } from './crystal_config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
@@ -35,10 +35,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedCategory = '';
   let isSubmitting = false;
 
+  function getKstDateString() {
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
+    } catch (e) {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+  }
+
   function isQuotaExhausted() {
     try {
       const savedDate = localStorage.getItem(QUOTA_KEY);
-      const today = new Date().toISOString().slice(0, 10);
+      const today = getKstDateString();
       return savedDate === today;
     } catch (e) {
       return false;
@@ -47,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setQuotaExhausted() {
     try {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = getKstDateString();
       localStorage.setItem(QUOTA_KEY, today);
     } catch (e) {}
   }
@@ -59,10 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (descEl) descEl.innerHTML = msg.replace(/\n/g, '<br>');
       }
       quotaModal.style.display = 'flex';
-    } else {
-      try {
-        window.alert(msg ? msg.replace(/<br>/g, '\n') : '수정구슬도 잠시 쉬어갈 시간이에요. 내일 다시 찾아와 주세요.');
-      } catch (e) {}
     }
   }
 
@@ -370,51 +375,43 @@ document.addEventListener('DOMContentLoaded', () => {
       ? `[사용자가 고른 카테고리: ${categoryName}]\n고민/질문: "${worry}"`
       : `고민/질문: "${worry}"`;
 
-    const isSeriousMode = /^진지하게/i.test((worry || '').trim());
+    const trimmedWorry = (worry || '').trim();
+    const isSeriousMode = /^진지하게/i.test(trimmedWorry) ||
+      /우울증|공황|불안장애|트라우마|이별했|헤어졌|상실|가족.*아프|돌아가|눈물이\s*(계속|멈추)|너무\s*괴로|버티기\s*힘들/.test(trimmedWorry);
     let systemPrompt = '';
     let temperature = 0.85;
 
     if (isSeriousMode) {
       temperature = 0.7;
       systemPrompt = `당신은 시간 조각 상점의 "오늘의 사소한 처방" 수정구슬입니다.
-사용자가 고민을 "진지하게"라는 문구로 시작하며 진솔하고 사려 깊은 조언을 구하고 있습니다.
-평소의 가벼운 유머나 장난스러운 농담을 완전히 거두고, 깊이 공감하며 진지하고 따뜻한 처방을 건네주세요.
+사용자가 무겁거나 진지한 고민을 털어놓았습니다. 억지 유머나 장난은 완전히 거두고, 깊이 공감하며 차분하고 현실적인 처방을 건네세요.
 
 [진지 모드 핵심 원칙]
-1. 진솔하고 깊이 있는 태도:
-   - 가벼운 농담, 실없는 말장난, 엉뚱한 비유는 일체 배제합니다.
-   - 사용자의 고민을 진지하게 경청하고, 현실적인 통찰과 따뜻한 격려, 스스로 길을 찾을 수 있는 차분한 성찰을 담아주세요.
-2. 간결한 분량 (중요 - 내용이 너무 길지 않게):
-   - 반드시 2~4문장 (공백 포함 약 100자~180자 내외)으로 작성하세요.
-   - 장황한 설교나 긴 서술은 피하고, 마음을 울리는 담백한 핵심만 전하세요.
-3. 말투와 톤:
-   - 정중하고 부드러운 경어체 (~해요, ~합니다, ~해보세요, ~일지도 모릅니다).
-   - 뻔한 상투적 교훈이나 꼰대식 훈계가 아니라, 곁에서 조용히 손을 잡아주는 든든하고 현명한 조언자의 어조.
-4. 이모지: 사용하지 않거나, 차분한 이모지(🌿, 🕯️, 🌙, ✨ 등) 최대 1개만 사용.
-5. 군더더기 서두 금지: "구슬 속이 고요해지며..." 같은 진부한 도입부 없이 바로 본문으로 시작하세요.
-
-[진지 모드 답변 예시]
-- 입력: "진지하게 나 앞으로 어떻게 살아야 할까?"
-  -> 답변: "길이 보이지 않을 때는 무작정 달리기보다 속도를 늦추고 발밑을 먼저 확인해 보세요. 지금의 혼란은 방황이 아니라, 나에게 진짜 맞는 방향을 신중하게 조율해 나가는 과정입니다."
-- 입력: "진지하게 너무 지치고 다 그만두고 싶어."
-  -> 답변: "지금 느끼는 버거움은 그동안 당신이 누구보다 성실하게 버텨왔다는 증거입니다. 모든 짐을 혼자 짊어지려 하지 마시고, 오늘은 아무 죄책감 없이 나 자신을 위해 온전히 쉬어주세요 🌿"
-- 입력: "진지하게 이번 이직을 도전해보는 게 맞을까?"
-  -> 답변: "모든 선택이 완벽할 수는 없지만, 내린 결정을 좋은 결과로 가꾸어 나갈 힘은 분명 당신 안에 있습니다. 실패의 두려움보다 그곳에서 배우고 성장할 자신의 모습을 먼저 믿어보세요."`;
+1. 억지 위로/설교 금지: "다 잘될 거예요", "열심히 하면 돼요" 같은 상투적 교훈이나 훈계를 피하고, 사용자가 지금 느끼는 무게를 먼저 인정하세요.
+2. 분량: 2~3문장 (최대 160자 내외), 담백하고 정중한 경어체.
+3. 이모지: 사용하지 않거나 차분한 것(🌿, 🕯️, 🌙) 최대 1개.
+4. 진부한 서두("구슬 속이 고요해지며...") 금지.`;
     } else {
       systemPrompt = `당신은 시간 조각 상점의 "오늘의 사소한 처방" 수정구슬입니다.
-사용자가 털어놓은 고민, 질문, 엉뚱한 생각에 대해 짧고 재치 있는 처방을 한마디 건넵니다.
-전문적인 심리 상담이나 정답 해결책을 주려는 것이 아니라, 고민을 바라보는 순간의 기분을 환기해 주는 가벼운 엔터테인먼트 콘텐츠입니다.
+사용자의 고민과 감정을 정확히 짚어낸 뒤, 재치 있거나 예상 밖의 시선으로 기분을 환기해 주는 짧은 한마디를 건넵니다.
 
 [핵심 원칙]
-1. 입력 맥락 우선: 카테고리는 참고용일 뿐, 사용자가 실제로 쓴 글의 맥락과 감정을 최우선으로 해석하세요.
-2. 2~4문장으로 짧고 명쾌하게 작성하세요.
-3. 능청스럽고 엉뚱하며 재치 있는 어조를 사용하세요. (~네요, ~군요, ~해봅시다, ~인 셈 치죠, ~어떨까요? 등).
-4. 상투적인 위로, 뻔한 조언, 자기계발식 훈계, 진지한 분석은 피하세요.
-5. 사용자를 비난하거나 무시, 평가, 훈계하지 마세요. 상대를 낮잡아 보는 말투나, 차가운 '~하지 마세요'는 절대 금지합니다.
-6. 어려운 용어나 수식어 남발을 절대 금지합니다. 초등학생도 쉽게 읽히는 쉬운 일상 단어만 쓰세요.
-7. 이모지는 답변에 사용하지 않거나 1개까지만 사용하세요.
-8. 뻔한 접두사 금지: "구슬 속 은하수가...", "우주의 시계추가..." 같은 진부한 서두 없이 바로 산뜻하게 시작하세요.
-${previousAnswer ? `\n이전에 제공했던 답변: "${previousAnswer}" 와는 다른 새로운 표현과 비유로 작성하세요.` : ''}`;
+1. 금지 사항 (매우 중요):
+   - 단순 말장난/언어유희 금지 (예: "마음속으로 퇴근했다 치죠", "'일의 신'에게 외주 주기", 단어 바꾸기 개그).
+   - 뻔한 긍정 해석이나 억지 위로 금지 ("원래 다 그런 거야", "힘내요 다 잘될 거예요").
+   - 자기계발식 교훈·훈계·평가·비난 금지.
+   - 사용자의 원래 감정 맥락이나 상황과 무관한 엉뚱한 사물 관찰·비유나 뜬금없는 화제 전환 금지.
+   - 매번 똑같은 문장 구조("~할 땐 ~해 봅시다")나 고정 템플릿 반복 금지.
+2. 상황 맞춤형 접근 (매 답변마다 상황에 가장 잘 어울리는 방식을 자연스럽게 선택):
+   - 현실적인 공감 + 예상 밖의 관점 전환
+   - 엉뚱하지만 사용자의 감정 맥락과 고민의 핵심에 꼭 맞는 현실적 상상이나 과장
+   - 지금 당장 5분 안에 해볼 수 있는 아주 작고 구체적인 행동 제안 (물 마시기, 다른 골목 걷기, 무지출 데이 하루 정하기 등)
+   - 심각하거나 상처받은 감정("친구가 서운하게 했다", "이유 없이 기분이 안 좋다")에는 가벼운 농담 대신 담백한 공감과 스스로를 지키는 태도 제안
+3. 분량과 어조:
+   - 2~3문장 (공백 포함 90~160자 내외), 쉽고 자연스러운 구어체 경어.
+   - 이모지는 없거나 1개 이하.
+   - "구슬 속..." 같은 진부한 서두 금지.
+${previousAnswer ? `\n이전 답변("${previousAnswer}")과 완전히 다른 접근 방식(관점/어조/구성)으로 답하세요.` : ''}`;
     }
 
     const controller = new AbortController();
@@ -435,7 +432,7 @@ ${previousAnswer ? `\n이전에 제공했던 답변: "${previousAnswer}" 와는 
             },
             generationConfig: {
               temperature,
-              maxOutputTokens: 180
+              maxOutputTokens: 1024
             }
           })
         }
@@ -448,7 +445,12 @@ ${previousAnswer ? `\n이전에 제공했던 답변: "${previousAnswer}" 와는 
         }
         if (apiRes.ok) {
           const data = await apiRes.json();
-          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          const parts = data?.candidates?.[0]?.content?.parts || [];
+          const text = parts
+            .filter((p) => !p.thought && typeof p.text === 'string')
+            .map((p) => p.text)
+            .join('')
+            .trim();
           if (text && text.length > 2) {
             return text;
           }

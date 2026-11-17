@@ -1,0 +1,29 @@
+{
+  "name": "시간 조각 상점",
+  "short_name": "시간 조각 상점",
+  "description": "시간 조각 상점에서 과거와 미래를 들여다보고, 오늘의 마음을 살피며, 일상의 작은 순간을 발견해 보세요. 시간 Q&A, 신년 타로, 오늘의 작은 처방, 순간 사진관, 그리고 은하재에서 당신만의 특별한 시간을 경험할 수 있어요.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0814",
+  "theme_color": "#0b0814",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "./assets/icons/android-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

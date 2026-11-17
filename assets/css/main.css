@@ -36,18 +36,22 @@
   word-break: keep-all;
 }
 
-/* Two Main Gateway Doors / Cards */
+/* Five Main Gateway Doors / Cards (Balanced 3+2 on desktop, 2+2+1 on tablet, 1-col on mobile) */
 .portal-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 20px;
-  max-width: 1200px;
+  max-width: 1120px;
   margin: 0 auto;
   width: 100%;
 }
 
 .portal-card {
   position: relative;
+  flex: 1 1 300px;
+  max-width: 356px;
+  min-height: 280px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -56,7 +60,7 @@
   background: linear-gradient(170deg, rgba(32, 23, 49, 0.95) 0%, rgba(20, 14, 32, 0.98) 100%);
   border: 1px solid rgba(212, 175, 55, 0.4);
   border-radius: var(--radius-card);
-  padding: 36px 24px 30px;
+  padding: 32px 24px 28px;
   color: var(--cream-text);
   box-shadow: var(--shadow-deep), 0 0 20px rgba(0, 0, 0, 0.4);
   transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -99,6 +103,22 @@
 .portal-card.crystal-card-portal:hover {
   background: linear-gradient(170deg, rgba(46, 24, 68, 0.98) 0%, rgba(20, 12, 38, 0.98) 100%);
   border-color: #d8b4fe;
+}
+
+.portal-card.fireworks-card-portal:hover {
+  background: linear-gradient(170deg, rgba(22, 30, 62, 0.98) 0%, rgba(15, 13, 34, 0.98) 100%);
+  border-color: #f6d379;
+}
+
+.portal-icon-wrap.fireworks-icon-wrap {
+  background: radial-gradient(circle, rgba(246, 211, 121, 0.28) 0%, rgba(22, 26, 54, 0.55) 70%);
+  border-color: rgba(246, 211, 121, 0.55);
+  box-shadow: 0 0 20px rgba(246, 211, 121, 0.22);
+}
+
+.portal-card:hover .portal-icon-wrap.fireworks-icon-wrap {
+  box-shadow: 0 0 30px rgba(246, 211, 121, 0.55);
+  border-color: #ffe8a3;
 }
 
 .portal-icon-wrap.crystal-icon-wrap {
@@ -200,40 +220,108 @@
 /* Responsive */
 @media (max-width: 1080px) {
   .portal-grid {
-    grid-template-columns: repeat(2, 1fr);
-    max-width: 720px;
-    gap: 20px;
+    max-width: 740px;
+    gap: 18px;
+  }
+
+  .portal-card {
+    flex: 1 1 300px;
+    max-width: 360px;
   }
 }
 
 @media (max-width: 680px) {
-  .portal-grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
-    max-width: 420px;
+  .main-hero {
+    margin: 6px auto 22px;
   }
-  
-  .portal-card {
-    padding: 30px 20px 26px;
-  }
-  
-  .portal-icon-wrap {
-    width: 76px;
-    height: 76px;
-    font-size: 34px;
-    margin-bottom: 16px;
-  }
-  
-  .portal-title {
-    font-size: 22px;
-  }
-  
-  .portal-desc {
-    font-size: 14px;
-    margin-bottom: 18px;
-  }
-  
+
   .hero-prose {
+    font-size: 14.5px;
+    line-height: 1.65;
+  }
+
+  .portal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    max-width: 460px;
+    align-items: stretch;
+  }
+
+  .portal-card {
+    width: 100%;
+    max-width: none;
+    flex: none;
+    min-height: 158px;
+    justify-content: center;
+    padding: 18px 10px 16px;
+  }
+
+  .portal-card::before {
+    inset: 5px;
+  }
+
+  .portal-badge {
+    font-size: 9.5px;
+    letter-spacing: 1.4px;
+    padding: 3px 9px;
+    margin-bottom: 10px;
+  }
+
+  .portal-icon-wrap {
+    width: 58px;
+    height: 58px;
+    font-size: 27px;
+    margin-bottom: 10px;
+  }
+
+  .portal-title {
+    font-size: 16.5px;
+    line-height: 1.3;
+    margin-bottom: 0;
+    word-break: keep-all;
+  }
+
+  .portal-grid .portal-desc {
+    display: none;
+  }
+
+  .portal-card.fireworks-card-portal {
+    grid-column: 1 / -1;
+    min-height: 124px;
+    flex-direction: row;
+    justify-content: center;
+    gap: 14px;
+    padding: 16px 18px;
+    text-align: left;
+  }
+
+  .portal-card.fireworks-card-portal .portal-badge {
+    position: static;
+    margin-bottom: 4px;
+  }
+
+  .portal-card.fireworks-card-portal .portal-icon-wrap {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .portal-card.fireworks-card-portal .portal-title {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 380px) {
+  .portal-grid {
+    gap: 10px;
+  }
+
+  .portal-card {
+    min-height: 146px;
+    padding: 16px 8px 14px;
+  }
+
+  .portal-title {
     font-size: 15px;
   }
 }

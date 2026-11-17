@@ -89,6 +89,34 @@
     drawQuestion(cat, false);
   }
 
+  function updateProgressUI(drawnCount, totalCount, isExhausted) {
+    const progressEl = document.getElementById('question-progress');
+    if (progressEl) {
+      const shownCount = Math.min(drawnCount, totalCount);
+      progressEl.textContent = isExhausted
+        ? `완료 (${totalCount} / ${totalCount})`
+        : `${shownCount} / ${totalCount}`;
+    }
+  }
+
+  function renderExhaustedNotice(cat, questionTextEl) {
+    if (!questionTextEl) return;
+    questionTextEl.innerHTML = `
+      <div class="exhausted-notice-wrap">
+        <div class="exhausted-icon">💛</div>
+        <div class="exhausted-title">준비된 모든 질문을 열어보았습니다!</div>
+        <div class="exhausted-desc">지난 시간을 돌아보고 새해를 상상하는 따뜻한 대화가 되었기를 바랍니다.</div>
+        <button id="btn-reset-questions" class="btn-vintage btn-gold" style="margin-top:12px; font-size:14px; padding:10px 20px;">
+          🔄 질문 다시 섞기 (처음부터)
+        </button>
+      </div>
+    `;
+    const resetBtn = document.getElementById('btn-reset-questions');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => resetCategoryHistory(cat));
+    }
+  }
+
   function drawQuestion(cat, forceNewAnimation = true) {
     if (isAnimating) return;
     currentCategory = cat;
@@ -125,23 +153,10 @@
     // Check if exhausted
     if (remaining.length === 0) {
       if (forceNewAnimation && cardEl) {
-        triggerFlip(cardEl);
-      }
-      if (questionTextEl) {
-        questionTextEl.innerHTML = `
-          <div class="exhausted-notice-wrap">
-            <div class="exhausted-icon">💛</div>
-            <div class="exhausted-title">준비된 모든 질문을 열어보았습니다!</div>
-            <div class="exhausted-desc">지난 시간을 돌아보고 새해를 상상하는 따뜻한 대화가 되었기를 바랍니다.</div>
-            <button id="btn-reset-questions" class="btn-vintage btn-gold" style="margin-top:12px; font-size:14px; padding:10px 20px;">
-              🔄 질문 다시 섞기 (처음부터)
-            </button>
-          </div>
-        `;
-        const resetBtn = document.getElementById('btn-reset-questions');
-        if (resetBtn) {
-          resetBtn.addEventListener('click', () => resetCategoryHistory(cat));
-        }
+        triggerExhaustedFade(cardEl, cat, allQuestions.length);
+      } else {
+        renderExhaustedNotice(cat, questionTextEl);
+        updateProgressUI(allQuestions.length, allQuestions.length, true);
       }
       return;
     }
@@ -154,7 +169,7 @@
     saveDrawnHistory(cat, drawn);
 
     if (forceNewAnimation && cardEl) {
-      triggerFade(cardEl, selectedQuestion, cat);
+      triggerFade(cardEl, selectedQuestion, cat, drawn.length, allQuestions.length);
     } else {
       if (categoryRibbonEl) {
         categoryRibbonEl.textContent = cat === 'this_year' ? '🧩 올해를 돌아보는 질문' : '☀️ 새해를 맞이하는 질문';
@@ -162,10 +177,33 @@
       if (questionTextEl) {
         questionTextEl.textContent = selectedQuestion;
       }
+      updateProgressUI(drawn.length, allQuestions.length, false);
     }
   }
 
-  function triggerFade(element, newQuestionText, cat) {
+  function triggerExhaustedFade(element, cat, totalCount) {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    const questionTextEl = document.getElementById('card-question-text');
+    element.classList.remove('fading-in');
+    element.classList.add('fading-out');
+
+    setTimeout(() => {
+      renderExhaustedNotice(cat, questionTextEl);
+      updateProgressUI(totalCount, totalCount, true);
+
+      element.classList.remove('fading-out');
+      element.classList.add('fading-in');
+
+      setTimeout(() => {
+        element.classList.remove('fading-in');
+        isAnimating = false;
+      }, 260);
+    }, 250);
+  }
+
+  function triggerFade(element, newQuestionText, cat, drawnCount, totalCount) {
     if (isAnimating) return;
     isAnimating = true;
 
@@ -184,6 +222,7 @@
       if (ribbonEl) {
         ribbonEl.textContent = cat === 'this_year' ? '🧩 올해를 돌아보는 질문' : '☀️ 새해를 맞이하는 질문';
       }
+      updateProgressUI(drawnCount, totalCount, false);
 
       element.classList.remove('fading-out');
       element.classList.add('fading-in');
@@ -201,7 +240,7 @@
     isAnimating = false;
     const cardEl = document.getElementById('question-card');
     if (cardEl) {
-      cardEl.classList.remove('flipping');
+      cardEl.classList.remove('flipping', 'fading-out', 'fading-in');
     }
 
     const params = new URLSearchParams(window.location.search);

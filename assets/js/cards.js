@@ -145,6 +145,7 @@
   }
 
   let isSelected = false;
+  let redirectTimerId = null;
 
   function onCardSelected(cardElement, cardId) {
     if (isSelected) return;
@@ -166,13 +167,19 @@
     }
 
     // Gentle mystical transition delay (~1.8s for an authentic, immersive reading experience)
-    setTimeout(() => {
+    if (redirectTimerId) clearTimeout(redirectTimerId);
+    redirectTimerId = setTimeout(() => {
+      redirectTimerId = null;
       window.location.href = `card.html?number=${cardId}`;
     }, 1800);
   }
 
   function initCardsPage() {
     isSelected = false;
+    if (redirectTimerId) {
+      clearTimeout(redirectTimerId);
+      redirectTimerId = null;
+    }
 
     // Ensure clean state and visibility of header
     document.body.removeAttribute('data-stage');
@@ -204,6 +211,20 @@
   }
 
   window.initCardsPage = initCardsPage;
+
+  // Handle browser Back/Forward cache (bfcache) so loading modal does not remain stuck
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted || isSelected) {
+      initCardsPage();
+    }
+  });
+
+  window.addEventListener('pagehide', () => {
+    if (redirectTimerId) {
+      clearTimeout(redirectTimerId);
+      redirectTimerId = null;
+    }
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initCardsPage);
