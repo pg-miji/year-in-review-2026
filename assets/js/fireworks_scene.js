@@ -30,8 +30,12 @@ import {
   createAmbientSkyLanterns,
   createEveningFireflies,
   createGroundLightPools,
-  createClickRippleRing
+  createClickRippleRing,
+  createCozyMailbox,
+  createShootingStar
 } from './fireworks_entities.js';
+import { EUNHAJAE_LETTERS } from './fireworks_letters.js';
+import { MAILBOX_CONFIG } from './mailbox_config.js';
 
 const HILL_BOUNDS = {
   minX: -15.0,
@@ -152,7 +156,7 @@ const NPC_DIALOGUES = {
     '가끔은 이렇게 가만히 앉아 있는 것도 참 좋죠.',
     '우리 몽이는 세상에서 제일 귀여워요. 그쵸?'
   ],
-  bit: [
+  beat: [
     '가만히 있으면 몸이 근질근질해요!',
     '오늘은 그루브가 아주 잘 타지는데요!',
     '춤에는 정답이 없어요! 마음 가는 대로!',
@@ -192,22 +196,22 @@ const NPC_DIALOGUES = {
   ]
 };
 
-// NPC Firework Reaction profiles (restricted strictly to bit, tori, naru, momo)
+// NPC Firework Reaction profiles (restricted strictly to beat, tori, naru, momo)
 const NPC_FIREWORK_PROFILE = {
-  bit:  { delayMin: 80,  delayMax: 240, lookProb: 1.0,  burstJumpProb: 0.72, burstWaveProb: 0.65, cooldownMs: 2200 },
+  beat: { delayMin: 80,  delayMax: 240, lookProb: 1.0,  burstJumpProb: 0.72, burstWaveProb: 0.65, cooldownMs: 2200 },
   tori: { delayMin: 140, delayMax: 380, lookProb: 0.9,  burstJumpProb: 0.15, burstWaveProb: 0.55, cooldownMs: 2800 },
   naru: { delayMin: 210, delayMax: 460, lookProb: 0.95, burstJumpProb: 0.05, burstWaveProb: 0.08, cooldownMs: 3200 },
   momo: { delayMin: 160, delayMax: 400, lookProb: 0.85, burstJumpProb: 0.0,  burstWaveProb: 0.25, cooldownMs: 3100 }
 };
 
-// Discoverable Golden Ticket candidate hiding spots near scenic corners
+// Discoverable Golden Ticket candidate hiding spots tucked behind scenic corners
 const TICKET_HIDING_SPOTS = [
-  { x: 11.4, z: -2.1 },
-  { x: 4.5, z: 10.6 },
-  { x: -11.6, z: 3.9 },
-  { x: -10.9, z: -9.8 },
-  { x: 7.4, z: -9.0 },
-  { x: -10.8, z: 9.6 }
+  { x: 11.45, z: -2.05 },
+  { x: 9.25, z: 9.85 },
+  { x: -11.55, z: 4.15 },
+  { x: -12.6, z: -9.8 },
+  { x: 11.8, z: -9.9 },
+  { x: -11.4, z: 9.4 }
 ];
 
 // Pre-allocated math helpers (zero GC inside animation loop)
@@ -364,6 +368,39 @@ export async function initEunhajaeScene() {
   const ticketModal = document.getElementById('golden-ticket-modal');
   const btnCloseTicketModal = document.getElementById('btn-close-ticket-modal');
 
+  const mailboxModal = document.getElementById('mailbox-modal');
+  const btnCloseMailboxModal = document.getElementById('btn-close-mailbox-modal');
+  const mailboxViews = {
+    menu: document.getElementById('mailbox-view-menu'),
+    read: document.getElementById('mailbox-view-read'),
+    write: document.getElementById('mailbox-view-write'),
+    confirm: document.getElementById('mailbox-view-confirm')
+  };
+  const mailboxVisitStatusEl = document.getElementById('mailbox-visit-status');
+  const btnMailboxOpenRead = document.getElementById('btn-mailbox-open-read');
+  const btnMailboxOpenWrite = document.getElementById('btn-mailbox-open-write');
+  const mailboxPaperTagEl = document.getElementById('mailbox-paper-tag');
+  const mailboxReadCounterEl = document.getElementById('mailbox-read-counter');
+  const mailboxLetterTitleEl = document.getElementById('mailbox-letter-title');
+  const mailboxLetterBodyEl = document.getElementById('mailbox-letter-body');
+  const mailboxLetterClosingEl = document.getElementById('mailbox-letter-closing');
+  const mailboxLimitNoticeEl = document.getElementById('mailbox-limit-notice');
+  const btnMailboxBackFromRead = document.getElementById('btn-mailbox-back-from-read');
+  const btnMailboxNextLetter = document.getElementById('btn-mailbox-next-letter');
+  const mailboxWriteForm = document.getElementById('mailbox-write-form');
+  const mailboxSenderInput = document.getElementById('mailbox-sender-input');
+  const mailboxMessageInput = document.getElementById('mailbox-message-input');
+  const mailboxCharCountEl = document.getElementById('mailbox-char-count');
+  const mailboxHoneypotInput = document.getElementById('mailbox-honeypot');
+  const mailboxWriteErrorEl = document.getElementById('mailbox-write-error');
+  const btnMailboxBackFromWrite = document.getElementById('btn-mailbox-back-from-write');
+  const mailboxPreviewSenderEl = document.getElementById('mailbox-preview-sender');
+  const mailboxPreviewMessageEl = document.getElementById('mailbox-preview-message');
+  const mailboxSendStatusEl = document.getElementById('mailbox-send-status');
+  const mailboxConfirmActionsEl = document.getElementById('mailbox-confirm-actions');
+  const btnMailboxEditDraft = document.getElementById('btn-mailbox-edit-draft');
+  const btnMailboxSendConfirm = document.getElementById('btn-mailbox-send-confirm');
+
   if (!canvas) {
     reportFailure(new Error('Missing canvas element'), 'no_canvas');
     return false;
@@ -396,7 +433,7 @@ export async function initEunhajaeScene() {
   function getTargetPixelRatio() {
     if (isSoftwareGl) return 1;
     const rawDpr = window.devicePixelRatio || 1;
-    return isMobile ? Math.min(rawDpr, 1.25) : Math.min(rawDpr, 1.75);
+    return isMobile ? Math.min(rawDpr, 1.5) : Math.min(rawDpr, 1.75);
   }
 
   renderer.setSize(viewportW, viewportH, false);
@@ -415,16 +452,21 @@ export async function initEunhajaeScene() {
   const roomEnv = new RoomEnvironment();
   const envTarget = pmremGenerator.fromScene(roomEnv, 0.04);
   scene.environment = envTarget.texture;
-  scene.environmentIntensity = isMobile ? 0.22 : 0.28;
+  scene.environmentIntensity = 0.28;
   roomEnv.dispose();
   pmremGenerator.dispose();
 
   const camera = new THREE.PerspectiveCamera(54, viewportW / viewportH, 0.2, 240);
 
-  // Initial local player state
+  // Initial local player state (migrate legacy default '나' -> '행복한 밤송이')
+  const DEFAULT_NICKNAME = '행복한 밤송이';
   const savedProfile = loadSavedProfile();
+  const rawSavedName = typeof savedProfile?.name === 'string' ? savedProfile.name.trim() : '';
+  const hasCustomNickname = Boolean(rawSavedName && rawSavedName !== '나');
+  const resolvedInitialName = hasCustomNickname ? rawSavedName : DEFAULT_NICKNAME;
+
   const selfState = {
-    name: savedProfile?.name || '나',
+    name: resolvedInitialName,
     coatColor: savedProfile?.coatColor || '#c94c4c',
     lanternColor: savedProfile?.lanternColor || '#ffd166',
     x: 0.2,
@@ -436,8 +478,16 @@ export async function initEunhajaeScene() {
     eating: false
   };
 
-  if (savedProfile?.name && inputNickname) {
-    inputNickname.value = savedProfile.name;
+  if (rawSavedName === '나') {
+    saveProfileLocal({
+      name: DEFAULT_NICKNAME,
+      coatColor: selfState.coatColor,
+      lanternColor: selfState.lanternColor
+    });
+  }
+
+  if (hasCustomNickname && inputNickname) {
+    inputNickname.value = rawSavedName;
   }
 
   const startGroundY = groundHeightAt(selfState.x, selfState.z);
@@ -505,10 +555,10 @@ export async function initEunhajaeScene() {
   const christmasTree = createChristmasTree(treeX, treeZ, glowTexture);
   scene.add(christmasTree);
 
-  const bungeoppangStall = createBungeoppangStall(stallX, stallZ, glowTexture, !isMobile);
+  const bungeoppangStall = createBungeoppangStall(stallX, stallZ, glowTexture, true);
   scene.add(bungeoppangStall);
 
-  const cozyFirepit = createCozyFirepit(firepitX, firepitZ, glowTexture, !isMobile);
+  const cozyFirepit = createCozyFirepit(firepitX, firepitZ, glowTexture, true);
   scene.add(cozyFirepit.group);
 
   const steppingStones = createHillSteppingStones({
@@ -532,6 +582,15 @@ export async function initEunhajaeScene() {
     createLanternPost(11.0, -10.2, glowTexture, false)
   ];
   lanternPosts.forEach((lp) => scene.add(lp));
+
+  // Cozy Hilltop Mailbox beside leftmost lantern post
+  const mailboxX = -11.75;
+  const mailboxZ = -9.95;
+  const cozyMailbox = createCozyMailbox(mailboxX, mailboxZ, 0.55, glowTexture);
+  scene.add(cozyMailbox);
+
+  // Night-only subtle irregular shooting star
+  const shootingStar = createShootingStar(scene, glowTexture);
 
   const hillLampLights = [];
   [pavilionGroup, christmasTree, bungeoppangStall, cozyFirepit.group, ...lanternPosts].forEach((grp) => {
@@ -562,10 +621,10 @@ export async function initEunhajaeScene() {
   const lanternRack = createLanternRack(glowTexture);
   scene.add(lanternRack);
 
-  const ambientSkyLanterns = createAmbientSkyLanterns(glowTexture, isMobile ? 16 : 28);
+  const ambientSkyLanterns = createAmbientSkyLanterns(glowTexture, isMobile ? 22 : 28);
   scene.add(ambientSkyLanterns.group);
 
-  const eveningFireflies = createEveningFireflies(glowTexture, isMobile ? 14 : 28);
+  const eveningFireflies = createEveningFireflies(glowTexture, isMobile ? 24 : 28);
   scene.add(eveningFireflies.points);
 
   const groundLightPools = createGroundLightPools(glowTexture, [
@@ -611,14 +670,6 @@ export async function initEunhajaeScene() {
     return el;
   }
 
-  const waveLabelEl = blueHouseInfo ? document.createElement('div') : null;
-  if (waveLabelEl && labelsLayer) {
-    waveLabelEl.className = 'world-wave-label';
-    waveLabelEl.textContent = '반가워요! 👋';
-    waveLabelEl.style.opacity = '0';
-    labelsLayer.appendChild(waveLabelEl);
-  }
-
   const eatBubbleEl = document.createElement('div');
   eatBubbleEl.className = 'world-eat-bubble';
   eatBubbleEl.style.opacity = '0';
@@ -637,7 +688,7 @@ export async function initEunhajaeScene() {
   const NPC_SPEAKER_NAMES = {
     manbok: '만복',
     momo: '모모',
-    bit: '비트',
+    beat: '비트',
     tori: '토리',
     naru: '나루',
     chichi: '치치',
@@ -684,7 +735,7 @@ export async function initEunhajaeScene() {
     ticketSpotIdx = Math.floor(Math.random() * TICKET_HIDING_SPOTS.length);
   }
   const ticketSpot = TICKET_HIDING_SPOTS[ticketSpotIdx];
-  const ticketY = groundHeightAt(ticketSpot.x, ticketSpot.z) + 0.28;
+  const ticketY = groundHeightAt(ticketSpot.x, ticketSpot.z) + 0.14;
   const goldenTicket = createGoldenTicket(glowTexture);
   goldenTicket.position.set(ticketSpot.x, ticketY, ticketSpot.z);
   goldenTicket.rotation.set(0.45, 0.55, 0.14);
@@ -692,7 +743,8 @@ export async function initEunhajaeScene() {
 
   let ticketFound = false;
   let ticketModalOpen = false;
-  const goldenSparkPool = createGoldenSparkPool(glowTexture, isMobile ? 14 : 20);
+  let mailboxModalOpen = false;
+  const goldenSparkPool = createGoldenSparkPool(glowTexture, isMobile ? 16 : 20);
   scene.add(goldenSparkPool.group);
 
   // Bosingak Bell Strike Animation State
@@ -737,9 +789,9 @@ export async function initEunhajaeScene() {
   }
 
   // =================================================================
-  // NPC Firework Reaction Helpers (Restricted to Bit, Tori, Naru, Momo)
+  // NPC Firework Reaction Helpers (Restricted to Beat, Tori, Naru, Momo)
   // =================================================================
-  const FIREWORK_REACT_IDS = new Set(['bit', 'tori', 'naru', 'momo']);
+  const FIREWORK_REACT_IDS = new Set(['beat', 'tori', 'naru', 'momo']);
 
   function notifyNpcsFireworkLaunch() {
     const now = performance.now();
@@ -789,8 +841,8 @@ export async function initEunhajaeScene() {
   // =================================================================
   // Zero-GC Fireworks Particle Engine (Adaptive Quality Aware)
   // =================================================================
-  const MAX_SPARKS = isMobile ? 2200 : 4200;
-  const MAX_SHELLS = isMobile ? 18 : 26;
+  const MAX_SPARKS = isMobile ? 2600 : 4200;
+  const MAX_SHELLS = isMobile ? 20 : 26;
 
   const sparkGeo = new THREE.BufferGeometry();
   const sparkPositions = new Float32Array(MAX_SPARKS * 3);
@@ -859,7 +911,7 @@ export async function initEunhajaeScene() {
     sparkTwinkle[idx] = twinkle;
   }
 
-  const burstLights = (isMobile ? [0] : [0, 1]).map(() => {
+  const burstLights = [0, 1].map(() => {
     const pt = new THREE.PointLight(0xffdf7a, 0, 56, 1.45);
     pt.position.set(0, -100, 0);
     scene.add(pt);
@@ -1290,7 +1342,10 @@ export async function initEunhajaeScene() {
     btnToggleGuide?.classList.toggle('is-active', isGuide);
     btnToggleGuide?.setAttribute('aria-expanded', String(isGuide));
 
-    mobileMovePad?.classList.toggle('is-obscured', isWish || isBungeoppang || isSettings || isGuide);
+    mobileMovePad?.classList.toggle(
+      'is-obscured',
+      isWish || isBungeoppang || isSettings || isGuide || mailboxModalOpen || ticketModalOpen
+    );
 
     if (isWish) {
       window.setTimeout(() => inputWish?.focus(), 60);
@@ -1308,9 +1363,369 @@ export async function initEunhajaeScene() {
   btnCloseTicketModal?.addEventListener('click', () => {
     ticketModalOpen = false;
     ticketModal?.classList.remove('is-open');
+    mobileMovePad?.classList.toggle('is-obscured', Boolean(openSheetName) || mailboxModalOpen);
     audio.ensureContext();
     audio.playWishLantern();
     goldenSparkPool.trigger();
+  });
+
+  // =================================================================
+  // Cozy Mailbox Modal: Read Anonymous Neighbor Letters (Max 3/Visit) & Send to Operator
+  // =================================================================
+  const MAX_MAILBOX_READS_PER_VISIT = 3;
+  let lettersReadThisVisit = 0;
+  const seenLetterIds = new Set();
+  let lastShownLetter = null;
+  let draftSenderName = '';
+  let draftMessageText = '';
+  let isSendingMailbox = false;
+  let lastMailSignature = '';
+  let lastMailSentAtMs = 0;
+
+  const MAILBOX_QUOTA_KEY = 'time_shop_mailbox_quota_v1';
+
+  function getMailboxEndpoint() {
+    return (MAILBOX_CONFIG?.serverlessEndpoint || '').trim() || '/api/mailbox/send';
+  }
+
+  function getCurrentMonthKey() {
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date()).slice(0, 7);
+    } catch (e) {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
+  }
+
+  function isMailboxQuotaExhausted() {
+    try {
+      const raw = localStorage.getItem(MAILBOX_QUOTA_KEY);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return Boolean(
+        parsed
+        && parsed.month === getCurrentMonthKey()
+        && parsed.endpoint === getMailboxEndpoint()
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function syncMailboxQuotaState() {
+    btnMailboxOpenWrite?.classList.toggle('is-hidden', isMailboxQuotaExhausted());
+  }
+
+  function markMailboxQuotaExhausted() {
+    try {
+      localStorage.setItem(MAILBOX_QUOTA_KEY, JSON.stringify({
+        month: getCurrentMonthKey(),
+        endpoint: getMailboxEndpoint()
+      }));
+    } catch (e) {
+      // ignore storage failure
+    }
+    syncMailboxQuotaState();
+  }
+
+  function syncMailboxVisitStatus() {
+    if (mailboxVisitStatusEl) {
+      mailboxVisitStatusEl.textContent = `이번 산책에서 읽은 편지 · ${lettersReadThisVisit} / ${MAX_MAILBOX_READS_PER_VISIT}통`;
+    }
+  }
+
+  function setMailboxView(viewKey) {
+    Object.entries(mailboxViews).forEach(([key, el]) => {
+      el?.classList.toggle('is-active', key === viewKey);
+    });
+    if (viewKey === 'menu') {
+      syncMailboxVisitStatus();
+      syncMailboxQuotaState();
+    }
+  }
+
+  syncMailboxQuotaState();
+
+  function setMailboxSendFeedback(text, kind = '') {
+    if (!mailboxSendStatusEl) return;
+    if (!text) {
+      mailboxSendStatusEl.textContent = '';
+      mailboxSendStatusEl.className = 'mailbox-feedback is-hidden';
+      return;
+    }
+    mailboxSendStatusEl.textContent = text;
+    mailboxSendStatusEl.className = `mailbox-feedback${kind ? ` is-${kind}` : ''}`;
+  }
+
+  function drawNextNeighborLetter() {
+    if (!Array.isArray(EUNHAJAE_LETTERS) || EUNHAJAE_LETTERS.length === 0) {
+      return null;
+    }
+    let pool = EUNHAJAE_LETTERS.filter((item) => !seenLetterIds.has(item.id));
+    if (pool.length === 0) {
+      pool = EUNHAJAE_LETTERS.filter((item) => !lastShownLetter || item.id !== lastShownLetter.id);
+    }
+    if (pool.length === 0) {
+      pool = EUNHAJAE_LETTERS;
+    }
+    const picked = pool[Math.floor(Math.random() * pool.length)];
+    seenLetterIds.add(picked.id);
+    lastShownLetter = picked;
+    lettersReadThisVisit += 1;
+    return picked;
+  }
+
+  function renderLetterToReadView(letter) {
+    if (!letter) return;
+    if (mailboxPaperTagEl) mailboxPaperTagEl.textContent = letter.tag || '익명의 편지';
+    if (mailboxLetterTitleEl) mailboxLetterTitleEl.textContent = letter.title || '';
+    if (mailboxLetterBodyEl) mailboxLetterBodyEl.textContent = letter.body || '';
+    if (mailboxLetterClosingEl) mailboxLetterClosingEl.textContent = letter.closing || '';
+    if (mailboxReadCounterEl) {
+      mailboxReadCounterEl.textContent = `${lettersReadThisVisit} / ${MAX_MAILBOX_READS_PER_VISIT}통`;
+    }
+    const reachedLimit = lettersReadThisVisit >= MAX_MAILBOX_READS_PER_VISIT;
+    if (btnMailboxNextLetter) {
+      btnMailboxNextLetter.disabled = reachedLimit;
+      btnMailboxNextLetter.textContent = reachedLimit ? '3통 모두 읽음' : '다른 편지 꺼내기';
+    }
+    mailboxLimitNoticeEl?.classList.toggle('is-hidden', !reachedLimit);
+    syncMailboxVisitStatus();
+  }
+
+  function openMailboxModal() {
+    setSheetOpen(null);
+    mailboxModalOpen = true;
+    controls.enabled = false;
+    keys.up = false;
+    keys.down = false;
+    keys.left = false;
+    keys.right = false;
+    mailboxModal?.classList.add('is-open');
+    mobileMovePad?.classList.add('is-obscured');
+    setMailboxView('menu');
+  }
+
+  function closeMailboxModal() {
+    mailboxModalOpen = false;
+    controls.enabled = true;
+    mailboxModal?.classList.remove('is-open');
+    mobileMovePad?.classList.toggle('is-obscured', Boolean(openSheetName) || ticketModalOpen);
+  }
+
+  btnCloseMailboxModal?.addEventListener('click', closeMailboxModal);
+  mailboxModal?.addEventListener('click', (e) => {
+    if (e.target === mailboxModal && !isSendingMailbox) {
+      closeMailboxModal();
+    }
+  });
+
+  btnMailboxOpenRead?.addEventListener('click', () => {
+    audio.ensureContext();
+    if (lettersReadThisVisit === 0) {
+      const letter = drawNextNeighborLetter();
+      renderLetterToReadView(letter);
+    } else if (lastShownLetter) {
+      renderLetterToReadView(lastShownLetter);
+    }
+    setMailboxView('read');
+  });
+
+  btnMailboxNextLetter?.addEventListener('click', () => {
+    if (lettersReadThisVisit >= MAX_MAILBOX_READS_PER_VISIT) {
+      mailboxLimitNoticeEl?.classList.remove('is-hidden');
+      if (btnMailboxNextLetter) btnMailboxNextLetter.disabled = true;
+      return;
+    }
+    audio.ensureContext();
+    const letter = drawNextNeighborLetter();
+    renderLetterToReadView(letter);
+  });
+
+  btnMailboxBackFromRead?.addEventListener('click', () => setMailboxView('menu'));
+
+  function syncMailboxCharCount() {
+    if (!mailboxCharCountEl || !mailboxMessageInput) return;
+    mailboxCharCountEl.textContent = `${mailboxMessageInput.value.length} / 500`;
+  }
+
+  function getMailboxSenderName() {
+    const cur = (selfState.name || '').trim();
+    return cur && cur !== '나' ? cur : DEFAULT_NICKNAME;
+  }
+
+  function syncMailboxSenderDisplay(force = false) {
+    if (!mailboxSenderInput) return;
+    const isWritingNow = mailboxModalOpen && mailboxViews.write?.classList.contains('is-active');
+    if (force || !isWritingNow) {
+      mailboxSenderInput.value = getMailboxSenderName();
+    }
+  }
+
+  btnMailboxOpenWrite?.addEventListener('click', () => {
+    if (isMailboxQuotaExhausted()) {
+      syncMailboxQuotaState();
+      return;
+    }
+    syncMailboxSenderDisplay(true);
+    if (mailboxWriteErrorEl) {
+      mailboxWriteErrorEl.textContent = '';
+      mailboxWriteErrorEl.classList.add('is-hidden');
+    }
+    syncMailboxCharCount();
+    setMailboxView('write');
+    window.setTimeout(() => mailboxMessageInput?.focus(), 60);
+  });
+
+  mailboxMessageInput?.addEventListener('input', syncMailboxCharCount);
+  btnMailboxBackFromWrite?.addEventListener('click', () => setMailboxView('menu'));
+
+  mailboxWriteForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const typedSender = (mailboxSenderInput?.value || '').trim().slice(0, 20);
+    const sender = typedSender || getMailboxSenderName();
+    if (mailboxSenderInput) mailboxSenderInput.value = sender;
+    const message = (mailboxMessageInput?.value || '').trim();
+
+    let errMsg = '';
+    if (message.length < 5 || message.length > 500) {
+      errMsg = '편지 내용을 5자 이상 500자 이하로 적어주세요.';
+    }
+
+    if (errMsg) {
+      if (mailboxWriteErrorEl) {
+        mailboxWriteErrorEl.textContent = errMsg;
+        mailboxWriteErrorEl.classList.remove('is-hidden');
+      }
+      return;
+    }
+
+    if (mailboxWriteErrorEl) {
+      mailboxWriteErrorEl.textContent = '';
+      mailboxWriteErrorEl.classList.add('is-hidden');
+    }
+
+    draftSenderName = sender;
+    draftMessageText = message;
+    if (mailboxPreviewSenderEl) mailboxPreviewSenderEl.textContent = draftSenderName;
+    if (mailboxPreviewMessageEl) mailboxPreviewMessageEl.textContent = draftMessageText;
+
+    setMailboxSendFeedback('');
+    mailboxConfirmActionsEl?.classList.remove('is-hidden');
+    if (btnMailboxEditDraft) {
+      btnMailboxEditDraft.classList.remove('is-hidden');
+      btnMailboxEditDraft.disabled = false;
+    }
+    if (btnMailboxSendConfirm) {
+      btnMailboxSendConfirm.classList.remove('is-hidden');
+      btnMailboxSendConfirm.disabled = false;
+      btnMailboxSendConfirm.textContent = '편지 띄우기';
+    }
+    setMailboxView('confirm');
+  });
+
+  btnMailboxEditDraft?.addEventListener('click', () => {
+    if (isSendingMailbox) return;
+    setMailboxView('write');
+  });
+
+  btnMailboxSendConfirm?.addEventListener('click', async () => {
+    if (isSendingMailbox) return;
+    if (isMailboxQuotaExhausted()) {
+      setMailboxSendFeedback('상점지기의 우체통이 이번 달 편지로 꽉 찼어요. 다음 달을 기약해 주세요.', 'error');
+      btnMailboxSendConfirm?.classList.add('is-hidden');
+      btnMailboxEditDraft?.classList.add('is-hidden');
+      mailboxConfirmActionsEl?.classList.add('is-hidden');
+      return;
+    }
+    const now = performance.now();
+    const signature = `${draftSenderName}::${draftMessageText}`;
+
+    if (signature === lastMailSignature && now - lastMailSentAtMs < 120000) {
+      setMailboxSendFeedback('방금 보낸 것과 같은 편지예요. 잠시 후 새로운 마음으로 작성해 주세요.', 'error');
+      return;
+    }
+    if (lastMailSentAtMs > 0 && now - lastMailSentAtMs < 35000) {
+      const remain = Math.ceil((35000 - (now - lastMailSentAtMs)) / 1000);
+      setMailboxSendFeedback(`잠시 숨을 고른 뒤(${remain}초 후) 다시 편지를 띄워 주세요.`, 'error');
+      return;
+    }
+
+    const endpoint = getMailboxEndpoint();
+    isSendingMailbox = true;
+    if (btnMailboxSendConfirm) {
+      btnMailboxSendConfirm.disabled = true;
+      btnMailboxSendConfirm.textContent = '전송 중...';
+    }
+    if (btnMailboxEditDraft) btnMailboxEditDraft.disabled = true;
+    setMailboxSendFeedback('상점지기에게 편지를 전하고 있어요...', 'pending');
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          senderName: draftSenderName,
+          message: draftMessageText,
+          website: mailboxHoneypotInput?.value || ''
+        })
+      });
+
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload || (payload.ok !== true && payload.success !== true)) {
+        const rawErr = String(payload?.error || payload?.errors?.[0]?.message || '').trim();
+        const isMonthlyQuotaError = response.status === 402
+          || (/limit|quota|upgrade|plan|50/i.test(rawErr) && !/rate.?limit/i.test(rawErr));
+
+        if (isMonthlyQuotaError) {
+          markMailboxQuotaExhausted();
+          setMailboxSendFeedback('상점지기의 우체통이 이번 달 편지로 꽉 찼어요. 다음 달을 기약해 주세요.', 'error');
+          btnMailboxSendConfirm?.classList.add('is-hidden');
+          btnMailboxEditDraft?.classList.add('is-hidden');
+          mailboxConfirmActionsEl?.classList.add('is-hidden');
+          return;
+        }
+
+        const hasKorean = /[가-힣]/.test(rawErr);
+        const serverErr = hasKorean
+          ? rawErr
+          : (response.status === 404 || response.status === 405 || response.status === 503
+            ? '이메일 발송 서버가 아직 연결되지 않았어요. 설정 완료 후 다시 시도해 주세요.'
+            : '편지를 전하지 못했어요. 잠시 후 다시 시도해 주세요.');
+        setMailboxSendFeedback(serverErr, 'error');
+        if (btnMailboxSendConfirm) {
+          btnMailboxSendConfirm.disabled = false;
+          btnMailboxSendConfirm.textContent = '다시 시도하기';
+        }
+        if (btnMailboxEditDraft) btnMailboxEditDraft.disabled = false;
+        return;
+      }
+
+      lastMailSignature = signature;
+      lastMailSentAtMs = performance.now();
+      if (mailboxMessageInput) mailboxMessageInput.value = '';
+      syncMailboxCharCount();
+
+      audio.ensureContext();
+      audio.playWishLantern();
+
+      setMailboxSendFeedback('소중한 편지가 상점지기에게 무사히 날아갔어요.', 'success');
+      btnMailboxSendConfirm?.classList.add('is-hidden');
+      btnMailboxEditDraft?.classList.add('is-hidden');
+      mailboxConfirmActionsEl?.classList.add('is-hidden');
+    } catch (err) {
+      setMailboxSendFeedback('네트워크 연결 문제로 편지를 보내지 못했어요. 잠시 후 다시 시도해 주세요.', 'error');
+      if (btnMailboxSendConfirm) {
+        btnMailboxSendConfirm.disabled = false;
+        btnMailboxSendConfirm.textContent = '다시 시도하기';
+      }
+      if (btnMailboxEditDraft) btnMailboxEditDraft.disabled = false;
+    } finally {
+      isSendingMailbox = false;
+    }
   });
 
   // Bungeoppang Purchase & Eat Sequence (lighter warm red-bean color 0xcf823a)
@@ -1394,7 +1809,7 @@ export async function initEunhajaeScene() {
     renderer.toneMappingExposure = THREE.MathUtils.lerp(renderer.toneMappingExposure, preset.exposure + midnightFlash * 0.14, alpha);
     scene.environmentIntensity = THREE.MathUtils.lerp(
       scene.environmentIntensity,
-      isMobile ? preset.envIntensity * 0.85 : preset.envIntensity,
+      preset.envIntensity,
       alpha
     );
 
@@ -1960,7 +2375,11 @@ export async function initEunhajaeScene() {
   }
 
   function onKeyDown(e) {
-    if (isTypingFocused() || ticketModalOpen) return;
+    if (e.key === 'Escape' && mailboxModalOpen && !isSendingMailbox) {
+      closeMailboxModal();
+      return;
+    }
+    if (isTypingFocused() || ticketModalOpen || mailboxModalOpen) return;
     if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.up = true;
     if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.down = true;
     if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = true;
@@ -2020,13 +2439,14 @@ export async function initEunhajaeScene() {
 
   function syncProfileToWorld() {
     const cleanName = (inputNickname?.value || '').trim().slice(0, 14);
-    if (cleanName) selfState.name = cleanName;
+    selfState.name = cleanName && cleanName !== '나' ? cleanName : DEFAULT_NICKNAME;
     saveProfileLocal({
       name: selfState.name,
       coatColor: selfState.coatColor,
       lanternColor: selfState.lanternColor
     });
     updateSelfStyle();
+    syncMailboxSenderDisplay();
   }
 
   document.querySelectorAll('.color-swatch-btn[data-coat]').forEach((btn) => {
@@ -2103,7 +2523,7 @@ export async function initEunhajaeScene() {
     const dtMs = performance.now() - pointerDownInfo.time;
     pointerDownInfo = null;
 
-    if (Math.hypot(dx, dy) > 8 || dtMs > 360 || ticketModalOpen) return;
+    if (Math.hypot(dx, dy) > 8 || dtMs > 360 || ticketModalOpen || mailboxModalOpen) return;
 
     const rect = canvas.getBoundingClientRect();
     _pointerNdc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -2182,6 +2602,16 @@ export async function initEunhajaeScene() {
       audio.ensureContext();
       clickRipple.trigger(stallX, stallZ, 0xffb85c);
       setSheetOpen('bungeoppang', true);
+      return;
+    }
+
+    // 3.5 Check Cozy Hilltop Mailbox -> Paper Stationery Letter Modal
+    const mailboxHits = _raycaster.intersectObject(cozyMailbox, true);
+    if (mailboxHits.length > 0) {
+      audio.ensureContext();
+      audio.playWishLantern();
+      clickRipple.trigger(mailboxX, mailboxZ, 0xffe08a);
+      openMailboxModal();
       return;
     }
 
@@ -2341,7 +2771,7 @@ export async function initEunhajaeScene() {
     // 1. Movement Controls
     const moveZ = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
     const moveX = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
-    const isMoving = !ticketModalOpen && (moveX !== 0 || moveZ !== 0);
+    const isMoving = !ticketModalOpen && !mailboxModalOpen && (moveX !== 0 || moveZ !== 0);
 
     if (isMoving && selfState.sitting) {
       standUpFromBench();
@@ -2444,7 +2874,8 @@ export async function initEunhajaeScene() {
 
     const ud = selfEntry.mesh.userData;
     if (selfEntry.sitting) {
-      ud.bodyGroup.position.y = THREE.MathUtils.lerp(ud.bodyGroup.position.y, -0.18, posLerp);
+      ud.bodyGroup.position.y = THREE.MathUtils.lerp(ud.bodyGroup.position.y, -0.04, posLerp);
+      ud.bodyGroup.position.z = THREE.MathUtils.lerp(ud.bodyGroup.position.z, 0.02, posLerp);
       ud.bodyGroup.rotation.z = THREE.MathUtils.lerp(ud.bodyGroup.rotation.z, 0, posLerp);
       ud.bodyGroup.rotation.y = THREE.MathUtils.lerp(ud.bodyGroup.rotation.y, 0, posLerp);
       ud.leftLegPivot.rotation.x = THREE.MathUtils.lerp(ud.leftLegPivot.rotation.x, -Math.PI * 0.44, posLerp);
@@ -2455,6 +2886,7 @@ export async function initEunhajaeScene() {
       ud.walkPhase += dt * 7.2;
       const beat = ud.walkPhase;
       ud.bodyGroup.position.y = Math.abs(Math.sin(beat)) * 0.1;
+      ud.bodyGroup.position.z = THREE.MathUtils.lerp(ud.bodyGroup.position.z, 0, posLerp);
       ud.bodyGroup.rotation.z = Math.sin(beat * 0.5) * 0.14;
       ud.bodyGroup.rotation.y = Math.sin(beat * 0.5) * 0.24;
       ud.leftLegPivot.rotation.x = Math.sin(beat) * 0.28;
@@ -2463,6 +2895,7 @@ export async function initEunhajaeScene() {
       ud.armGroup.rotation.z = 0.22 + Math.cos(beat * 0.5) * 0.28;
     } else {
       ud.bodyGroup.position.y = THREE.MathUtils.lerp(ud.bodyGroup.position.y, 0, posLerp);
+      ud.bodyGroup.position.z = THREE.MathUtils.lerp(ud.bodyGroup.position.z, 0, posLerp);
       ud.bodyGroup.rotation.z = THREE.MathUtils.lerp(ud.bodyGroup.rotation.z, 0, posLerp);
       ud.bodyGroup.rotation.y = THREE.MathUtils.lerp(ud.bodyGroup.rotation.y, 0, posLerp);
       ud.armGroup.rotation.z = THREE.MathUtils.lerp(ud.armGroup.rotation.z, 0, posLerp);
@@ -2494,7 +2927,7 @@ export async function initEunhajaeScene() {
       }
     }
 
-    const labelY = gy + (selfEntry.sitting ? 1.54 : 1.72);
+    const labelY = gy + (selfEntry.sitting ? 1.68 : 1.72);
     projectLabelToScreen(selfEntry.curX, labelY, selfEntry.curZ, selfEntry.labelEl, halfW, halfH, -8);
 
     if (eatBubbleEl) {
@@ -2556,7 +2989,7 @@ export async function initEunhajaeScene() {
       if (npc.id === 'momo') {
         baseHeadYaw = Math.sin(timeSec * 0.7) * 0.09;
         baseHeadPitch = Math.sin(timeSec * 1.1) * 0.04;
-      } else if (npc.id === 'bit') {
+      } else if (npc.id === 'beat') {
         // Multi-phase musical dance groove (bounce + upper groove + arm wave + subtle step)
         const beat = timeSec * 5.4;
         const barPhase = Math.sin(beat * 0.25);
@@ -2772,14 +3205,18 @@ export async function initEunhajaeScene() {
       }
     }
 
-    // Golden Ticket Twinkle & Player Victory Swirl
+    // Golden Ticket Subtle Twinkle, Mailbox Flag Breeze, Shooting Star & Player Victory Swirl
     if (!ticketFound && goldenTicket.visible) {
-      goldenTicket.position.y = ticketY + Math.sin(timeSec * 2.4) * 0.028;
-      goldenTicket.rotation.y = 0.55 + Math.sin(timeSec * 1.3) * 0.14;
+      goldenTicket.position.y = ticketY + Math.sin(timeSec * 2.2) * 0.014;
+      goldenTicket.rotation.y = 0.55 + Math.sin(timeSec * 1.1) * 0.1;
       if (goldenTicket.userData.shimmerMat) {
-        goldenTicket.userData.shimmerMat.opacity = 0.42 + Math.sin(timeSec * 3.4) * 0.24;
+        goldenTicket.userData.shimmerMat.opacity = 0.16 + Math.sin(timeSec * 3.1) * 0.08;
       }
     }
+    if (cozyMailbox.userData.flagPivot) {
+      cozyMailbox.userData.flagPivot.rotation.x = -0.22 + Math.sin(timeSec * 1.6) * 0.04;
+    }
+    shootingStar.update(dt, activeTimeKey === 'night');
     if (goldenSparkPool.isActive()) {
       goldenSparkPool.update(dt, selfEntry.mesh.position);
     }
@@ -2899,7 +3336,7 @@ export async function initEunhajaeScene() {
       }
     }
 
-    // Chichi (Blue-Roof House Villager): Wave when zoomed close + Nameplate within 55m
+    // Chichi (Blue-Roof House Villager): Wave when zoomed close (no overhead greeting label)
     if (blueHouseInfo) {
       const distToBlueHouse = camera.position.distanceTo(blueHouseInfo.porchWorldPos);
       const isClose = distToBlueHouse < 32;
@@ -2911,25 +3348,6 @@ export async function initEunhajaeScene() {
       blueHouseInfo.rightArmPivot.rotation.z = THREE.MathUtils.lerp(restArmZ, waveArmZ, wb);
       blueHouseInfo.bodyPivot.position.y = Math.abs(Math.sin(nowMs * 0.0055)) * 0.05 * wb;
       blueHouseInfo.bodyPivot.rotation.z = Math.sin(nowMs * 0.0055) * 0.06 * wb;
-
-      if (waveLabelEl) {
-        if (wb > 0.25) {
-          projectLabelToScreen(
-            blueHouseInfo.porchWorldPos.x,
-            blueHouseInfo.porchWorldPos.y + 0.92,
-            blueHouseInfo.porchWorldPos.z,
-            waveLabelEl,
-            halfW,
-            halfH,
-            -8
-          );
-          if (waveLabelEl.style.opacity !== '0') {
-            waveLabelEl.style.opacity = wb.toFixed(2);
-          }
-        } else {
-          waveLabelEl.style.opacity = '0';
-        }
-      }
     }
 
     // 9. Sky Midnight Countdown (high cadence while countdown active, 4x/sec idle)
@@ -3062,6 +3480,7 @@ export async function initEunhajaeScene() {
     clearTimeout(hintHideTimer);
     clearCountdownTimers();
     goldenSparkPool.stop();
+    shootingStar.dispose();
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('keyup', onKeyUp);
     window.removeEventListener('resize', onResize);

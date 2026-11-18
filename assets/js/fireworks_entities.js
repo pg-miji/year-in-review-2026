@@ -223,77 +223,92 @@ function createNamsanLibrary(x, z, atmosphereRefs) {
   return g;
 }
 
-// Cozy Multi-part Hillside House on Namsan (varied stories/heights + Blue Roof Waving Villager)
+// Cozy Multi-part Hillside House on Namsan (varied stories/heights + Blue Roof House with Yard & Chichi)
 function createNamsanHouse(x, z, { roofColor = 0x9c4638, wallColor = 0xe8dfd1, isBlueRoof = false, lit = true, stories = 1, heightScale = 1.0 }, glowTexture, sharedMats, atmosphereRefs) {
   const g = new THREE.Group();
   const baseY = northLandElevation(x, z);
   g.position.set(x, baseY, z);
 
   const { stoneMat, woodMat, winMat, darkWinMat } = sharedMats;
-  const wallMat = new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.84 });
+  const wallMat = new THREE.MeshStandardMaterial({
+    color: wallColor,
+    roughness: isBlueRoof ? 0.92 : 0.84,
+    envMapIntensity: isBlueRoof ? 0.35 : 0.65
+  });
   const roofMat = new THREE.MeshStandardMaterial({
     color: roofColor,
-    roughness: isBlueRoof ? 0.52 : 0.68,
-    metalness: isBlueRoof ? 0.12 : 0.06
+    roughness: isBlueRoof ? 0.64 : 0.68,
+    metalness: isBlueRoof ? 0.06 : 0.06,
+    envMapIntensity: isBlueRoof ? 0.42 : 0.65
   });
 
-  const bodyH = 1.55 * heightScale;
-  const roofH = 1.15 * (0.85 + 0.2 * heightScale);
+  const bodyH = (isBlueRoof ? 1.72 : 1.55) * heightScale;
+  const roofH = (isBlueRoof ? 1.24 : 1.15) * (0.85 + 0.2 * heightScale);
+  const houseOffsetX = isBlueRoof ? -0.35 : 0;
+  const houseOffsetZ = isBlueRoof ? -0.45 : -0.15;
 
-  // 1. Stone Terrace Foundation seated deeply into steep mountain slopes (zero floating)
-  const terrace = new THREE.Mesh(new THREE.BoxGeometry(3.5, 5.2, 4.1), stoneMat);
-  terrace.position.set(0, -2.45, 0.35);
+  // 1. Stone Terrace Foundation seated deeply into steep mountain slopes (expanded yard terrace for Chichi)
+  const terrace = new THREE.Mesh(
+    isBlueRoof ? new THREE.BoxGeometry(6.4, 5.2, 6.0) : new THREE.BoxGeometry(3.5, 5.2, 4.1),
+    stoneMat
+  );
+  terrace.position.set(0, -2.45, isBlueRoof ? 1.05 : 0.35);
   g.add(terrace);
 
   // 2. Main House Body (varied story height)
-  const body = new THREE.Mesh(new THREE.BoxGeometry(2.6, bodyH, 2.1), wallMat);
-  body.position.set(0, 0.15 + bodyH * 0.5, -0.15);
+  const body = new THREE.Mesh(
+    isBlueRoof ? new THREE.BoxGeometry(2.9, bodyH, 2.25) : new THREE.BoxGeometry(2.6, bodyH, 2.1),
+    wallMat
+  );
+  body.position.set(houseOffsetX, 0.15 + bodyH * 0.5, houseOffsetZ);
   g.add(body);
 
   // 3. Pitched Gable Roof (4-sided pyramid seated atop body)
-  const roof = new THREE.Mesh(new THREE.ConeGeometry(2.25, roofH, 4), roofMat);
-  roof.position.set(0, 0.15 + bodyH + roofH * 0.45, -0.15);
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(isBlueRoof ? 2.52 : 2.25, roofH, 4), roofMat);
+  roof.position.set(houseOffsetX, 0.15 + bodyH + roofH * 0.45, houseOffsetZ);
   roof.rotation.y = Math.PI / 4;
   roof.scale.set(1.12, 1.0, 0.95);
   g.add(roof);
 
   // 4. Brick Chimney
   const chimney = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.72, 0.32), stoneMat);
-  chimney.position.set(0.68, 0.15 + bodyH + roofH * 0.52, -0.45);
+  chimney.position.set(houseOffsetX + 0.74, 0.15 + bodyH + roofH * 0.52, houseOffsetZ - 0.35);
   g.add(chimney);
 
   const activeWinMat = !lit
     ? darkWinMat
     : (isBlueRoof
         ? new THREE.MeshStandardMaterial({
-            color: 0xfff3c8,
-            emissive: 0xffc65c,
-            emissiveIntensity: 1.85,
-            roughness: 0.22
+            color: 0xfae3ac,
+            emissive: 0xd99e42,
+            emissiveIntensity: 0.85,
+            roughness: 0.32,
+            envMapIntensity: 0.35
           })
         : winMat);
   if (lit && isBlueRoof) {
-    atmosphereRefs.nightWindowMats.push({ mat: activeWinMat, baseEmissive: 1.85, maxEmissive: 1.85, minEmissive: 0.42 });
+    atmosphereRefs.nightWindowMats.push({ mat: activeWinMat, baseEmissive: 0.85, maxEmissive: 0.85, minEmissive: 0.22 });
   }
 
   // 5. Windows + Wooden Front Door
-  const door = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.92, 0.08), woodMat);
-  door.position.set(-0.42, 0.61, 0.91);
+  const doorZ = houseOffsetZ + (isBlueRoof ? 1.13 : 1.06);
+  const door = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.96, 0.08), woodMat);
+  door.position.set(houseOffsetX - 0.46, 0.63, doorZ);
   g.add(door);
 
-  const frontWin = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.54, 0.08), activeWinMat);
-  frontWin.position.set(0.48, 0.9, 0.91);
+  const frontWin = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.56, 0.08), activeWinMat);
+  frontWin.position.set(houseOffsetX + 0.52, 0.94, doorZ);
   g.add(frontWin);
 
   const sideWin = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.5, 0.62), activeWinMat);
-  sideWin.position.set(1.31, 0.9, -0.1);
+  sideWin.position.set(houseOffsetX + (isBlueRoof ? 1.46 : 1.31), 0.94, houseOffsetZ + 0.05);
   g.add(sideWin);
 
   // Upper floor windows for 2-story hillside houses
   if (stories >= 2 || heightScale >= 1.2) {
     [-0.5, 0.5].forEach((wx) => {
       const upperWin = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.48, 0.08), activeWinMat);
-      upperWin.position.set(wx, 0.15 + bodyH * 0.74, 0.91);
+      upperWin.position.set(houseOffsetX + wx, 0.15 + bodyH * 0.74, doorZ);
       g.add(upperWin);
     });
   }
@@ -301,42 +316,153 @@ function createNamsanHouse(x, z, { roofColor = 0x9c4638, wallColor = 0xe8dfd1, i
   if (lit) {
     const porchHaloMat = new THREE.SpriteMaterial({
       map: glowTexture,
-      color: isBlueRoof ? 0xffe4a3 : 0xffcb74,
+      color: isBlueRoof ? 0xf6cf88 : 0xffcb74,
       transparent: true,
-      opacity: isBlueRoof ? 0.55 : 0.36,
+      opacity: isBlueRoof ? 0.2 : 0.36,
       blending: THREE.AdditiveBlending,
       depthWrite: false
     });
     atmosphereRefs.nightHaloSprites.push({
       mat: porchHaloMat,
-      baseOpacity: isBlueRoof ? 0.55 : 0.36,
-      maxOpacity: isBlueRoof ? 0.55 : 0.36
+      baseOpacity: isBlueRoof ? 0.2 : 0.36,
+      maxOpacity: isBlueRoof ? 0.2 : 0.36
     });
     const porchHalo = new THREE.Sprite(porchHaloMat);
-    porchHalo.position.set(0, 1.05, 1.35);
-    porchHalo.scale.set(isBlueRoof ? 3.2 : 2.2, isBlueRoof ? 3.2 : 2.2, 1);
+    porchHalo.position.set(houseOffsetX, isBlueRoof ? 1.2 : 1.05, doorZ + 0.28);
+    porchHalo.scale.set(isBlueRoof ? 1.6 : 2.2, isBlueRoof ? 1.6 : 2.2, 1);
     g.add(porchHalo);
   }
 
-  // 6. Clean Wooden Porch Deck + Friendly Waving Villager (치치) for the Blue-Roof House
+  // 6. Upgraded Yard, Side Sunroom Wing, Fence Gate & Friendly Waving Villager (치치) for the Blue-Roof House
   let villager = null;
   if (isBlueRoof) {
-    const porchFloor = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.14, 1.35), woodMat);
-    porchFloor.position.set(0, 0.14, 1.48);
+    const yardGrassMat = new THREE.MeshStandardMaterial({ color: 0x2a4536, roughness: 0.94, envMapIntensity: 0.35 });
+    const trimWhiteMat = new THREE.MeshStandardMaterial({ color: 0xded7cb, roughness: 0.85, envMapIntensity: 0.35 });
+    const fenceWoodMat = new THREE.MeshStandardMaterial({ color: 0x6b4b36, roughness: 0.84, envMapIntensity: 0.35 });
+    const pineYardMat = new THREE.MeshStandardMaterial({ color: 0x1e4a35, roughness: 0.86, envMapIntensity: 0.35 });
+    const shrubMat = new THREE.MeshStandardMaterial({ color: 0x2c5c40, roughness: 0.88, envMapIntensity: 0.35 });
+
+    // Landscaped Green Front & Side Yard Lawn Bed
+    const yardLawn = new THREE.Mesh(new THREE.BoxGeometry(6.15, 0.16, 5.6), yardGrassMat);
+    yardLawn.position.set(0, 0.14, 1.05);
+    g.add(yardLawn);
+
+    // Cozy Side Annex / Sunroom Wing on the +X side of the main cottage
+    const wingBody = new THREE.Mesh(new THREE.BoxGeometry(1.55, 1.22, 1.68), wallMat);
+    wingBody.position.set(houseOffsetX + 2.15, 0.78, houseOffsetZ + 0.08);
+    g.add(wingBody);
+    const wingRoof = new THREE.Mesh(new THREE.ConeGeometry(1.42, 0.82, 4), roofMat);
+    wingRoof.position.set(houseOffsetX + 2.15, 1.78, houseOffsetZ + 0.08);
+    wingRoof.rotation.y = Math.PI / 4;
+    wingRoof.scale.set(1.05, 1.0, 1.02);
+    g.add(wingRoof);
+    const wingWin = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.48, 0.08), activeWinMat);
+    wingWin.position.set(houseOffsetX + 2.15, 0.86, houseOffsetZ + 0.94);
+    g.add(wingWin);
+
+    // Cozy Wooden Porch Deck + Steps leading down to the front yard
+    const porchFloor = new THREE.Mesh(new THREE.BoxGeometry(3.3, 0.14, 1.25), woodMat);
+    porchFloor.position.set(houseOffsetX, 0.22, doorZ + 0.62);
     g.add(porchFloor);
 
-    // Stylized Friendly Villager standing on the Porch facing +Z (toward visitors on 은하재)
+    const porchStep = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.1, 0.42), woodMat);
+    porchStep.position.set(houseOffsetX - 0.38, 0.16, doorZ + 1.38);
+    g.add(porchStep);
+
+    // Stepping Stone Path across the front yard to the open fence gate
+    [0, 1, 2, 3].forEach((idx) => {
+      const stepStone = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.27, 0.06, 7), stoneMat);
+      stepStone.position.set(houseOffsetX - 0.35 + idx * 0.1, 0.23, doorZ + 1.85 + idx * 0.56);
+      stepStone.rotation.y = idx * 0.6;
+      g.add(stepStone);
+    });
+
+    // Yard Perimeter Fence (left, right, and front with an open centered garden gate)
+    const postGeo = new THREE.BoxGeometry(0.11, 0.62, 0.11);
+    const postPositions = [
+      // Left edge (-2.88)
+      [-2.88, -1.2], [-2.88, 0.2], [-2.88, 1.6], [-2.88, 3.0], [-2.88, 3.68],
+      // Right edge (2.88)
+      [2.88, -1.2], [2.88, 0.2], [2.88, 1.6], [2.88, 3.0], [2.88, 3.68],
+      // Front edge (z = 3.68) with centered gate gap around x = -0.35 .. +0.35
+      [-1.75, 3.68], [-0.85, 3.68], [0.55, 3.68], [1.75, 3.68]
+    ];
+    postPositions.forEach(([px, pz]) => {
+      const post = new THREE.Mesh(postGeo, trimWhiteMat);
+      post.position.set(px, 0.5, pz);
+      g.add(post);
+    });
+
+    // Horizontal rails along left/right and front left/right segments
+    [-2.88, 2.88].forEach((fx) => {
+      [0.38, 0.65].forEach((ry) => {
+        const sideRail = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 4.92), trimWhiteMat);
+        sideRail.position.set(fx, ry, 1.24);
+        g.add(sideRail);
+      });
+    });
+    [
+      { x0: -2.88, x1: -0.85 },
+      { x0: 0.55, x1: 2.88 }
+    ].forEach((seg) => {
+      const len = seg.x1 - seg.x0;
+      const cx = (seg.x0 + seg.x1) * 0.5;
+      [0.38, 0.65].forEach((ry) => {
+        const frontRail = new THREE.Mesh(new THREE.BoxGeometry(len, 0.06, 0.06), trimWhiteMat);
+        frontRail.position.set(cx, ry, 3.68);
+        g.add(frontRail);
+      });
+    });
+
+    // Open Gate Pillars with tiny warm brass caps
+    [-0.85, 0.55].forEach((gx) => {
+      const cap = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.1, 0.15), activeWinMat);
+      cap.position.set(gx, 0.85, 3.68);
+      g.add(cap);
+    });
+
+    // Cozy Yard Pine Tree & Shrubs + Small Wooden Yard Bench
+    const yardTreeTrunk = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.12, 0.72, 7), woodMat);
+    yardTreeTrunk.position.set(-2.1, 0.56, 2.65);
+    g.add(yardTreeTrunk);
+    const yardTreeCone1 = new THREE.Mesh(new THREE.ConeGeometry(0.62, 1.28, 8), pineYardMat);
+    yardTreeCone1.position.set(-2.1, 1.32, 2.65);
+    g.add(yardTreeCone1);
+    const yardTreeCone2 = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.96, 8), pineYardMat);
+    yardTreeCone2.position.set(-2.1, 1.95, 2.65);
+    g.add(yardTreeCone2);
+
+    [[-1.6, 3.15, 0.24], [1.15, 3.18, 0.22], [2.32, 2.85, 0.26]].forEach(([sx, sz, sr]) => {
+      const shrub = new THREE.Mesh(new THREE.SphereGeometry(sr, 8, 7), shrubMat);
+      shrub.scale.set(1.15, 0.85, 1.15);
+      shrub.position.set(sx, 0.34, sz);
+      g.add(shrub);
+    });
+
+    const yardBench = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.08, 0.34), fenceWoodMat);
+    yardBench.position.set(1.88, 0.42, 2.35);
+    yardBench.rotation.y = -0.35;
+    g.add(yardBench);
+    [-0.36, 0.36].forEach((blx) => {
+      const bLeg = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.24, 0.28), stoneMat);
+      bLeg.position.set(1.88 + Math.cos(-0.35) * blx, 0.3, 2.35 - Math.sin(-0.35) * blx);
+      bLeg.rotation.y = -0.35;
+      g.add(bLeg);
+    });
+
+    // Stylized Friendly Villager (치치) standing on the Porch facing +Z (deep navy hat + coat buttons + calmer lighting)
     const villagerGroup = new THREE.Group();
-    villagerGroup.position.set(0.28, 0.21, 1.58);
+    villagerGroup.position.set(houseOffsetX + 0.34, 0.29, doorZ + 0.65);
 
     const bodyPivot = new THREE.Group();
     villagerGroup.add(bodyPivot);
 
-    const coatMat = new THREE.MeshStandardMaterial({ color: 0xe6b84c, roughness: 0.72 });
-    const scarfMat = new THREE.MeshStandardMaterial({ color: 0xd1495b, roughness: 0.82 });
-    const skinMat = new THREE.MeshStandardMaterial({ color: 0xf6d5be, roughness: 0.65 });
-    const pantMat = new THREE.MeshStandardMaterial({ color: 0x262b3d, roughness: 0.8 });
-    const bucketHatMat = new THREE.MeshStandardMaterial({ color: 0x9db8f2, roughness: 0.78 });
+    const coatMat = new THREE.MeshStandardMaterial({ color: 0xd4a43f, roughness: 0.82, envMapIntensity: 0.32 });
+    const scarfMat = new THREE.MeshStandardMaterial({ color: 0xc24354, roughness: 0.86, envMapIntensity: 0.32 });
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xeec9af, roughness: 0.76, envMapIntensity: 0.3 });
+    const pantMat = new THREE.MeshStandardMaterial({ color: 0x262b3d, roughness: 0.84, envMapIntensity: 0.3 });
+    const bucketHatMat = new THREE.MeshStandardMaterial({ color: 0x1e325c, roughness: 0.82, envMapIntensity: 0.32 });
+    const chichiButtonMat = new THREE.MeshStandardMaterial({ color: 0xf4e3b8, roughness: 0.45, metalness: 0.25, envMapIntensity: 0.35 });
 
     [-0.08, 0.08].forEach((lx) => {
       const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.048, 0.34, 8), pantMat);
@@ -347,6 +473,17 @@ function createNamsanHouse(x, z, { roofColor = 0x9c4638, wallColor = 0xe8dfd1, i
     const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.2, 0.52, 10), coatMat);
     torso.position.y = 0.58;
     bodyPivot.add(torso);
+
+    // Coat front buttons for Chichi
+    [
+      { y: 0.72, z: 0.156 },
+      { y: 0.6, z: 0.17 },
+      { y: 0.48, z: 0.184 }
+    ].forEach((b) => {
+      const btn = new THREE.Mesh(new THREE.SphereGeometry(0.015, 6, 6), chichiButtonMat);
+      btn.position.set(0, b.y, b.z);
+      bodyPivot.add(btn);
+    });
 
     const scarf = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.04, 6, 12), scarfMat);
     scarf.rotation.x = Math.PI / 2;
@@ -365,7 +502,7 @@ function createNamsanHouse(x, z, { roofColor = 0x9c4638, wallColor = 0xe8dfd1, i
       headPivot.add(eye);
     });
 
-    // Snugly pulled-down pastel blue bucket hat seated low on forehead while keeping eyes clearly visible
+    // Snugly pulled-down deep navy bucket hat seated low on forehead while keeping eyes clearly visible
     const hatGroup = new THREE.Group();
     hatGroup.position.set(0, 0.056, -0.004);
     hatGroup.rotation.x = -0.06;
@@ -410,7 +547,7 @@ function createNamsanHouse(x, z, { roofColor = 0x9c4638, wallColor = 0xe8dfd1, i
       bodyPivot,
       headPivot,
       rightArmPivot,
-      porchWorldPos: new THREE.Vector3(x + 0.28, baseY + 1.15, z + 1.58),
+      porchWorldPos: new THREE.Vector3(x + houseOffsetX + 0.34, baseY + 1.24, z + doorZ + 0.65),
       waveBlend: 0
     };
   }
@@ -598,7 +735,7 @@ function createNamsanAndTower(glowTexture, quality, atmosphereRefs) {
   atmosphereRefs.nightWindowMats.push({ mat: sharedHouseMats.winMat, baseEmissive: 1.65, maxEmissive: 1.65, minEmissive: 0.14 });
 
   const houseSpecs = [
-    { x: -18.0, z: -74.5, roofColor: 0x2563eb, wallColor: 0xf4ede2, isBlueRoof: true, lit: true, stories: 1, heightScale: 1.0 },
+    { x: -18.0, z: -74.5, roofColor: 0x2558c4, wallColor: 0xd8cfc2, isBlueRoof: true, lit: true, stories: 1, heightScale: 1.0 },
     { x: -36.5, z: -85.0, roofColor: 0x9c4638, wallColor: 0xe6dccd, isBlueRoof: false, lit: true, stories: 2, heightScale: 1.38 },
     { x: -3.5, z: -67.5, roofColor: 0x4b5563, wallColor: 0xe2d8c8, isBlueRoof: false, lit: false, stories: 1, heightScale: 0.88 },
     { x: 34.5, z: -83.5, roofColor: 0x3b5954, wallColor: 0xe5dccb, isBlueRoof: false, lit: true, stories: 2, heightScale: 1.28 },
@@ -871,7 +1008,7 @@ export function createTerrainAndBay(scene, glowTexture, quality = { isMobile: fa
   const moonMat = new THREE.MeshBasicMaterial({ color: 0xfff5d6, transparent: true, opacity: 1.0, fog: false });
   atmosphereRefs.moonMat = moonMat;
   const moonMesh = new THREE.Mesh(
-    new THREE.SphereGeometry(3.6, isMobile ? 16 : 22, isMobile ? 14 : 22),
+    new THREE.SphereGeometry(3.6, isMobile ? 20 : 22, isMobile ? 18 : 22),
     moonMat
   );
   moonGroup.add(moonMesh);
@@ -891,8 +1028,8 @@ export function createTerrainAndBay(scene, glowTexture, quality = { isMobile: fa
   moonGroup.add(moonHalo);
   group.add(moonGroup);
 
-  // 6. Starfield Celestial Dome (Points - mobile reduced count)
-  const starCount = isMobile ? 360 : 700;
+  // 6. Starfield Celestial Dome (Points)
+  const starCount = isMobile ? 520 : 700;
   const starPos = new Float32Array(starCount * 3);
   const starColors = new Float32Array(starCount * 3);
   const sColor = new THREE.Color();
@@ -930,9 +1067,9 @@ export function createTerrainAndBay(scene, glowTexture, quality = { isMobile: fa
   const starField = new THREE.Points(starGeo, starMat);
   group.add(starField);
 
-  // 7. Instanced Pine Trees around outer slopes (northern cliff left wide open; mobile count reduced)
+  // 7. Instanced Pine Trees around outer slopes (northern cliff left wide open; full instanced density)
   const treeCoords = [];
-  const totalTreeSamples = isMobile ? 22 : 36;
+  const totalTreeSamples = isMobile ? 30 : 36;
   for (let i = 0; i < totalTreeSamples; i++) {
     const angle = (i / totalTreeSamples) * Math.PI * 2;
     const dirZ = Math.sin(angle);
@@ -1788,10 +1925,10 @@ export function createBungeoppangStall(x, z, glowTexture, withLight = true) {
   vendor.add(vendorBody);
 
   const vBootsMat = new THREE.MeshStandardMaterial({ color: 0x201a24, roughness: 0.78 });
-  const vCoatMat = new THREE.MeshStandardMaterial({ color: 0x3b5b76, roughness: 0.75 });
+  const vCoatMat = new THREE.MeshStandardMaterial({ color: 0x214a35, roughness: 0.76 });
   const vScarfMat = new THREE.MeshStandardMaterial({ color: 0xf4e4c1, roughness: 0.84 });
   const vSkinMat = new THREE.MeshStandardMaterial({ color: 0xf6d5be, roughness: 0.65 });
-  const vCapMat = new THREE.MeshStandardMaterial({ color: 0x8f2d38, roughness: 0.8 });
+  const vCapMat = new THREE.MeshStandardMaterial({ color: 0x7c2530, roughness: 0.78 });
   const vBagMat = new THREE.MeshStandardMaterial({ color: 0xd6a468, roughness: 0.88 });
   const vBagFoldMat = new THREE.MeshStandardMaterial({ color: 0xb98349, roughness: 0.9 });
 
@@ -1822,17 +1959,28 @@ export function createBungeoppangStall(x, z, glowTexture, withLight = true) {
     vHeadGroup.add(vEye);
   });
 
-  const vBeanie = new THREE.Mesh(
-    new THREE.SphereGeometry(0.194, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.55),
+  // Baseball cap (캡 모자) for Manbok
+  const vCapGroup = new THREE.Group();
+  vCapGroup.position.set(0, 0.036, 0);
+  vCapGroup.rotation.x = -0.1;
+  const vCapCrown = new THREE.Mesh(
+    new THREE.SphereGeometry(0.193, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.52),
     vCapMat
   );
-  vBeanie.position.y = 0.03;
-  vBeanie.rotation.x = -0.14;
-  vHeadGroup.add(vBeanie);
-
-  const vPom = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), vScarfMat);
-  vPom.position.set(0, 0.23, -0.04);
-  vHeadGroup.add(vPom);
+  vCapGroup.add(vCapCrown);
+  const vCapButton = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), vCapMat);
+  vCapButton.scale.set(1, 0.55, 1);
+  vCapButton.position.y = 0.194;
+  vCapGroup.add(vCapButton);
+  const vCapVisor = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.155, 0.165, 0.022, 14, 1, false, -Math.PI * 0.42, Math.PI * 0.84),
+    vCapMat
+  );
+  vCapVisor.scale.set(1.04, 1, 1.38);
+  vCapVisor.position.set(0, 0.028, 0.12);
+  vCapVisor.rotation.x = 0.14;
+  vCapGroup.add(vCapVisor);
+  vHeadGroup.add(vCapGroup);
   vendorBody.add(vHeadGroup);
 
   // Left arm + bare round skin-colored hand holding a small kraft paper bag
@@ -2522,7 +2670,7 @@ export function createHillNpcs() {
     button: new THREE.MeshStandardMaterial({ color: 0xd9b36c, roughness: 0.4, metalness: 0.4 })
   };
 
-  function buildNpc({ id, name, coatColor, hatColor, hairMode = false, x, z, yaw, sitting = false, accessoryFn = null }) {
+  function buildNpc({ id, name, coatColor, hatColor, hairMode = false, showButtons = true, x, z, yaw, sitting = false, accessoryFn = null }) {
     const g = new THREE.Group();
     const gy = groundHeightAt(x, z);
     g.position.set(x, gy, z);
@@ -2549,7 +2697,7 @@ export function createHillNpcs() {
     rightLegPivot.add(rLeg);
     bodyGroup.add(rightLegPivot);
 
-    // Torso + subtle winter coat hem & front buttons
+    // Torso + subtle winter coat hem & optional front buttons
     const torso = new THREE.Mesh(sharedGeo.torso, coatMat);
     torso.position.y = 0.74;
     torso.castShadow = true;
@@ -2560,11 +2708,13 @@ export function createHillNpcs() {
     hemTrim.position.y = 0.425;
     bodyGroup.add(hemTrim);
 
-    [0.84, 0.7, 0.56].forEach((by, bIdx) => {
-      const btn = new THREE.Mesh(sharedGeo.button, sharedMat.button);
-      btn.position.set(0, by, 0.2 + bIdx * 0.018);
-      bodyGroup.add(btn);
-    });
+    if (showButtons) {
+      [0.84, 0.7, 0.56].forEach((by, bIdx) => {
+        const btn = new THREE.Mesh(sharedGeo.button, sharedMat.button);
+        btn.position.set(0, by, 0.2 + bIdx * 0.018);
+        bodyGroup.add(btn);
+      });
+    }
 
     // Head Pivot (allows independent head-only rotation toward player / fireworks!)
     const headPivot = new THREE.Group();
@@ -2695,8 +2845,8 @@ export function createHillNpcs() {
   });
 
   // 2. 비트 (Dancing NPC in open left-center yard + Clean Non-Clipping Gold Collar Necklace & Pendant)
-  const bit = buildNpc({
-    id: 'bit',
+  const beat = buildNpc({
+    id: 'beat',
     name: '비트',
     coatColor: 0x2f537a,
     hatColor: 0x252b3b,
@@ -2716,7 +2866,7 @@ export function createHillNpcs() {
     }
   });
 
-  // 3. 토리 (Conversing NPC 1 + Slate-Teal Coat, Rust Beanie & Warm Amber Scarf)
+  // 3. 토리 (Conversing NPC 1 + Brown Coat, Pink Knit Pom Beanie & Warm Amber Scarf)
   const toriX = 3.0;
   const toriZ = -1.8;
   const naruX = 4.1;
@@ -2727,12 +2877,12 @@ export function createHillNpcs() {
   const tori = buildNpc({
     id: 'tori',
     name: '토리',
-    coatColor: 0x456b7d,
-    hatColor: 0xc26d4a,
+    coatColor: 0x6b4c35,
+    hatColor: 0xb85d78,
     x: toriX,
     z: toriZ,
     yaw: toriYaw,
-    accessoryFn: ({ bodyGroup }) => {
+    accessoryFn: ({ bodyGroup, headPivot }) => {
       const scarfMat = new THREE.MeshStandardMaterial({ color: 0xd9924c, roughness: 0.84 });
       const scarfRing = new THREE.Mesh(new THREE.TorusGeometry(0.174, 0.048, 8, 16), scarfMat);
       scarfRing.rotation.x = Math.PI / 2;
@@ -2744,20 +2894,47 @@ export function createHillNpcs() {
       scarfTail.rotation.x = -0.14;
       scarfTail.rotation.z = -0.1;
       bodyGroup.add(scarfTail);
+
+      // Calm deeper dusty-rose pompom matching Tori's hat
+      const pinkPomMat = new THREE.MeshStandardMaterial({ color: 0xd48da2, roughness: 0.86 });
+      const pom = new THREE.Mesh(new THREE.SphereGeometry(0.052, 10, 10), pinkPomMat);
+      pom.position.set(0, 0.22, -0.04);
+      headPivot.add(pom);
     }
   });
 
-  // 4. 나루 (Conversing NPC 2 + Jade Wrist Bracelet + Warm Canned Drink in Left Hand)
+  // 4. 나루 (Conversing NPC 2 + Calm Deep Orange Coat without buttons + Dark Gray Brimmed Hat pressed low + Bracelet & Drink Can)
   const naru = buildNpc({
     id: 'naru',
     name: '나루',
-    coatColor: 0x4b6b5d,
-    hatColor: 0x5c4738,
-    hairMode: true,
+    coatColor: 0xa84d24,
+    hatColor: 0x3e4450,
+    hairMode: false,
+    showButtons: false,
     x: naruX,
     z: naruZ,
     yaw: naruYaw,
-    accessoryFn: ({ leftArmPivot, rightArmPivot }) => {
+    accessoryFn: ({ headPivot, leftArmPivot, rightArmPivot }) => {
+      // Dark gray fedora/cloche-style brimmed hat pressed low just like Chichi (zero inner brown clipping)
+      const fedoraMat = new THREE.MeshStandardMaterial({ color: 0x3e4450, roughness: 0.8 });
+      const bandMat = new THREE.MeshStandardMaterial({ color: 0x22262e, roughness: 0.72 });
+      const naruHatGroup = new THREE.Group();
+      naruHatGroup.position.set(0, 0.048, -0.004);
+      naruHatGroup.rotation.x = -0.08;
+
+      const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.165, 0.198, 0.165, 18), fedoraMat);
+      crown.position.y = 0.082;
+      naruHatGroup.add(crown);
+
+      const hatBand = new THREE.Mesh(new THREE.CylinderGeometry(0.194, 0.199, 0.026, 18), bandMat);
+      hatBand.position.y = 0.013;
+      naruHatGroup.add(hatBand);
+
+      const flatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.248, 0.248, 0.016, 22), fedoraMat);
+      flatBrim.position.y = -0.002;
+      naruHatGroup.add(flatBrim);
+      headPivot.add(naruHatGroup);
+
       const braceletGoldMat = new THREE.MeshStandardMaterial({ color: 0xf0c965, roughness: 0.24, metalness: 0.85 });
       const jadeBeadMat = new THREE.MeshStandardMaterial({ color: 0x62d4a8, roughness: 0.28, metalness: 0.15 });
 
@@ -2777,7 +2954,7 @@ export function createHillNpcs() {
       canGroup.position.set(0, -0.355, 0.068);
       canGroup.rotation.x = 0.14;
 
-      const canBodyMat = new THREE.MeshStandardMaterial({ color: 0xd97943, roughness: 0.34, metalness: 0.35 });
+      const canBodyMat = new THREE.MeshStandardMaterial({ color: 0x3f6c8a, roughness: 0.34, metalness: 0.35 });
       const canLabelMat = new THREE.MeshStandardMaterial({ color: 0xf6ebd8, roughness: 0.45, metalness: 0.08 });
       const canMetalMat = new THREE.MeshStandardMaterial({ color: 0xdce2ea, roughness: 0.24, metalness: 0.82 });
 
@@ -2804,7 +2981,7 @@ export function createHillNpcs() {
     }
   });
 
-  return [momo, bit, tori, naru];
+  return [momo, beat, tori, naru];
 }
 
 // ===================================================================
@@ -3071,14 +3248,14 @@ export function createGoldenTicket(glowTexture) {
 
   const mat = new THREE.MeshStandardMaterial({
     map: ticketTex,
-    color: 0xffe48f,
-    emissive: 0xd99a26,
-    emissiveIntensity: 0.72,
-    roughness: 0.25,
-    metalness: 0.78
+    color: 0xf5d67f,
+    emissive: 0xa6741b,
+    emissiveIntensity: 0.32,
+    roughness: 0.3,
+    metalness: 0.72
   });
 
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.036, 0.28), mat);
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.028, 0.18), mat);
   mesh.castShadow = true;
   g.add(mesh);
 
@@ -3086,13 +3263,13 @@ export function createGoldenTicket(glowTexture) {
     map: glowTexture,
     color: 0xffe38f,
     transparent: true,
-    opacity: 0.56,
+    opacity: 0.22,
     blending: THREE.AdditiveBlending,
     depthWrite: false
   });
   const shimmer = new THREE.Sprite(shimmerMat);
-  shimmer.position.y = 0.14;
-  shimmer.scale.set(1.05, 1.05, 1);
+  shimmer.position.y = 0.065;
+  shimmer.scale.set(0.54, 0.54, 1);
   g.add(shimmer);
 
   g.userData.shimmerMat = shimmerMat;
@@ -3570,3 +3747,247 @@ export function createClickRippleRing() {
   return { mesh, trigger, update };
 }
 
+// 7. Cozy Vintage Hilltop Mailbox near Left Lantern Post (Zero dynamic PointLights)
+export function createCozyMailbox(x, z, yaw = 0.55, glowTexture) {
+  const g = new THREE.Group();
+  const baseY = groundHeightAt(x, z);
+  g.position.set(x, baseY, z);
+  g.rotation.y = yaw;
+
+  const stoneMat = new THREE.MeshStandardMaterial({ color: 0x4b4657, roughness: 0.88, metalness: 0.06 });
+  const woodMat = new THREE.MeshStandardMaterial({ color: 0x523524, roughness: 0.84 });
+  const boxRedMat = new THREE.MeshStandardMaterial({ color: 0xa6373f, roughness: 0.58, metalness: 0.12 });
+  const trimGoldMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.34, metalness: 0.72 });
+  const slotDarkMat = new THREE.MeshStandardMaterial({ color: 0x1a1420, roughness: 0.85 });
+  const creamLetterMat = new THREE.MeshStandardMaterial({
+    color: 0xfff3d9,
+    emissive: 0xffe09e,
+    emissiveIntensity: 0.25,
+    roughness: 0.5
+  });
+
+  // Stone footing pad + wooden post + mounting bracket
+  const footing = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, 0.14, 10), stoneMat);
+  footing.position.y = 0.07;
+  footing.receiveShadow = true;
+  g.add(footing);
+
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.08, 0.88, 8), woodMat);
+  post.position.y = 0.54;
+  post.castShadow = true;
+  g.add(post);
+
+  const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.07, 0.52), woodMat);
+  bracket.position.y = 0.96;
+  g.add(bracket);
+
+  // Classic curved-top red mailbox body
+  const lowerBox = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.26, 0.56), boxRedMat);
+  lowerBox.position.set(0, 1.12, 0);
+  lowerBox.castShadow = true;
+  g.add(lowerBox);
+
+  const roofArch = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.56, 14), boxRedMat);
+  roofArch.rotation.x = Math.PI / 2;
+  roofArch.position.set(0, 1.25, 0);
+  roofArch.castShadow = true;
+  g.add(roofArch);
+
+  // Brass front door lip, letter slot & small peeking envelope corner
+  const frontLip = new THREE.Mesh(new THREE.BoxGeometry(0.435, 0.045, 0.05), trimGoldMat);
+  frontLip.position.set(0, 1.02, 0.275);
+  g.add(frontLip);
+
+  const mailSlot = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.042, 0.03), slotDarkMat);
+  mailSlot.position.set(0, 1.21, 0.275);
+  g.add(mailSlot);
+
+  const peekingLetter = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.018, 0.09), creamLetterMat);
+  peekingLetter.position.set(0.01, 1.21, 0.3);
+  peekingLetter.rotation.y = 0.12;
+  g.add(peekingLetter);
+
+  const emblemPlate = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.085, 0.022), trimGoldMat);
+  emblemPlate.position.set(0, 1.11, 0.28);
+  g.add(emblemPlate);
+
+  // Classic right-side Brass Semaphore Flag Arm Pivot
+  const flagPivot = new THREE.Group();
+  flagPivot.position.set(0.225, 1.12, 0.08);
+  const flagStem = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.24, 6), trimGoldMat);
+  flagStem.position.y = 0.11;
+  flagPivot.add(flagStem);
+  const flagHead = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.08, 0.11), trimGoldMat);
+  flagHead.position.set(0, 0.21, -0.045);
+  flagPivot.add(flagHead);
+  flagPivot.rotation.x = -0.22;
+  g.add(flagPivot);
+
+  // Very gentle soft warm aura sprite (harmonizes with nearby lantern without excess glare)
+  if (glowTexture) {
+    const auraMat = new THREE.SpriteMaterial({
+      map: glowTexture,
+      color: 0xffd78c,
+      transparent: true,
+      opacity: 0.2,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    const aura = new THREE.Sprite(auraMat);
+    aura.position.set(0, 1.24, 0.24);
+    aura.scale.set(0.9, 0.9, 1);
+    g.add(aura);
+    g.userData.auraMat = auraMat;
+  }
+
+  g.userData.flagPivot = flagPivot;
+  g.userData.worldCenter = new THREE.Vector3(x, baseY + 1.35, z);
+  return g;
+}
+
+// 8. Night-Only Irregular Shooting Star (Zero Particles / Zero Lights / Zero Per-Frame Allocations)
+function createShootingStarTailTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 16;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 128, 0);
+  grad.addColorStop(0, 'rgba(255, 252, 232, 0)');
+  grad.addColorStop(0.55, 'rgba(255, 245, 205, 0.42)');
+  grad.addColorStop(0.92, 'rgba(255, 250, 235, 0.92)');
+  grad.addColorStop(1, 'rgba(255, 255, 255, 1)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 2, 128, 12);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+export function createShootingStar(scene, glowTexture) {
+  const group = new THREE.Group();
+  group.visible = false;
+
+  const tailTex = createShootingStarTailTexture();
+  const tailGeo = new THREE.PlaneGeometry(1, 0.24);
+  // Shift plane so x=0 is at the star head and x=-1 extends behind into tail
+  tailGeo.translate(-0.5, 0, 0);
+
+  const tailMat = new THREE.MeshBasicMaterial({
+    map: tailTex,
+    color: 0xfff6d8,
+    transparent: true,
+    opacity: 0,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    fog: false
+  });
+  const tailPlaneA = new THREE.Mesh(tailGeo, tailMat);
+  const tailPlaneB = new THREE.Mesh(tailGeo, tailMat);
+  tailPlaneB.rotation.x = Math.PI / 2;
+  group.add(tailPlaneA, tailPlaneB);
+
+  const headMat = new THREE.SpriteMaterial({
+    map: glowTexture,
+    color: 0xfffaf0,
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    fog: false
+  });
+  const headSprite = new THREE.Sprite(headMat);
+  headSprite.scale.set(1.15, 1.15, 1);
+  group.add(headSprite);
+
+  scene.add(group);
+
+  const startPos = new THREE.Vector3();
+  const endPos = new THREE.Vector3();
+  const dirVec = new THREE.Vector3();
+  const xAxis = new THREE.Vector3(1, 0, 0);
+  const rotQuat = new THREE.Quaternion();
+
+  let active = false;
+  let elapsed = 0;
+  let duration = 1.05;
+  let tailLength = 12;
+  let nextWait = 6 + Math.random() * 7;
+
+  function hideImmediate() {
+    active = false;
+    group.visible = false;
+    tailMat.opacity = 0;
+    headMat.opacity = 0;
+  }
+
+  function spawn() {
+    const leftToRight = Math.random() < 0.52;
+    const sx = (leftToRight ? -1 : 1) * (24 + Math.random() * 26);
+    const sy = 36 + Math.random() * 14;
+    const sz = -82 - Math.random() * 26;
+    const dx = (leftToRight ? 1 : -1) * (26 + Math.random() * 18);
+    const dy = -(7 + Math.random() * 7);
+    const dz = (Math.random() - 0.5) * 10;
+
+    startPos.set(sx, sy, sz);
+    endPos.set(sx + dx, sy + dy, sz + dz);
+    dirVec.copy(endPos).sub(startPos).normalize();
+    rotQuat.setFromUnitVectors(xAxis, dirVec);
+
+    tailPlaneA.quaternion.copy(rotQuat);
+    tailPlaneB.quaternion.copy(rotQuat);
+    const perp = new THREE.Vector3(0, 0, 1).applyQuaternion(rotQuat);
+    tailPlaneB.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(xAxis, Math.PI / 2));
+    void perp;
+
+    duration = 0.85 + Math.random() * 0.45;
+    tailLength = 9.5 + Math.random() * 5.0;
+    elapsed = 0;
+    active = true;
+    group.position.copy(startPos);
+    group.visible = true;
+  }
+
+  function update(dt, isNightMode) {
+    if (!isNightMode) {
+      if (active) hideImmediate();
+      return;
+    }
+
+    if (!active) {
+      nextWait -= dt;
+      if (nextWait <= 0) {
+        spawn();
+      }
+      return;
+    }
+
+    elapsed += dt;
+    const p = elapsed / duration;
+    if (p >= 1) {
+      hideImmediate();
+      nextWait = 10 + Math.random() * 16;
+      return;
+    }
+
+    group.position.lerpVectors(startPos, endPos, p);
+    const alphaEnv = Math.sin(p * Math.PI);
+    const tailScale = tailLength * (0.35 + 0.65 * Math.sin(Math.min(1, p * 1.15) * Math.PI));
+    tailPlaneA.scale.set(tailScale, 1, 1);
+    tailPlaneB.scale.set(tailScale, 1, 1);
+    tailMat.opacity = 0.62 * alphaEnv;
+    headMat.opacity = 0.88 * alphaEnv;
+  }
+
+  function dispose() {
+    hideImmediate();
+    scene.remove(group);
+    tailGeo.dispose();
+    tailTex.dispose();
+    tailMat.dispose();
+    headMat.dispose();
+  }
+
+  return { update, hideImmediate, dispose };
+}

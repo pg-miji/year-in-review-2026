@@ -50,8 +50,9 @@ html.fireworks-page body {
   transform: translate3d(-9999px, -9999px, 0);
   padding: 2px 8px;
   border-radius: 6px;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 11px;
+  font-weight: 600;
   line-height: 1.3;
   white-space: nowrap;
   color: #fff6df;
@@ -101,9 +102,9 @@ html.fireworks-page body {
   transform: translate3d(-9999px, -9999px, 0);
   padding: 4px 10px;
   border-radius: 9px;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
   color: #fff9e6;
   background: rgba(30, 58, 138, 0.92);
@@ -119,9 +120,9 @@ html.fireworks-page body {
   transform: translate3d(-9999px, -9999px, 0);
   padding: 4px 10px;
   border-radius: 9px;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 11.5px;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
   color: #fff6df;
   background: rgba(122, 34, 42, 0.92);
@@ -144,9 +145,9 @@ html.fireworks-page body {
   transform: translate3d(-9999px, -9999px, 0);
   padding: 4px 10px;
   border-radius: 9px;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 11.5px;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
   color: #2c1908;
   background: rgba(255, 232, 163, 0.95);
@@ -214,8 +215,9 @@ html.fireworks-page body {
 }
 
 .bungeoppang-choice-text strong {
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 13px;
+  font-weight: 600;
   color: #ffe9a8;
 }
 
@@ -287,8 +289,9 @@ html.fireworks-page body {
   min-height: 38px;
   padding: 6px 10px;
   border-radius: 10px;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
   color: var(--cream-text);
   background: rgba(13, 9, 24, 0.92);
   border: 1px solid rgba(212, 175, 55, 0.32);
@@ -329,9 +332,9 @@ html.fireworks-page body {
   padding: 0 10px;
   border-radius: 10px;
   cursor: pointer;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: #fff8e6;
   background: rgba(13, 9, 24, 0.92);
   border: 1px solid rgba(212, 175, 55, 0.38);
@@ -358,9 +361,9 @@ html.fireworks-page body {
   min-height: 38px;
   padding: 6px 11px;
   border-radius: 10px;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: #fff6df;
   background: rgba(24, 34, 64, 0.92);
   border: 1px solid rgba(147, 197, 253, 0.55);
@@ -386,7 +389,7 @@ html.fireworks-page body {
   z-index: 9;
   padding: 5px 12px;
   border-radius: 8px;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 11.5px;
   color: rgba(248, 242, 228, 0.88);
   background: rgba(13, 9, 24, 0.84);
@@ -427,10 +430,11 @@ html.fireworks-page body {
 }
 
 .countdown-kicker {
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 12.5px;
+  font-weight: 600;
   color: var(--gold-light);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   margin-bottom: 4px;
 }
 
@@ -516,9 +520,9 @@ html.fireworks-page body {
   border: 1px solid rgba(212, 175, 55, 0.24);
   background: rgba(24, 17, 40, 0.92);
   color: var(--cream-muted);
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 12.5px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
@@ -581,7 +585,7 @@ html.fireworks-page body {
   border: 1px solid rgba(212, 175, 55, 0.28);
   background: rgba(25, 18, 42, 0.92);
   color: var(--cream-text);
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 12.5px;
   cursor: pointer;
   transition: border-color 0.16s ease, background-color 0.16s ease;
@@ -626,7 +630,7 @@ html.fireworks-page body {
   border: 1px solid rgba(212, 175, 55, 0.38);
   background: rgba(8, 5, 16, 0.94);
   color: #fff8e6;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 14px;
 }
 
@@ -688,7 +692,7 @@ html.fireworks-page body {
 
 .guide-section-heading {
   margin: 0;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 700;
   color: var(--gold-light);
@@ -703,7 +707,7 @@ html.fireworks-page body {
 .feature-guide-item {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   padding: 6px 8px;
   border-radius: 8px;
   background: rgba(24, 17, 40, 0.72);
@@ -711,8 +715,9 @@ html.fireworks-page body {
 }
 
 .feature-guide-item strong {
-  font-family: var(--font-serif-ko);
-  font-size: 11.5px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
   color: #fff3cf;
 }
 
@@ -741,8 +746,8 @@ html.fireworks-page body {
   padding: 7px 12px;
   border-radius: 11px;
   font-family: var(--font-serif-ko);
-  font-size: 11.5px;
-  line-height: 1.42;
+  font-size: 12px;
+  line-height: 1.45;
   color: #fff8e6;
   background: rgba(22, 15, 38, 0.95);
   border: 1px solid rgba(243, 207, 122, 0.72);
@@ -801,7 +806,7 @@ html.fireworks-page body {
 
 .ticket-modal-body {
   margin: 0 0 18px;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 13.5px;
   line-height: 1.65;
   color: var(--cream-text);
@@ -811,6 +816,459 @@ html.fireworks-page body {
 .ticket-modal-btn {
   width: 100%;
   max-width: 180px;
+}
+
+/* Cozy Paper Stationery Mailbox Modal */
+.mailbox-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 42;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(8, 5, 16, 0.78);
+}
+
+.mailbox-modal-backdrop.is-open {
+  display: flex;
+}
+
+.mailbox-modal-card {
+  width: min(468px, 100%);
+  max-height: min(88dvh, 680px);
+  overflow-y: auto;
+  padding: 20px 22px 22px;
+  border-radius: 14px;
+  background: var(--bg-card-parchment);
+  color: var(--ink-dark);
+  border: 2px solid #c9a76a;
+  box-shadow:
+    inset 0 0 0 4px #f7ecd6,
+    inset 0 0 0 5px rgba(178, 138, 72, 0.35),
+    0 20px 52px rgba(0, 0, 0, 0.72);
+  font-family: var(--font-sans);
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.mailbox-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(154, 118, 62, 0.32);
+}
+
+.mailbox-modal-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mailbox-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  background: #9e2f36;
+  color: #fdf6e6;
+  font-size: 20px;
+  box-shadow: 0 3px 8px rgba(102, 24, 30, 0.28);
+  flex-shrink: 0;
+}
+
+.mailbox-modal-title {
+  margin: 0;
+  font-family: var(--font-title-ko);
+  font-size: 18px;
+  font-weight: 700;
+  color: #2b1a12;
+  line-height: 1.25;
+}
+
+.mailbox-modal-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #6f5638;
+}
+
+.mailbox-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  border: 1px solid rgba(145, 110, 58, 0.38);
+  background: #f5ebd5;
+  color: #4a3520;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+  touch-action: manipulation;
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+}
+
+.mailbox-close-btn:hover {
+  background: #ecdcb9;
+  border-color: #9e7d23;
+}
+
+.mailbox-view {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mailbox-view.is-active {
+  display: flex;
+}
+
+.mailbox-intro-copy {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #36261a;
+  word-break: keep-all;
+}
+
+.mailbox-visit-status {
+  margin: 0;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: #f5ebd5;
+  border: 1px solid rgba(173, 134, 70, 0.36);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #6b4b22;
+}
+
+.mailbox-menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mailbox-choice-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 62px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #cdb07d;
+  background: #fffcf4;
+  color: #241811;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.14s ease;
+}
+
+.mailbox-choice-card:hover {
+  border-color: #9e7d23;
+  background: #f7eed9;
+}
+
+.mailbox-choice-icon {
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.mailbox-choice-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mailbox-choice-copy strong {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #281910;
+}
+
+.mailbox-choice-copy small {
+  font-size: 12px;
+  color: #6b5339;
+  word-break: keep-all;
+}
+
+.mailbox-paper-sheet {
+  padding: 16px 16px 18px;
+  border-radius: 10px;
+  background: #fffdf7;
+  border: 1px solid #d9c39b;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 27px,
+    rgba(196, 168, 120, 0.16) 27px,
+    rgba(196, 168, 120, 0.16) 28px
+  );
+  box-shadow: 0 3px 12px rgba(82, 54, 24, 0.08);
+}
+
+.mailbox-paper-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px dashed rgba(165, 130, 78, 0.4);
+}
+
+.mailbox-paper-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8f353b;
+}
+
+.mailbox-read-counter {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6d5336;
+  font-variant-numeric: tabular-nums;
+}
+
+.mailbox-letter-title {
+  margin: 0 0 10px;
+  font-family: var(--font-title-ko);
+  font-size: 16px;
+  font-weight: 700;
+  color: #24160e;
+  line-height: 1.4;
+}
+
+.mailbox-letter-body {
+  margin: 0 0 14px;
+  font-family: var(--font-serif-ko);
+  font-size: 14px;
+  line-height: 1.85;
+  color: #2e2017;
+  white-space: pre-line;
+  word-break: keep-all;
+}
+
+.mailbox-letter-closing {
+  margin: 0;
+  text-align: right;
+  font-family: var(--font-serif-ko);
+  font-size: 13px;
+  font-weight: 700;
+  color: #684c2b;
+  word-break: keep-all;
+}
+
+.mailbox-limit-notice {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f5ebd5;
+  border: 1px solid #c7a265;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #5b3b18;
+  word-break: keep-all;
+}
+
+.mailbox-limit-notice.is-hidden,
+.mailbox-feedback.is-hidden,
+.mailbox-choice-card.is-hidden,
+.mailbox-footer-actions.is-hidden,
+.mailbox-btn-primary.is-hidden,
+.mailbox-btn-secondary.is-hidden {
+  display: none;
+}
+
+.mailbox-write-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mailbox-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mailbox-field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mailbox-field-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3d2a1b;
+}
+
+.mailbox-char-count {
+  font-size: 12px;
+  color: #70583c;
+  font-variant-numeric: tabular-nums;
+}
+
+.mailbox-input,
+.mailbox-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 9px;
+  border: 1px solid #c9ab78;
+  background: #fffdf7;
+  color: #1f140d;
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.mailbox-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.mailbox-input:focus,
+.mailbox-textarea:focus {
+  outline: none;
+  border-color: #9e7d23;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25);
+}
+
+.mailbox-confirm-lead {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #3b2819;
+}
+
+.mailbox-preview-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mailbox-preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(165, 130, 78, 0.4);
+  font-size: 13px;
+  color: #6b5339;
+}
+
+.mailbox-preview-row strong {
+  color: #24160e;
+  font-size: 14px;
+}
+
+.mailbox-preview-message {
+  margin: 0;
+  font-family: var(--font-serif-ko);
+  font-size: 14px;
+  line-height: 1.75;
+  color: #261911;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mailbox-feedback {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 12.8px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.mailbox-feedback.is-error {
+  background: #fdecec;
+  border: 1px solid #df9b9b;
+  color: #7d1e24;
+}
+
+.mailbox-feedback.is-success {
+  background: #edf6ea;
+  border: 1px solid #9cc495;
+  color: #214d24;
+}
+
+.mailbox-feedback.is-pending {
+  background: #f6eedb;
+  border: 1px solid #cbb17d;
+  color: #5b401b;
+}
+
+.mailbox-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.mailbox-btn-primary,
+.mailbox-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 0.16s ease, border-color 0.16s ease, opacity 0.16s ease;
+}
+
+.mailbox-btn-primary {
+  border: 1px solid #8a3137;
+  background: #9e353d;
+  color: #fff9ee;
+}
+
+.mailbox-btn-primary:hover:not(:disabled) {
+  background: #842a31;
+}
+
+.mailbox-btn-primary:disabled,
+.mailbox-btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.mailbox-btn-secondary {
+  border: 1px solid #c5a672;
+  background: #f5ebd5;
+  color: #3f2b19;
+}
+
+.mailbox-btn-secondary:hover:not(:disabled) {
+  background: #ead9b7;
+}
+
+@media (max-width: 768px) {
+  .mailbox-input,
+  .mailbox-textarea {
+    font-size: 16px;
+  }
+
+  .mailbox-modal-card {
+    padding: 16px 16px 18px;
+  }
 }
 
 .sr-only {
@@ -862,7 +1320,7 @@ html.fireworks-page body {
   border: 1px solid #ffe39b;
   background: linear-gradient(135deg, #f7dda2 0%, #d4af37 52%, #ad8823 100%);
   color: #171007;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -880,9 +1338,9 @@ html.fireworks-page body {
   border: 1px solid rgba(212, 175, 55, 0.34);
   background: rgba(26, 18, 44, 0.94);
   color: #f8f2e4;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 12.5px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition: border-color 0.16s ease, background-color 0.16s ease;
@@ -920,9 +1378,9 @@ html.fireworks-page body {
   border: 1px solid rgba(212, 175, 55, 0.45);
   background: rgba(13, 9, 24, 0.92);
   color: #fff6df;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 12.5px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.6);
 }

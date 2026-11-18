@@ -27,8 +27,8 @@
 }
 
 .selection-subtext {
-  font-family: var(--font-serif-ko);
-  font-size: 15px;
+  font-family: var(--font-sans);
+  font-size: 14.5px;
   color: var(--cream-muted);
   margin-bottom: 36px;
   line-height: 1.6;
@@ -143,8 +143,8 @@
 }
 
 .frame-pick-desc {
-  font-family: var(--font-serif-ko);
-  font-size: 13.5px;
+  font-family: var(--font-sans);
+  font-size: 13px;
   color: var(--cream-muted);
   margin-top: 6px;
   margin-bottom: 4px;
@@ -330,8 +330,8 @@
 }
 
 .step-status-text {
-  font-family: var(--font-serif-ko);
-  font-size: 13.5px;
+  font-family: var(--font-sans);
+  font-size: 13px;
   color: #eeddbf;
   font-weight: 600;
 }
@@ -380,7 +380,7 @@
 }
 
 .filter-label {
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 13px;
   color: var(--gold-light);
   font-weight: 700;
@@ -390,7 +390,7 @@
 }
 
 .active-filter-desc {
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 11.5px;
   color: rgba(238, 221, 191, 0.75);
   font-weight: 500;
@@ -421,7 +421,7 @@
   justify-content: center;
   gap: 3px;
   outline: none;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
 }
 
 .filter-name {
@@ -433,7 +433,7 @@
 }
 
 .filter-sub {
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 10.5px;
   opacity: 0.8;
   letter-spacing: -0.2px;
@@ -503,7 +503,7 @@
 }
 
 .console-btn .aux-text {
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
@@ -575,7 +575,7 @@
 }
 
 .shutter-helper-tip {
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 11.5px;
   color: rgba(238, 221, 191, 0.6);
   text-align: center;
@@ -601,7 +601,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   border-radius: 12px;
@@ -627,7 +627,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   border-radius: 12px;

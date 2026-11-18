@@ -291,7 +291,7 @@
 }
 
 .mystical-loading-sub {
-  font-family: var(--font-serif-ko);
+  font-family: var(--font-sans);
   font-size: 13.5px;
   color: var(--gold-light);
   line-height: 1.5;
