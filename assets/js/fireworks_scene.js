@@ -8,6 +8,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { FireworksAudioEngine } from './fireworks_audio.js';
 import {
   groundHeightAt,
+  northLandElevation,
   createGlowTexture,
   createTerrainAndBay,
   createHilltopPavilion,
@@ -204,14 +205,16 @@ const NPC_FIREWORK_PROFILE = {
   momo: { delayMin: 160, delayMax: 400, lookProb: 0.85, burstJumpProb: 0.0,  burstWaveProb: 0.25, cooldownMs: 3100 }
 };
 
-// Discoverable Golden Ticket candidate hiding spots tucked behind scenic corners
+// Discoverable Golden Ticket candidate spots tucked partway behind, beside, or under prop edges
 const TICKET_HIDING_SPOTS = [
-  { x: 11.45, z: -2.05 },
-  { x: 9.25, z: 9.85 },
-  { x: -11.55, z: 4.15 },
-  { x: -12.6, z: -9.8 },
-  { x: 11.8, z: -9.9 },
-  { x: -11.4, z: 9.4 }
+  { x: 7.05,   z: -3.22,  rotY: 0.48,  tiltX: 0.12, tiltZ: -0.06, yOffset: 0.036 }, // Half under crimson tree gift box
+  { x: 9.02,   z: 6.14,   rotY: 0.42,  tiltX: 0.16, tiltZ: 0.08,  yOffset: 0.042 }, // Tucked beside Bosingak north step corner
+  { x: -11.04, z: 3.44,   rotY: 0.92,  tiltX: 0.18, tiltZ: 0.10,  yOffset: 0.042 }, // Peeking beside Bungeoppang cart wheel
+  { x: -11.54, z: -10.14, rotY: -0.45, tiltX: 0.20, tiltZ: -0.12, yOffset: 0.048 }, // Behind hilltop mailbox stone footing
+  { x: -5.42,  z: -8.62,  rotY: 0.36,  tiltX: 0.14, tiltZ: 0.08,  yOffset: 0.034 }, // Half under left cliff bench overhang
+  { x: -4.24,  z: 4.82,   rotY: 0.70,  tiltX: 0.22, tiltZ: -0.14, yOffset: 0.046 }, // Tucked against campfire hearth stone
+  { x: 1.86,   z: -8.98,  rotY: -0.58, tiltX: 0.16, tiltZ: 0.08,  yOffset: 0.036 }, // Peeking beside cliffside puppy Mongi
+  { x: -16.56, z: -71.95, rotY: 0.42,  tiltX: 0.14, tiltZ: 0.06,  yOffset: 0.255, onBlueHouse: true, baseX: -18.0, baseZ: -74.5 } // Tucked under Chichi's yard bench
 ];
 
 // Pre-allocated math helpers (zero GC inside animation loop)
@@ -539,13 +542,13 @@ export async function initEunhajaeScene() {
     snowRefs
   } = createTerrainAndBay(scene, glowTexture, { isMobile });
 
-  // Spread 3 primary landmarks across distinct zones while preserving Cliffside Benches & 몽이
+  // Spread landmarks with unobstructed sightlines between Bosingak & Christmas Tree
   const stallX = -10.2;
   const stallZ = 2.8;
-  const treeX = 10.2;
-  const treeZ = -0.8;
-  const pavilionX = 7.4;
-  const pavilionZ = 8.4;
+  const treeX = 8.4;
+  const treeZ = -4.0;
+  const pavilionX = 10.2;
+  const pavilionZ = 8.8;
   const firepitX = -4.8;
   const firepitZ = 4.4;
 
@@ -632,7 +635,6 @@ export async function initEunhajaeScene() {
     { x: stallX, z: stallZ, radius: 5.6, color: 0xffb357, opacity: 0.36 },
     { x: treeX, z: treeZ, radius: 6.2, color: 0xffe08a, opacity: 0.34 },
     { x: firepitX, z: firepitZ, radius: 4.8, color: 0xff8c42, opacity: 0.44, flicker: true },
-    { x: 0.0, z: 4.0, radius: 3.8, color: 0xffcf73, opacity: 0.24 },
     { x: -10.5, z: -10.5, radius: 3.6, color: 0xffd175, opacity: 0.28 },
     { x: -3.5, z: -11.0, radius: 3.8, color: 0xffd175, opacity: 0.3 },
     { x: 4.2, z: -11.0, radius: 3.6, color: 0xffd175, opacity: 0.28 },
@@ -735,10 +737,14 @@ export async function initEunhajaeScene() {
     ticketSpotIdx = Math.floor(Math.random() * TICKET_HIDING_SPOTS.length);
   }
   const ticketSpot = TICKET_HIDING_SPOTS[ticketSpotIdx];
-  const ticketY = groundHeightAt(ticketSpot.x, ticketSpot.z) + 0.14;
+  const ticketGroundY = ticketSpot.onBlueHouse
+    ? northLandElevation(ticketSpot.baseX, ticketSpot.baseZ)
+    : groundHeightAt(ticketSpot.x, ticketSpot.z);
+  const ticketY = ticketGroundY + (ticketSpot.yOffset ?? 0.045);
+  const ticketBaseRotY = ticketSpot.rotY ?? 0.55;
   const goldenTicket = createGoldenTicket(glowTexture);
   goldenTicket.position.set(ticketSpot.x, ticketY, ticketSpot.z);
-  goldenTicket.rotation.set(0.45, 0.55, 0.14);
+  goldenTicket.rotation.set(ticketSpot.tiltX ?? 0.16, ticketBaseRotY, ticketSpot.tiltZ ?? 0.08);
   scene.add(goldenTicket);
 
   let ticketFound = false;
@@ -2535,7 +2541,9 @@ export async function initEunhajaeScene() {
       const ticketHits = _raycaster.intersectObject(goldenTicket, true);
       if (ticketHits.length > 0) {
         const distToPlayer = Math.hypot(selfEntry.curX - ticketSpot.x, selfEntry.curZ - ticketSpot.z);
-        if (distToPlayer <= 5.0) {
+        const distToCamera = Math.hypot(camera.position.x - ticketSpot.x, camera.position.z - ticketSpot.z);
+        const canCollectTicket = ticketSpot.onBlueHouse ? distToCamera <= 14.0 : distToPlayer <= 5.0;
+        if (canCollectTicket) {
           ticketFound = true;
           goldenTicket.visible = false;
           ticketModalOpen = true;
@@ -3207,8 +3215,8 @@ export async function initEunhajaeScene() {
 
     // Golden Ticket Subtle Twinkle, Mailbox Flag Breeze, Shooting Star & Player Victory Swirl
     if (!ticketFound && goldenTicket.visible) {
-      goldenTicket.position.y = ticketY + Math.sin(timeSec * 2.2) * 0.014;
-      goldenTicket.rotation.y = 0.55 + Math.sin(timeSec * 1.1) * 0.1;
+      goldenTicket.position.y = ticketY + Math.sin(timeSec * 2.2) * 0.008;
+      goldenTicket.rotation.y = ticketBaseRotY + Math.sin(timeSec * 1.1) * 0.06;
       if (goldenTicket.userData.shimmerMat) {
         goldenTicket.userData.shimmerMat.opacity = 0.16 + Math.sin(timeSec * 3.1) * 0.08;
       }

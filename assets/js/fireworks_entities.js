@@ -82,7 +82,7 @@ function createCityFacadeTexture() {
 }
 
 // Continuous northern shore + wider Mount Namsan height function (organic shoreline, never submerged)
-function northLandElevation(wx, wz) {
+export function northLandElevation(wx, wz) {
   const bankCurve = Math.sin(wx * 0.085) * 1.15 + Math.cos(wx * 0.19) * 0.55;
   const shorelineZ = -58.5 + bankCurve;
   const bankFactor = smoothstep(shorelineZ + 2.8, shorelineZ - 2.4, wz);
@@ -264,10 +264,10 @@ function createNamsanHouse(x, z, { roofColor = 0x9c4638, wallColor = 0xe8dfd1, i
   g.add(body);
 
   // 3. Pitched Gable Roof (4-sided pyramid seated atop body)
-  const roof = new THREE.Mesh(new THREE.ConeGeometry(isBlueRoof ? 2.52 : 2.25, roofH, 4), roofMat);
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(isBlueRoof ? 2.38 : 2.25, roofH, 4), roofMat);
   roof.position.set(houseOffsetX, 0.15 + bodyH + roofH * 0.45, houseOffsetZ);
   roof.rotation.y = Math.PI / 4;
-  roof.scale.set(1.12, 1.0, 0.95);
+  roof.scale.set(isBlueRoof ? 1.02 : 1.12, 1.0, 0.96);
   g.add(roof);
 
   // 4. Brick Chimney
@@ -301,7 +301,11 @@ function createNamsanHouse(x, z, { roofColor = 0x9c4638, wallColor = 0xe8dfd1, i
   g.add(frontWin);
 
   const sideWin = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.5, 0.62), activeWinMat);
-  sideWin.position.set(houseOffsetX + (isBlueRoof ? 1.46 : 1.31), 0.94, houseOffsetZ + 0.05);
+  if (isBlueRoof) {
+    sideWin.position.set(houseOffsetX + 2.94, 0.78, houseOffsetZ + 0.08);
+  } else {
+    sideWin.position.set(houseOffsetX + 1.31, 0.94, houseOffsetZ + 0.05);
+  }
   g.add(sideWin);
 
   // Upper floor windows for 2-story hillside houses
@@ -347,17 +351,44 @@ function createNamsanHouse(x, z, { roofColor = 0x9c4638, wallColor = 0xe8dfd1, i
     yardLawn.position.set(0, 0.14, 1.05);
     g.add(yardLawn);
 
-    // Cozy Side Annex / Sunroom Wing on the +X side of the main cottage
-    const wingBody = new THREE.Mesh(new THREE.BoxGeometry(1.55, 1.22, 1.68), wallMat);
-    wingBody.position.set(houseOffsetX + 2.15, 0.78, houseOffsetZ + 0.08);
+    // Cozy Side Annex / Sunroom Wing on the +X side of the main cottage (flush outside shared wall at x = +1.10)
+    const wingBody = new THREE.Mesh(new THREE.BoxGeometry(1.48, 1.18, 1.64), wallMat);
+    wingBody.position.set(houseOffsetX + 2.19, 0.74, houseOffsetZ + 0.08);
     g.add(wingBody);
-    const wingRoof = new THREE.Mesh(new THREE.ConeGeometry(1.42, 0.82, 4), roofMat);
-    wingRoof.position.set(houseOffsetX + 2.15, 1.78, houseOffsetZ + 0.08);
-    wingRoof.rotation.y = Math.PI / 4;
-    wingRoof.scale.set(1.05, 1.0, 1.02);
+
+    // Solid cream gable triangle filling the upper annex wall cleanly
+    const wingGableShape = new THREE.Shape();
+    wingGableShape.moveTo(-0.82, 1.32);
+    wingGableShape.lineTo(0.82, 1.32);
+    wingGableShape.lineTo(0, 1.78);
+    wingGableShape.closePath();
+    const wingGable = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(wingGableShape, { depth: 1.48, bevelEnabled: false }),
+      wallMat
+    );
+    wingGable.rotation.y = Math.PI / 2;
+    wingGable.position.set(houseOffsetX + 1.45, 0, houseOffsetZ + 0.08);
+    g.add(wingGable);
+
+    // Solid gable roof starting strictly at x = +1.10 (zero middle-wall clipping) and overhanging all 3 outer sides
+    const wingRoofShape = new THREE.Shape();
+    wingRoofShape.moveTo(-1.02, 1.25);
+    wingRoofShape.lineTo(-1.02, 1.36);
+    wingRoofShape.lineTo(0, 1.87);
+    wingRoofShape.lineTo(1.02, 1.36);
+    wingRoofShape.lineTo(1.02, 1.25);
+    wingRoofShape.lineTo(0, 1.76);
+    wingRoofShape.closePath();
+    const wingRoof = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(wingRoofShape, { depth: 1.68, bevelEnabled: false }),
+      roofMat
+    );
+    wingRoof.rotation.y = Math.PI / 2;
+    wingRoof.position.set(houseOffsetX + 1.45, 0, houseOffsetZ + 0.08);
     g.add(wingRoof);
+
     const wingWin = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.48, 0.08), activeWinMat);
-    wingWin.position.set(houseOffsetX + 2.15, 0.86, houseOffsetZ + 0.94);
+    wingWin.position.set(houseOffsetX + 2.19, 0.78, houseOffsetZ + 0.91);
     g.add(wingWin);
 
     // Cozy Wooden Porch Deck + Steps leading down to the front yard
@@ -553,7 +584,7 @@ function createNamsanHouse(x, z, { roofColor = 0x9c4638, wallColor = 0xe8dfd1, i
   }
 
   g.userData.isBlueRoofHouse = isBlueRoof;
-  return { houseGroup: g, villager, bodyH, roofH };
+  return { houseGroup: g, villager, bodyH, roofH, offsetX: houseOffsetX, offsetZ: houseOffsetZ, isBlueRoof };
 }
 
 // Wide Northern Shoreline, Mount Namsan + N Seoul Tower, Modernist Library & Hillside Houses
@@ -752,7 +783,10 @@ function createNamsanAndTower(glowTexture, quality, atmosphereRefs) {
       y: northLandElevation(spec.x, spec.z),
       z: spec.z,
       bodyH: built.bodyH,
-      roofH: built.roofH
+      roofH: built.roofH,
+      offsetX: built.offsetX,
+      offsetZ: built.offsetZ,
+      isBlueRoof: built.isBlueRoof
     });
     if (spec.isBlueRoof && built.villager) {
       blueHouseInfo = built.villager;
@@ -1256,13 +1290,17 @@ export function createHilltopPavilion(x, z, glowTexture) {
     g.add(finial);
   });
 
-  // 4. Heavy Overhead Bell Crossbeam + Grand Bosingak Bronze Bell (보신각 범종)
+  // 4. Heavy Overhead Bell Crossbeam + Iron Hanger + Grand Bosingak Bronze Bell (보신각 범종)
   const bellCrossbeam = new THREE.Mesh(new THREE.BoxGeometry(3.85, 0.2, 0.26), darkWoodMat);
   bellCrossbeam.position.set(0, 3.52, -0.1);
   g.add(bellCrossbeam);
 
+  const bellHanger = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.042, 0.46, 8), ironMat);
+  bellHanger.position.set(-0.14, 3.29, -0.1);
+  g.add(bellHanger);
+
   const bellPivot = new THREE.Group();
-  bellPivot.position.set(-0.14, 3.44, -0.1);
+  bellPivot.position.set(-0.14, 2.98, -0.1);
 
   const yokeLoop = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.055, 8, 12), ironMat);
   yokeLoop.position.y = -0.11;
@@ -1305,24 +1343,24 @@ export function createHilltopPavilion(x, z, glowTexture) {
 
   g.add(bellPivot);
 
-  // 5. Enlarged Suspended Horizontal Wooden Striking Log (당목) beside the Bell
+  // 5. Enlarged Suspended Horizontal Wooden Striking Log (당목) hung cleanly from the Crossbeam at matching Bell Strike Height
   const strikerPivot = new THREE.Group();
   strikerPivot.position.set(1.66, 3.42, -0.1);
 
   const strikerLog = new THREE.Mesh(new THREE.CylinderGeometry(0.128, 0.142, 1.46, 12), darkWoodMat);
   strikerLog.rotation.z = Math.PI / 2;
-  strikerLog.position.set(-0.06, -1.36, 0);
+  strikerLog.position.set(-0.06, -1.82, 0);
   strikerLog.castShadow = true;
   strikerPivot.add(strikerLog);
 
   const strikerTip = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.11, 12), goldTrimMat);
   strikerTip.rotation.z = Math.PI / 2;
-  strikerTip.position.set(-0.82, -1.36, 0);
+  strikerTip.position.set(-0.82, -1.82, 0);
   strikerPivot.add(strikerTip);
 
   [-0.5, 0.36].forEach((rx) => {
-    const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 1.36, 6), ironMat);
-    rope.position.set(rx, -0.68, 0);
+    const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 1.82, 6), ironMat);
+    rope.position.set(rx, -0.91, 0);
     strikerPivot.add(rope);
   });
 
@@ -1338,7 +1376,7 @@ export function createHilltopPavilion(x, z, glowTexture) {
     depthWrite: false
   });
   const bellHalo = new THREE.Sprite(bellHaloMat);
-  bellHalo.position.set(-0.14, 2.25, -0.1);
+  bellHalo.position.set(-0.14, 1.79, -0.1);
   bellHalo.scale.set(3.7, 3.7, 1);
   g.add(bellHalo);
 
@@ -1352,12 +1390,12 @@ export function createHilltopPavilion(x, z, glowTexture) {
   });
   const bellWaveRing = new THREE.Mesh(new THREE.RingGeometry(0.95, 1.18, 28), bellWaveMat);
   bellWaveRing.rotation.x = -Math.PI / 2;
-  bellWaveRing.position.set(-0.14, 1.38, -0.1);
+  bellWaveRing.position.set(-0.14, 0.92, -0.1);
   bellWaveRing.visible = false;
   g.add(bellWaveRing);
 
   const warmLight = new THREE.PointLight(0xffb85c, 2.6, 13, 1.6);
-  warmLight.position.set(0, 2.85, 0);
+  warmLight.position.set(0, 2.45, 0);
   g.add(warmLight);
 
   g.userData.bellPivot = bellPivot;
@@ -1366,7 +1404,7 @@ export function createHilltopPavilion(x, z, glowTexture) {
   g.userData.bellHaloMat = bellHaloMat;
   g.userData.bellWaveRing = bellWaveRing;
   g.userData.bellWaveMat = bellWaveMat;
-  g.userData.worldCenter = new THREE.Vector3(x, baseY + 2.6, z);
+  g.userData.worldCenter = new THREE.Vector3(x, baseY + 2.15, z);
 
   return g;
 }
@@ -2553,10 +2591,14 @@ export function createSnowEnvironment(
 
   if (snowRefs?.namsanHousesInfo) {
     snowRefs.namsanHousesInfo.forEach((h) => {
-      const cap = new THREE.Mesh(new THREE.ConeGeometry(2.2, h.roofH * 0.72, 4), snowMat);
-      cap.position.set(h.x, h.y + 0.22 + h.bodyH + h.roofH * 0.56, h.z - 0.15);
+      const cap = new THREE.Mesh(new THREE.ConeGeometry(h.isBlueRoof ? 2.15 : 2.2, h.roofH * 0.72, 4), snowMat);
+      cap.position.set(
+        h.x + (h.offsetX ?? 0),
+        h.y + 0.22 + h.bodyH + h.roofH * 0.56,
+        h.z + (h.offsetZ ?? -0.15)
+      );
       cap.rotation.y = Math.PI / 4;
-      cap.scale.set(1.08, 1.0, 0.92);
+      cap.scale.set(h.isBlueRoof ? 0.98 : 1.08, 1.0, 0.92);
       snowRoot.add(cap);
     });
   }
