@@ -228,4 +228,8 @@
     order: 3;
     flex: 1 1 100%;
   }
+
+  .card-stage {
+    margin: -25px auto -5px;
+  }
 }
