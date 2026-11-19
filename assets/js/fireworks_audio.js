@@ -18,12 +18,25 @@ const CELESTA_MOTIF = [
 ];
 
 export class FireworksAudioEngine {
-  constructor() {
+  constructor(options = {}) {
     this.ctx = null;
     this.masterGain = null;
+    this.compressor = null;
     this.sfxGain = null;
     this.bgmGain = null;
     this.noiseBuffer = null;
+
+    this.isMobile = Boolean(
+      options?.isMobile ??
+        (typeof window !== 'undefined' &&
+          (window.matchMedia?.('(hover: none) and (pointer: coarse)').matches ||
+            Math.min(window.innerWidth, window.innerHeight) <= 768))
+    );
+
+    this._masterLevel = this.isMobile ? 1.28 : 0.72;
+    this._sfxLevel = this.isMobile ? 1.05 : 0.65;
+    this._ambientLevel = this.isMobile ? 0.56 : 0.36;
+    this._bgmScale = this.isMobile ? 1.48 : 1.0;
 
     this.muted = false;
     this.sfxEnabled = true;
@@ -49,19 +62,31 @@ export class FireworksAudioEngine {
       this.ctx = new AudioCtx();
 
       this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.value = this.muted ? 0 : 0.72;
-      this.masterGain.connect(this.ctx.destination);
+      this.masterGain.gain.value = this.muted ? 0 : this._masterLevel;
+
+      if (this.isMobile && typeof this.ctx.createDynamicsCompressor === 'function') {
+        this.compressor = this.ctx.createDynamicsCompressor();
+        this.compressor.threshold.setValueAtTime(-12, this.ctx.currentTime);
+        this.compressor.knee.setValueAtTime(14, this.ctx.currentTime);
+        this.compressor.ratio.setValueAtTime(3.5, this.ctx.currentTime);
+        this.compressor.attack.setValueAtTime(0.004, this.ctx.currentTime);
+        this.compressor.release.setValueAtTime(0.14, this.ctx.currentTime);
+        this.masterGain.connect(this.compressor);
+        this.compressor.connect(this.ctx.destination);
+      } else {
+        this.masterGain.connect(this.ctx.destination);
+      }
 
       this.sfxGain = this.ctx.createGain();
-      this.sfxGain.gain.value = this.sfxEnabled ? 0.65 : 0;
+      this.sfxGain.gain.value = this.sfxEnabled ? this._sfxLevel : 0;
       this.sfxGain.connect(this.masterGain);
 
       this.bgmGain = this.ctx.createGain();
-      this.bgmGain.gain.value = this.bgmEnabled ? this.bgmVolume : 0;
+      this.bgmGain.gain.value = this.bgmEnabled ? this.bgmVolume * this._bgmScale : 0;
       this.bgmGain.connect(this.masterGain);
 
       this.ambientGain = this.ctx.createGain();
-      this.ambientGain.gain.value = this.ambientEnabled ? 0.36 : 0;
+      this.ambientGain.gain.value = this.ambientEnabled ? this._ambientLevel : 0;
       this.ambientGain.connect(this.masterGain);
 
       this.noiseBuffer = this._createNoiseBuffer(this.ctx);
@@ -142,7 +167,7 @@ export class FireworksAudioEngine {
   setAmbientEnabled(enabled) {
     this.ambientEnabled = Boolean(enabled);
     if (this.ambientGain && this.ctx) {
-      this.ambientGain.gain.setTargetAtTime(this.ambientEnabled ? 0.36 : 0, this.ctx.currentTime, 0.08);
+      this.ambientGain.gain.setTargetAtTime(this.ambientEnabled ? this._ambientLevel : 0, this.ctx.currentTime, 0.08);
     }
     return this.ambientEnabled;
   }
@@ -179,7 +204,7 @@ export class FireworksAudioEngine {
   setMuted(muted) {
     this.muted = Boolean(muted);
     if (this.masterGain && this.ctx) {
-      this.masterGain.gain.setTargetAtTime(this.muted ? 0 : 0.72, this.ctx.currentTime, 0.04);
+      this.masterGain.gain.setTargetAtTime(this.muted ? 0 : this._masterLevel, this.ctx.currentTime, 0.04);
     }
     if (this.muted) {
       this._stopBgmLoop();
@@ -192,7 +217,7 @@ export class FireworksAudioEngine {
   setSfxEnabled(enabled) {
     this.sfxEnabled = Boolean(enabled);
     if (this.sfxGain && this.ctx) {
-      this.sfxGain.gain.setTargetAtTime(this.sfxEnabled ? 0.65 : 0, this.ctx.currentTime, 0.04);
+      this.sfxGain.gain.setTargetAtTime(this.sfxEnabled ? this._sfxLevel : 0, this.ctx.currentTime, 0.04);
     }
     return this.sfxEnabled;
   }
@@ -200,7 +225,7 @@ export class FireworksAudioEngine {
   setBgmEnabled(enabled) {
     this.bgmEnabled = Boolean(enabled);
     if (this.bgmGain && this.ctx) {
-      this.bgmGain.gain.setTargetAtTime(this.bgmEnabled ? this.bgmVolume : 0, this.ctx.currentTime, 0.08);
+      this.bgmGain.gain.setTargetAtTime(this.bgmEnabled ? this.bgmVolume * this._bgmScale : 0, this.ctx.currentTime, 0.08);
     }
     if (this.bgmEnabled && !this.muted) {
       this.ensureContext();
@@ -213,7 +238,7 @@ export class FireworksAudioEngine {
   setBgmVolume(vol) {
     this.bgmVolume = Math.max(0, Math.min(1, Number(vol) || 0));
     if (this.bgmGain && this.ctx && this.bgmEnabled) {
-      this.bgmGain.gain.setTargetAtTime(this.bgmVolume, this.ctx.currentTime, 0.05);
+      this.bgmGain.gain.setTargetAtTime(this.bgmVolume * this._bgmScale, this.ctx.currentTime, 0.05);
     }
   }
 
@@ -278,7 +303,7 @@ export class FireworksAudioEngine {
     try {
       const lpf = this.ctx.createBiquadFilter();
       lpf.type = 'lowpass';
-      lpf.frequency.value = 460;
+      lpf.frequency.value = this.isMobile ? 820 : 460;
 
       const env = this.ctx.createGain();
       env.gain.setValueAtTime(0.0001, startTime);
@@ -715,6 +740,48 @@ export class FireworksAudioEngine {
           jingle.stop(t0 + 0.12);
         }
       });
+    } catch (e) {}
+  }
+
+  playDrinkOrder() {
+    const ctx = this.ensureContext();
+    if (!ctx || this.muted || !this.sfxEnabled) return;
+
+    try {
+      const now = ctx.currentTime;
+      // Warm gentle wooden cup-set chime + soft warm pour shimmer
+      [587.33, 783.99].forEach((freq, idx) => {
+        const t0 = now + idx * 0.085;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t0);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.linearRampToValueAtTime(0.11, t0 + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0006, t0 + 0.34);
+        osc.connect(gain);
+        gain.connect(this.sfxGain);
+        osc.start(t0);
+        osc.stop(t0 + 0.36);
+      });
+
+      if (this.noiseBuffer) {
+        const pour = ctx.createBufferSource();
+        pour.buffer = this.noiseBuffer;
+        const bpf = ctx.createBiquadFilter();
+        bpf.type = 'bandpass';
+        bpf.frequency.setValueAtTime(1400, now);
+        bpf.Q.value = 1.6;
+        const pGain = ctx.createGain();
+        pGain.gain.setValueAtTime(0.0001, now);
+        pGain.gain.linearRampToValueAtTime(0.045, now + 0.04);
+        pGain.gain.exponentialRampToValueAtTime(0.0004, now + 0.24);
+        pour.connect(bpf);
+        bpf.connect(pGain);
+        pGain.connect(this.sfxGain);
+        pour.start(now);
+        pour.stop(now + 0.26);
+      }
     } catch (e) {}
   }
 

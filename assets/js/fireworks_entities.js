@@ -488,12 +488,17 @@ function createNamsanHouse(x, z, { roofColor = 0x9c4638, wallColor = 0xe8dfd1, i
     const bodyPivot = new THREE.Group();
     villagerGroup.add(bodyPivot);
 
-    const coatMat = new THREE.MeshStandardMaterial({ color: 0xd4a43f, roughness: 0.82, envMapIntensity: 0.32 });
-    const scarfMat = new THREE.MeshStandardMaterial({ color: 0xc24354, roughness: 0.86, envMapIntensity: 0.32 });
-    const skinMat = new THREE.MeshStandardMaterial({ color: 0xeec9af, roughness: 0.76, envMapIntensity: 0.3 });
-    const pantMat = new THREE.MeshStandardMaterial({ color: 0x262b3d, roughness: 0.84, envMapIntensity: 0.3 });
-    const bucketHatMat = new THREE.MeshStandardMaterial({ color: 0x1e325c, roughness: 0.82, envMapIntensity: 0.32 });
-    const chichiButtonMat = new THREE.MeshStandardMaterial({ color: 0xf4e3b8, roughness: 0.45, metalness: 0.25, envMapIntensity: 0.35 });
+    const coatMat = new THREE.MeshStandardMaterial({ color: 0xe6b85c, emissive: 0x443311, emissiveIntensity: 0.22, roughness: 0.72, envMapIntensity: 0.45 });
+    const scarfMat = new THREE.MeshStandardMaterial({ color: 0xd44d5e, roughness: 0.76, envMapIntensity: 0.4 });
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xfce4d2, roughness: 0.62, envMapIntensity: 0.4 });
+    const pantMat = new THREE.MeshStandardMaterial({ color: 0x2e364f, roughness: 0.75, envMapIntensity: 0.4 });
+    const bucketHatMat = new THREE.MeshStandardMaterial({ color: 0x243b6b, roughness: 0.72, envMapIntensity: 0.45 });
+    const chichiButtonMat = new THREE.MeshStandardMaterial({ color: 0xfff2cc, roughness: 0.35, metalness: 0.35, envMapIntensity: 0.5 });
+
+    // Warm local light to ensure Chichi is brightly lit and never shadowed
+    const chichiLight = new THREE.PointLight(0xffeaad, 1.5, 5.5, 1.5);
+    chichiLight.position.set(0, 1.6, 0.25);
+    villagerGroup.add(chichiLight);
 
     [-0.08, 0.08].forEach((lx) => {
       const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.048, 0.34, 8), pantMat);
@@ -1857,12 +1862,570 @@ function createBungeoppangFishMesh(pastryMat, scale = 1) {
   return fish;
 }
 
-// Cozy Left-Hill Bungeoppang Street Cart (붕어빵 포장마차 + 사장님 + 물고기 붕어빵 + rising warm steam)
-export function createBungeoppangStall(x, z, glowTexture, withLight = true) {
+// Shared Materials Cache for Winter Drinks (Coffee, Hot Choco, Vin Chaud)
+let _drinkAssetCache = null;
+function getDrinkAssetCache() {
+  if (_drinkAssetCache) return _drinkAssetCache;
+  _drinkAssetCache = {
+    cupBodyGeo: new THREE.CylinderGeometry(0.052, 0.038, 0.142, 12),
+    sleeveGeo: new THREE.CylinderGeometry(0.0505, 0.0445, 0.06, 12),
+    sleeveBandGeo: new THREE.CylinderGeometry(0.0512, 0.0506, 0.009, 12),
+    liquidGeo: new THREE.CircleGeometry(0.046, 12),
+    lidBaseGeo: new THREE.CylinderGeometry(0.055, 0.055, 0.014, 12),
+    lidRimGeo: new THREE.CylinderGeometry(0.049, 0.053, 0.012, 12),
+    marshmallowGeo: new THREE.SphereGeometry(0.015, 7, 6),
+    orangeSliceGeo: new THREE.CylinderGeometry(0.036, 0.036, 0.009, 10, 1, false, 0, Math.PI),
+    orangeRindGeo: new THREE.TorusGeometry(0.035, 0.0045, 5, 10, Math.PI),
+    cinnamonGeo: new THREE.CylinderGeometry(0.0085, 0.0075, 0.125, 7),
+    coffeeCupMat: new THREE.MeshStandardMaterial({ color: 0xf4ead8, roughness: 0.72 }),
+    coffeeSleeveMat: new THREE.MeshStandardMaterial({ color: 0x4b3222, roughness: 0.88 }),
+    coffeeGoldMat: new THREE.MeshStandardMaterial({ color: 0xd6b064, roughness: 0.45, metalness: 0.35 }),
+    coffeeLidMat: new THREE.MeshStandardMaterial({ color: 0x2b1d16, roughness: 0.62 }),
+    cocoaCupMat: new THREE.MeshStandardMaterial({ color: 0xd48556, roughness: 0.74 }),
+    cocoaSleeveMat: new THREE.MeshStandardMaterial({ color: 0x6f3230, roughness: 0.88 }),
+    cocoaLiquidMat: new THREE.MeshStandardMaterial({ color: 0x441f13, roughness: 0.42 }),
+    marshmallowMat: new THREE.MeshStandardMaterial({ color: 0xfffcf5, roughness: 0.85 }),
+    creamSwirlMat: new THREE.MeshStandardMaterial({ color: 0xfff5e0, roughness: 0.82 }),
+    vinCupMat: new THREE.MeshStandardMaterial({ color: 0x761d31, roughness: 0.72 }),
+    vinSleeveMat: new THREE.MeshStandardMaterial({ color: 0xf0e1c8, roughness: 0.88 }),
+    vinLiquidMat: new THREE.MeshStandardMaterial({ color: 0x640e22, roughness: 0.32 }),
+    orangeMat: new THREE.MeshStandardMaterial({ color: 0xf28729, roughness: 0.52 }),
+    orangeRindMat: new THREE.MeshStandardMaterial({ color: 0xffe4a8, roughness: 0.72 }),
+    cinnamonMat: new THREE.MeshStandardMaterial({ color: 0x8e4c23, roughness: 0.86 })
+  };
+  return _drinkAssetCache;
+}
+
+// Distinct Winter Takeout Cup Builder (coffee / hotchoco / vinchaud)
+export function createWinterDrinkMesh(drinkType = 'coffee', glowTexture = null, withSteam = false) {
+  const c = getDrinkAssetCache();
+  const cup = new THREE.Group();
+
+  const bodyMat = drinkType === 'hotchoco'
+    ? c.cocoaCupMat
+    : (drinkType === 'vinchaud' ? c.vinCupMat : c.coffeeCupMat);
+  const sleeveMat = drinkType === 'hotchoco'
+    ? c.cocoaSleeveMat
+    : (drinkType === 'vinchaud' ? c.vinSleeveMat : c.coffeeSleeveMat);
+
+  const cupBody = new THREE.Mesh(c.cupBodyGeo, bodyMat);
+  cup.add(cupBody);
+
+  const sleeve = new THREE.Mesh(c.sleeveGeo, sleeveMat);
+  sleeve.position.y = -0.005;
+  cup.add(sleeve);
+
+  if (drinkType === 'coffee') {
+    // Calm & clean dark espresso lid + subtle gold sleeve stripe
+    const band = new THREE.Mesh(c.sleeveBandGeo, c.coffeeGoldMat);
+    band.position.y = 0.022;
+    cup.add(band);
+
+    const lidBase = new THREE.Mesh(c.lidBaseGeo, c.coffeeLidMat);
+    lidBase.position.y = 0.075;
+    cup.add(lidBase);
+
+    const lidRim = new THREE.Mesh(c.lidRimGeo, c.coffeeLidMat);
+    lidRim.position.y = 0.087;
+    cup.add(lidRim);
+  } else if (drinkType === 'hotchoco') {
+    // Sweet open cocoa surface topped with puffy white mini marshmallows
+    const liq = new THREE.Mesh(c.liquidGeo, c.cocoaLiquidMat);
+    liq.rotation.x = -Math.PI / 2;
+    liq.position.y = 0.068;
+    cup.add(liq);
+
+    const swirl = new THREE.Mesh(c.marshmallowGeo, c.creamSwirlMat);
+    swirl.scale.set(1.5, 0.75, 1.5);
+    swirl.position.set(0, 0.074, 0);
+    cup.add(swirl);
+
+    [
+      [-0.022, 0.081, 0.015, 1.0],
+      [0.021,  0.082, 0.018, 0.92],
+      [0.018,  0.081, -0.02, 0.95],
+      [-0.018, 0.082, -0.019, 0.88],
+      [0.0,    0.088, 0.002, 1.05]
+    ].forEach(([mx, my, mz, ms]) => {
+      const m = new THREE.Mesh(c.marshmallowGeo, c.marshmallowMat);
+      m.position.set(mx, my, mz);
+      m.scale.set(ms, ms * 0.88, ms);
+      cup.add(m);
+    });
+  } else if (drinkType === 'vinchaud') {
+    // Deep ruby mulled wine + vivid orange half-slice + tall protruding cinnamon stick
+    const liq = new THREE.Mesh(c.liquidGeo, c.vinLiquidMat);
+    liq.rotation.x = -Math.PI / 2;
+    liq.position.y = 0.068;
+    cup.add(liq);
+
+    const orangeGroup = new THREE.Group();
+    orangeGroup.position.set(-0.026, 0.078, 0.012);
+    orangeGroup.rotation.set(0.32, 0.4, -0.28);
+    const orangeSlice = new THREE.Mesh(c.orangeSliceGeo, c.orangeMat);
+    orangeSlice.rotation.x = Math.PI / 2;
+    orangeGroup.add(orangeSlice);
+    const orangeRind = new THREE.Mesh(c.orangeRindGeo, c.orangeRindMat);
+    orangeGroup.add(orangeRind);
+    cup.add(orangeGroup);
+
+    const cinnamon = new THREE.Mesh(c.cinnamonGeo, c.cinnamonMat);
+    cinnamon.position.set(0.018, 0.106, -0.006);
+    cinnamon.rotation.set(-0.22, 0.15, -0.34);
+    cup.add(cinnamon);
+  }
+
+  if (withSteam && glowTexture) {
+    const steams = [];
+    for (let i = 0; i < 2; i++) {
+      const sm = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+          map: glowTexture,
+          color: 0xf7f1e6,
+          transparent: true,
+          opacity: 0.12,
+          depthWrite: false
+        })
+      );
+      sm.position.set((i === 0 ? -0.01 : 0.01), 0.13 + i * 0.06, 0);
+      sm.scale.set(0.1, 0.1, 1);
+      cup.add(sm);
+      steams.push({ sprite: sm, phase: i * 1.9 });
+    }
+    cup.userData.steams = steams;
+  }
+
+  return cup;
+}
+
+// Cozy West-Hill Winter Drink Kiosk (우체통-붕어빵 사이 목재 음료 스탠드 + 나나 사장님)
+export function createWinterDrinkStand(x, z, glowTexture, withLight = true, yaw = 1.02) {
   const g = new THREE.Group();
   const groundY = groundHeightAt(x, z);
   g.position.set(x, groundY, z);
-  g.rotation.y = 0.62;
+  g.rotation.y = yaw;
+
+  const darkOakMat = new THREE.MeshStandardMaterial({ color: 0x4d3020, roughness: 0.84 });
+  const pineSlatMat = new THREE.MeshStandardMaterial({ color: 0xa67449, roughness: 0.78 });
+  const counterMat = new THREE.MeshStandardMaterial({ color: 0xe7dcc7, roughness: 0.58 });
+  const greenRoofMat = new THREE.MeshStandardMaterial({ color: 0x264b3b, roughness: 0.78 });
+  const brassMat = new THREE.MeshStandardMaterial({ color: 0xc98c48, roughness: 0.32, metalness: 0.74 });
+  const bulbMat = new THREE.MeshStandardMaterial({
+    color: 0xfff5d1,
+    emissive: 0xffc966,
+    emissiveIntensity: 1.75,
+    roughness: 0.25
+  });
+
+  // 1. Timber Deck Base & Honey-Pine Counter Cabinet (no wheels, distinct from cart)
+  const deckBase = new THREE.Mesh(new THREE.BoxGeometry(2.34, 0.08, 1.32), darkOakMat);
+  deckBase.position.y = 0.04;
+  deckBase.receiveShadow = true;
+  g.add(deckBase);
+
+  const lowerCabinet = new THREE.Mesh(new THREE.BoxGeometry(2.12, 0.96, 1.08), darkOakMat);
+  lowerCabinet.position.set(0, 0.54, 0);
+  lowerCabinet.castShadow = true;
+  lowerCabinet.receiveShadow = true;
+  g.add(lowerCabinet);
+
+  // Decorative front pine wood slats on kiosk body
+  for (let i = -4; i <= 4; i++) {
+    const slat = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.76, 0.04), pineSlatMat);
+    slat.position.set(i * 0.22, 0.54, 0.55);
+    g.add(slat);
+  }
+
+  // Pale stone-wood serving counter + rear backsplash wall
+  const counterTop = new THREE.Mesh(new THREE.BoxGeometry(2.38, 0.09, 1.24), counterMat);
+  counterTop.position.set(0, 1.06, 0.04);
+  counterTop.castShadow = true;
+  counterTop.receiveShadow = true;
+  g.add(counterTop);
+
+  const rearPanel = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.72, 0.08), pineSlatMat);
+  rearPanel.position.set(0, 1.46, -0.5);
+  rearPanel.castShadow = true;
+  g.add(rearPanel);
+
+  // Four timber support posts
+  [[-1.02, -0.48], [1.02, -0.48], [-1.02, 0.48], [1.02, 0.48]].forEach(([px, pz]) => {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.056, 1.28, 8), darkOakMat);
+    post.position.set(px, 1.72, pz);
+    post.castShadow = true;
+    g.add(post);
+  });
+
+  // 2. Cozy Pitched Forest-Green Gable Roof + Hanging Chalkboard Sign + Fairy Bulbs
+  const roofLeft = new THREE.Mesh(new THREE.BoxGeometry(1.36, 0.08, 1.56), greenRoofMat);
+  roofLeft.position.set(-0.62, 2.48, 0.02);
+  roofLeft.rotation.z = 0.25;
+  roofLeft.castShadow = true;
+  g.add(roofLeft);
+
+  const roofRight = new THREE.Mesh(new THREE.BoxGeometry(1.36, 0.08, 1.56), greenRoofMat);
+  roofRight.position.set(0.62, 2.48, 0.02);
+  roofRight.rotation.z = -0.25;
+  roofRight.castShadow = true;
+  g.add(roofRight);
+
+  const ridgeBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 1.62, 8), darkOakMat);
+  ridgeBeam.rotation.x = Math.PI / 2;
+  ridgeBeam.position.set(0, 2.66, 0.02);
+  g.add(ridgeBeam);
+
+  // Chalkboard menu fascia sign ("겨울 음료 · 커피 / 핫초코 / 뱅쇼")
+  const menuCanvas = document.createElement('canvas');
+  menuCanvas.width = 512;
+  menuCanvas.height = 192;
+  const mctx = menuCanvas.getContext('2d');
+  mctx.fillStyle = '#23332c';
+  mctx.fillRect(0, 0, 512, 192);
+  mctx.strokeStyle = '#d4aa62';
+  mctx.lineWidth = 8;
+  mctx.strokeRect(10, 10, 492, 172);
+  mctx.textAlign = 'center';
+  mctx.textBaseline = 'middle';
+  mctx.fillStyle = '#ffe9b0';
+  mctx.font = '700 54px "Gowun Batang", serif';
+  mctx.fillText('☕ 겨울 음료', 256, 72);
+  mctx.fillStyle = '#f2e4cc';
+  mctx.font = '600 30px "Gowun Batang", serif';
+  mctx.fillText('커피  ·  핫초코  ·  뱅쇼', 256, 134);
+
+  const menuTex = new THREE.CanvasTexture(menuCanvas);
+  menuTex.colorSpace = THREE.SRGBColorSpace;
+  const menuBoard = new THREE.Mesh(
+    new THREE.BoxGeometry(1.42, 0.46, 0.05),
+    [
+      darkOakMat, darkOakMat, darkOakMat, darkOakMat,
+      new THREE.MeshStandardMaterial({
+        map: menuTex,
+        emissive: 0xffe4ad,
+        emissiveMap: menuTex,
+        emissiveIntensity: 0.24,
+        roughness: 0.72
+      }),
+      darkOakMat
+    ]
+  );
+  menuBoard.position.set(0, 2.15, 0.56);
+  g.add(menuBoard);
+
+  // Warm little fairy-bulb garland along front fascia
+  const bulbGeo = new THREE.SphereGeometry(0.036, 7, 7);
+  for (let i = -3; i <= 3; i++) {
+    const b = new THREE.Mesh(bulbGeo, bulbMat);
+    b.position.set(i * 0.28, 2.34 - Math.abs(i) * 0.025, 0.64);
+    g.add(b);
+  }
+
+  // 3. Countertop Copper Kettle + Serving Tray Displaying Coffee, Hot Choco & Vin Chaud
+  const kettleGroup = new THREE.Group();
+  kettleGroup.position.set(-0.62, 1.11, 0.06);
+  const kettleBody = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.145, 0.24, 12), brassMat);
+  kettleBody.position.y = 0.12;
+  kettleBody.castShadow = true;
+  kettleGroup.add(kettleBody);
+  const kettleLid = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.5), brassMat);
+  kettleLid.position.y = 0.235;
+  kettleGroup.add(kettleLid);
+  const kettleKnob = new THREE.Mesh(new THREE.SphereGeometry(0.024, 7, 7), darkOakMat);
+  kettleKnob.position.y = 0.35;
+  kettleGroup.add(kettleKnob);
+  const kettleSpout = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.024, 0.14, 7), brassMat);
+  kettleSpout.position.set(0.12, 0.18, 0);
+  kettleSpout.rotation.z = -0.68;
+  kettleGroup.add(kettleSpout);
+  g.add(kettleGroup);
+
+  const tray = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.035, 0.44), pineSlatMat);
+  tray.position.set(0.38, 1.12, 0.12);
+  g.add(tray);
+
+  [
+    { type: 'coffee', dx: 0.1, dz: 0.14 },
+    { type: 'hotchoco', dx: 0.38, dz: 0.1 },
+    { type: 'vinchaud', dx: 0.66, dz: 0.14 }
+  ].forEach((sample) => {
+    const cup = createWinterDrinkMesh(sample.type, null, false);
+    cup.scale.setScalar(1.22);
+    cup.position.set(sample.dx, 1.22, sample.dz);
+    g.add(cup);
+  });
+
+  // Soft warm ambient halo + single warm kiosk PointLight
+  const haloMat = new THREE.SpriteMaterial({
+    map: glowTexture,
+    color: 0xffcb74,
+    transparent: true,
+    opacity: 0.52,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  const halo = new THREE.Sprite(haloMat);
+  halo.position.set(0, 1.98, 0.45);
+  halo.scale.set(2.2, 2.2, 1);
+  g.add(halo);
+
+  if (withLight) {
+    const pt = new THREE.PointLight(0xffbe6b, 1.55, 8.5, 1.75);
+    pt.position.set(0, 1.92, 0.52);
+    g.add(pt);
+    g.userData.stallLight = pt;
+  }
+
+  // Subtle upward drifting steam sprites above the copper kettle & drinks
+  const steams = [];
+  for (let i = 0; i < 3; i++) {
+    const sm = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: glowTexture,
+        color: 0xfff6e6,
+        transparent: true,
+        opacity: 0.24,
+        depthWrite: false
+      })
+    );
+    sm.position.set(-0.62 + i * 0.48, 1.42 + i * 0.16, 0.08);
+    sm.scale.set(0.28, 0.28, 1);
+    g.add(sm);
+    steams.push({ sprite: sm, baseX: -0.62 + i * 0.48, phase: i * 2.15 });
+  }
+
+  // 4. Shopkeeper NPC: 나나 (Nana) standing right beside kiosk in barista apron & cap
+  const localVx = 1.52;
+  const localVz = 0.34;
+  const cosR = Math.cos(g.rotation.y);
+  const sinR = Math.sin(g.rotation.y);
+  const worldVx = x + localVx * cosR + localVz * sinR;
+  const worldVz = z - localVx * sinR + localVz * cosR;
+  const vendorYOffset = groundHeightAt(worldVx, worldVz) - groundY;
+
+  const vendor = new THREE.Group();
+  vendor.position.set(localVx, vendorYOffset, localVz);
+  vendor.rotation.y = -0.18;
+
+  const vendorBody = new THREE.Group();
+  vendor.add(vendorBody);
+
+  const nBootsMat = new THREE.MeshStandardMaterial({ color: 0x261d22, roughness: 0.78 });
+  const nCoatMat = new THREE.MeshStandardMaterial({ color: 0xc9966b, roughness: 0.76 });
+  const nApronMat = new THREE.MeshStandardMaterial({ color: 0x264b3b, roughness: 0.8 });
+  const nScarfMat = new THREE.MeshStandardMaterial({ color: 0xf4e6cb, roughness: 0.85 });
+  const nSkinMat = new THREE.MeshStandardMaterial({ color: 0xf6d5be, roughness: 0.65 });
+  const nEyeMat = new THREE.MeshStandardMaterial({ color: 0x241714, roughness: 0.45 });
+  const nCapMat = new THREE.MeshStandardMaterial({ color: 0x264b3b, roughness: 0.78 });
+
+  [-0.12, 0.12].forEach((lx) => {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.066, 0.06, 0.46, 8), nBootsMat);
+    leg.position.set(lx, 0.23, 0);
+    vendorBody.add(leg);
+  });
+
+  const nTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.265, 0.68, 12), nCoatMat);
+  nTorso.position.y = 0.78;
+  nTorso.castShadow = true;
+  vendorBody.add(nTorso);
+
+  // Forest-green barista apron front panel
+  const apronFront = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.196, 0.272, 0.54, 12, 1, false, -Math.PI * 0.34, Math.PI * 0.68),
+    nApronMat
+  );
+  apronFront.position.y = 0.73;
+  vendorBody.add(apronFront);
+
+  const nScarf = new THREE.Mesh(new THREE.TorusGeometry(0.165, 0.052, 8, 16), nScarfMat);
+  nScarf.rotation.x = Math.PI / 2;
+  nScarf.position.y = 1.13;
+  vendorBody.add(nScarf);
+
+  const nHeadGroup = new THREE.Group();
+  nHeadGroup.position.set(0, 1.32, 0);
+  const nHead = new THREE.Mesh(new THREE.SphereGeometry(0.182, 14, 12), nSkinMat);
+  nHeadGroup.add(nHead);
+
+  [-0.062, 0.062].forEach((ex) => {
+    const nEye = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), nEyeMat);
+    nEye.position.set(ex, 0.018, 0.165);
+    nHeadGroup.add(nEye);
+  });
+
+  // Matching Barista Baseball Cap (캡모자) for Nana
+  const nCapGroup = new THREE.Group();
+  nCapGroup.position.set(0, 0.036, 0);
+  nCapGroup.rotation.x = -0.1;
+  const nCapCrown = new THREE.Mesh(
+    new THREE.SphereGeometry(0.19, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.52),
+    nCapMat
+  );
+  nCapGroup.add(nCapCrown);
+  const nCapButton = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), nCapMat);
+  nCapButton.scale.set(1, 0.55, 1);
+  nCapButton.position.y = 0.192;
+  nCapGroup.add(nCapButton);
+  const nCapVisor = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.152, 0.162, 0.022, 14, 1, false, -Math.PI * 0.42, Math.PI * 0.84),
+    nCapMat
+  );
+  nCapVisor.scale.set(1.04, 1, 1.38);
+  nCapVisor.position.set(0, 0.028, 0.118);
+  nCapVisor.rotation.x = 0.14;
+  nCapGroup.add(nCapVisor);
+  nHeadGroup.add(nCapGroup);
+  vendorBody.add(nHeadGroup);
+
+  // Left arm holding a warm wooden cup coaster + coffee cup
+  const nLeftArm = new THREE.Group();
+  nLeftArm.position.set(-0.24, 1.02, 0.05);
+  const nLeftSleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.052, 0.35, 8), nCoatMat);
+  nLeftSleeve.position.set(-0.03, -0.14, 0.06);
+  nLeftSleeve.rotation.x = -0.45;
+  nLeftSleeve.rotation.z = -0.12;
+  nLeftArm.add(nLeftSleeve);
+
+  const nLeftHand = new THREE.Mesh(new THREE.SphereGeometry(0.048, 8, 8), nSkinMat);
+  nLeftHand.position.set(-0.052, -0.30, 0.14);
+  nLeftArm.add(nLeftHand);
+
+  const heldSampleCup = createWinterDrinkMesh('coffee', null, false);
+  heldSampleCup.position.set(-0.052, -0.22, 0.15);
+  nLeftArm.add(heldSampleCup);
+  vendorBody.add(nLeftArm);
+
+  // Right arm gesturing welcomingly
+  const nRightArmPivot = new THREE.Group();
+  nRightArmPivot.position.set(0.24, 1.03, 0.06);
+  const nRightSleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.052, 0.35, 8), nCoatMat);
+  nRightSleeve.position.set(0.045, -0.09, 0.14);
+  nRightSleeve.rotation.x = -1.02;
+  nRightSleeve.rotation.z = 0.16;
+  nRightArmPivot.add(nRightSleeve);
+
+  const nRightHand = new THREE.Mesh(new THREE.SphereGeometry(0.048, 8, 8), nSkinMat);
+  nRightHand.position.set(0.075, -0.18, 0.3);
+  nRightArmPivot.add(nRightHand);
+  vendorBody.add(nRightArmPivot);
+
+  g.add(vendor);
+
+  g.userData.steams = steams;
+  g.userData.haloMat = haloMat;
+  g.userData.vendor = vendor;
+  g.userData.vendorBody = vendorBody;
+  g.userData.vendorRightArm = nRightArmPivot;
+  g.userData.vendorHead = nHeadGroup;
+  g.userData.vendorWorldPos = new THREE.Vector3(worldVx, groundY + vendorYOffset, worldVz);
+  g.userData.worldCenter = new THREE.Vector3(x, groundY + 1.35, z);
+  return g;
+}
+
+function createManbokCoatFishTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+
+  // Exact match to Manbok's coat green (#214a35)
+  ctx.fillStyle = '#214a35';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Heart emblem with golden bungeoppang inside, centered on coat front
+  ctx.save();
+  ctx.translate(256, 120);
+
+  // Cozy stitched terracotta-rose heart
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(0, 42);
+  ctx.bezierCurveTo(-22, 26, -54, 4, -54, -20);
+  ctx.bezierCurveTo(-54, -42, -26, -50, 0, -28);
+  ctx.bezierCurveTo(26, -50, 54, -42, 54, -20);
+  ctx.bezierCurveTo(54, 4, 22, 26, 0, 42);
+  ctx.closePath();
+  ctx.fillStyle = '#cf525e';
+  ctx.fill();
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#f5e4c3';
+  ctx.stroke();
+  ctx.restore();
+
+  // Golden bungeoppang (fish) centered neatly inside the heart
+  ctx.save();
+  ctx.translate(0, -4);
+  ctx.scale(0.68, 0.68);
+
+  // Tail fin
+  ctx.fillStyle = '#de9a3c';
+  ctx.strokeStyle = '#5e2e0b';
+  ctx.lineWidth = 3.2;
+  ctx.beginPath();
+  ctx.moveTo(22, 0);
+  ctx.lineTo(42, -16);
+  ctx.quadraticCurveTo(36, 0, 42, 16);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Dorsal & belly fins
+  ctx.beginPath();
+  ctx.moveTo(-8, -14);
+  ctx.quadraticCurveTo(2, -25, 14, -13);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(-4, 14);
+  ctx.quadraticCurveTo(4, 23, 12, 13);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Plump oval fish body
+  ctx.fillStyle = '#f0b654';
+  ctx.beginPath();
+  ctx.ellipse(-2, 0, 27, 17, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Cute gill arc & waffle pattern lines
+  ctx.strokeStyle = '#8b4d19';
+  ctx.lineWidth = 2.6;
+  ctx.beginPath();
+  ctx.arc(-10, 0, 9, -0.9, 0.9);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(0, -10);
+  ctx.lineTo(10, -4);
+  ctx.moveTo(0, 0);
+  ctx.lineTo(12, 0);
+  ctx.moveTo(0, 10);
+  ctx.lineTo(10, 4);
+  ctx.stroke();
+
+  // Eye dot
+  ctx.fillStyle = '#3b1e08';
+  ctx.beginPath();
+  ctx.arc(-16, -4, 3.6, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+  ctx.restore();
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// Cozy Left-Hill Bungeoppang Street Cart (붕어빵 포장마차 + 사장님 + 물고기 붕어빵 + rising warm steam)
+export function createBungeoppangStall(x, z, glowTexture, withLight = true, yaw = 2.02) {
+  const g = new THREE.Group();
+  const groundY = groundHeightAt(x, z);
+  g.position.set(x, groundY, z);
+  g.rotation.y = yaw;
 
   const woodMat = new THREE.MeshStandardMaterial({ color: 0x6b422a, roughness: 0.8 });
   const counterMat = new THREE.MeshStandardMaterial({ color: 0xc29768, roughness: 0.65 });
@@ -1957,7 +2520,7 @@ export function createBungeoppangStall(x, z, glowTexture, withLight = true) {
 
   const vendor = new THREE.Group();
   vendor.position.set(localVx, vendorYOffset, localVz);
-  vendor.rotation.y = 0.28;
+  vendor.rotation.y = -0.22;
 
   const vendorBody = new THREE.Group();
   vendor.add(vendorBody);
@@ -1976,8 +2539,16 @@ export function createBungeoppangStall(x, z, glowTexture, withLight = true) {
     vendorBody.add(leg);
   });
 
-  const vTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.28, 0.7, 12), vCoatMat);
+  const vTorsoSideMat = new THREE.MeshStandardMaterial({
+    map: createManbokCoatFishTexture(),
+    roughness: 0.76
+  });
+  const vTorso = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.2, 0.28, 0.7, 14),
+    [vTorsoSideMat, vCoatMat, vCoatMat]
+  );
   vTorso.position.y = 0.79;
+  vTorso.rotation.y = Math.PI;
   vTorso.castShadow = true;
   vendorBody.add(vTorso);
 
@@ -1997,27 +2568,54 @@ export function createBungeoppangStall(x, z, glowTexture, withLight = true) {
     vHeadGroup.add(vEye);
   });
 
-  // Baseball cap (캡 모자) for Manbok
+  // Snug Sculpted Winter Trapper Earflap Hat (귀달이 모자) worn smoothly over head, clear of scarf, rounded flaps with no hanging balls
   const vCapGroup = new THREE.Group();
-  vCapGroup.position.set(0, 0.036, 0);
-  vCapGroup.rotation.x = -0.1;
+  vCapGroup.position.set(0, 0.052, -0.006);
+  vCapGroup.rotation.x = -0.08;
+
+  // Full outer hat crown wrapping cleanly over his skull
   const vCapCrown = new THREE.Mesh(
-    new THREE.SphereGeometry(0.193, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.52),
+    new THREE.SphereGeometry(0.205, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.56),
     vCapMat
   );
   vCapGroup.add(vCapCrown);
-  const vCapButton = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), vCapMat);
-  vCapButton.scale.set(1, 0.55, 1);
-  vCapButton.position.y = 0.194;
-  vCapGroup.add(vCapButton);
-  const vCapVisor = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.155, 0.165, 0.022, 14, 1, false, -Math.PI * 0.42, Math.PI * 0.84),
-    vCapMat
+
+  // Top fabric button
+  const vCapBtn = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), vCapMat);
+  vCapBtn.scale.set(1.25, 0.5, 1.25);
+  vCapBtn.position.y = 0.205;
+  vCapGroup.add(vCapBtn);
+
+  // 360-degree padded hat band so earflaps flow seamlessly out of a real wearable hat brim
+  const vHatBand = new THREE.Mesh(new THREE.CylinderGeometry(0.206, 0.218, 0.072, 18), vCapMat);
+  vHatBand.position.y = 0.004;
+  vCapGroup.add(vHatBand);
+
+  // Curved cream-fleece upturned front brow cuff matching hat curvature
+  const vForeheadFlap = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.216, 0.223, 0.078, 16, 1, false, -0.74, 1.48),
+    vScarfMat
   );
-  vCapVisor.scale.set(1.04, 1, 1.38);
-  vCapVisor.position.set(0, 0.028, 0.12);
-  vCapVisor.rotation.x = 0.14;
-  vCapGroup.add(vCapVisor);
+  vForeheadFlap.position.y = 0.022;
+  vCapGroup.add(vForeheadFlap);
+
+  // Larger, longer rounded capsule earflaps hanging cleanly clear of the face & above the scarf
+  const outerFlapGeo = new THREE.CapsuleGeometry(0.068, 0.105, 6, 12);
+  const innerFlapGeo = new THREE.CapsuleGeometry(0.058, 0.092, 6, 10);
+  [-1, 1].forEach((side) => {
+    const earFlap = new THREE.Mesh(outerFlapGeo, vCapMat);
+    earFlap.scale.set(0.36, 1.0, 1.12);
+    earFlap.position.set(side * 0.206, -0.048, -0.008);
+    earFlap.rotation.z = side * 0.045;
+    vCapGroup.add(earFlap);
+
+    const earFleece = new THREE.Mesh(innerFlapGeo, vScarfMat);
+    earFleece.scale.set(0.30, 1.0, 1.06);
+    earFleece.position.set(side * 0.197, -0.049, -0.003);
+    earFleece.rotation.z = side * 0.045;
+    vCapGroup.add(earFleece);
+  });
+
   vHeadGroup.add(vCapGroup);
   vendorBody.add(vHeadGroup);
 
@@ -2217,9 +2815,24 @@ export function createVisitorAvatar({ coatColor = '#c94c4c', lanternColor = '#ff
   heldLantern.scale.setScalar(0.42);
   heldLantern.position.set(0.086, -0.41, 0.185);
   armGroup.add(heldLantern);
+
+  // Right-hand winter drink hold (used only when simultaneously carrying Bungeoppang in left hand)
+  const rightDrinkHold = new THREE.Group();
+  rightDrinkHold.position.set(0.082, -0.245, 0.175);
+  rightDrinkHold.visible = false;
+  const rightDrinkVariants = {
+    coffee: createWinterDrinkMesh('coffee', glowTexture, true),
+    hotchoco: createWinterDrinkMesh('hotchoco', glowTexture, true),
+    vinchaud: createWinterDrinkMesh('vinchaud', glowTexture, true)
+  };
+  Object.values(rightDrinkVariants).forEach((cup) => {
+    cup.visible = false;
+    rightDrinkHold.add(cup);
+  });
+  armGroup.add(rightDrinkHold);
   bodyGroup.add(armGroup);
 
-  // Left Arm + Round Skin-Colored Hand + Held Warm Bungeoppang Pastry (visible while eating!)
+  // Left Arm + Round Skin-Colored Hand + Held Warm Bungeoppang Pastry + Winter Drink Hold
   const leftArmPivot = new THREE.Group();
   leftArmPivot.position.set(-0.24, 1.0, 0.06);
   const leftSleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.052, 0.34, 8), coatMat);
@@ -2236,6 +2849,20 @@ export function createVisitorAvatar({ coatColor = '#c94c4c', lanternColor = '#ff
   bungeoppangGroup.position.set(-0.05, -0.33, 0.12);
   bungeoppangGroup.visible = false;
   leftArmPivot.add(bungeoppangGroup);
+
+  const leftDrinkHold = new THREE.Group();
+  leftDrinkHold.position.set(-0.052, -0.295, 0.065);
+  leftDrinkHold.visible = false;
+  const leftDrinkVariants = {
+    coffee: createWinterDrinkMesh('coffee', glowTexture, true),
+    hotchoco: createWinterDrinkMesh('hotchoco', glowTexture, true),
+    vinchaud: createWinterDrinkMesh('vinchaud', glowTexture, true)
+  };
+  Object.values(leftDrinkVariants).forEach((cup) => {
+    cup.visible = false;
+    leftDrinkHold.add(cup);
+  });
+  leftArmPivot.add(leftDrinkHold);
 
   bodyGroup.add(leftArmPivot);
 
@@ -2263,6 +2890,12 @@ export function createVisitorAvatar({ coatColor = '#c94c4c', lanternColor = '#ff
     leftArmPivot,
     bungeoppangGroup,
     fishPastryMat,
+    heldLantern,
+    lanternCord,
+    leftDrinkHold,
+    rightDrinkHold,
+    leftDrinkVariants,
+    rightDrinkVariants,
     coatMat,
     lanternGlowMat: heldLantern.userData.shellMat,
     lanternHaloMat: heldLantern.userData.haloMat,
@@ -2567,11 +3200,31 @@ export function createSnowEnvironment(
 
   if (stallPos) {
     const sy = groundHeightAt(stallPos.x, stallPos.z);
+    const stallYaw = stallPos.yaw ?? 0.85;
+    const sGroup = new THREE.Group();
+    sGroup.position.set(stallPos.x, sy, stallPos.z);
+    sGroup.rotation.y = stallYaw;
     const sCap = new THREE.Mesh(new THREE.BoxGeometry(2.74, 0.08, 1.56), snowMat);
-    sCap.position.set(stallPos.x, sy + 2.58, stallPos.z);
-    sCap.rotation.y = 0.62;
+    sCap.position.set(0, 2.58, 0.06);
     sCap.rotation.x = 0.08;
-    snowRoot.add(sCap);
+    sGroup.add(sCap);
+    snowRoot.add(sGroup);
+  }
+
+  if (snowRefs?.drinkStandPos) {
+    const dPos = snowRefs.drinkStandPos;
+    const dy = groundHeightAt(dPos.x, dPos.z);
+    const dGroup = new THREE.Group();
+    dGroup.position.set(dPos.x, dy, dPos.z);
+    dGroup.rotation.y = dPos.yaw ?? 1.02;
+    const dLeft = new THREE.Mesh(new THREE.BoxGeometry(1.32, 0.06, 1.52), snowMat);
+    dLeft.position.set(-0.62, 2.54, 0.02);
+    dLeft.rotation.z = 0.25;
+    const dRight = new THREE.Mesh(new THREE.BoxGeometry(1.32, 0.06, 1.52), snowMat);
+    dRight.position.set(0.62, 2.54, 0.02);
+    dRight.rotation.z = -0.25;
+    dGroup.add(dLeft, dRight);
+    snowRoot.add(dGroup);
   }
 
   if (treePos) {
@@ -3095,7 +3748,238 @@ export function createHillNpcs() {
     walkPhase: 0
   };
 
-  return [momo, beat, tori, naru, romi];
+  // 6. 구름 (Strolling near Drink Stand & Bungeoppang Stall holding Hot Choco & talking on phone)
+  const gureumStartX = -9.6;
+  const gureumStartZ = -5.6;
+  const gureumStartYaw = Math.atan2(-12.2 - gureumStartX, -2.8 - gureumStartZ);
+
+  const gureum = buildNpc({
+    id: 'gureum',
+    name: '구름',
+    coatColor: 0x6f7f94,
+    hatColor: 0xe8decb,
+    skipDefaultHeadwear: true,
+    showButtons: true,
+    x: gureumStartX,
+    z: gureumStartZ,
+    yaw: gureumStartYaw,
+    accessoryFn: ({ headPivot, leftArmPivot, rightArmPivot }) => {
+      // Cozy Winter Wool Knit Beanie (털모자) + Ribbed Cuff + Fluffy Pompom
+      const woolMat = new THREE.MeshStandardMaterial({ color: 0xe8decb, roughness: 0.9 });
+      const cuffMat = new THREE.MeshStandardMaterial({ color: 0xd6c7ae, roughness: 0.92 });
+      const pomMat = new THREE.MeshStandardMaterial({ color: 0xf8f3ea, roughness: 0.88 });
+
+      const knitDome = new THREE.Mesh(
+        new THREE.SphereGeometry(0.188, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.56),
+        woolMat
+      );
+      knitDome.position.set(0, 0.032, -0.005);
+      knitDome.rotation.x = -0.12;
+      headPivot.add(knitDome);
+
+      const knitCuff = new THREE.Mesh(new THREE.TorusGeometry(0.175, 0.034, 8, 18), cuffMat);
+      knitCuff.rotation.x = Math.PI / 2 - 0.12;
+      knitCuff.position.set(0, 0.045, -0.005);
+      headPivot.add(knitCuff);
+
+      const pompom = new THREE.Mesh(new THREE.SphereGeometry(0.056, 10, 10), pomMat);
+      pompom.position.set(0, 0.232, -0.035);
+      headPivot.add(pompom);
+
+      // Left Hand: Holds warm Hot Choco cup with mini marshmallows upright
+      const cupHolder = new THREE.Group();
+      cupHolder.position.set(0, -0.325, 0.055);
+      cupHolder.rotation.x = 0.78; // Counter-rotates leftArmPivot (-0.78) so cup stays level
+      const gureumCup = createWinterDrinkMesh('hotchoco', null, false);
+      cupHolder.add(gureumCup);
+      leftArmPivot.add(cupHolder);
+      leftArmPivot.rotation.x = -0.78;
+      leftArmPivot.rotation.z = -0.12;
+
+      // Right Arm: Joint-to-joint continuous shoulder -> elbow -> wrist -> hand holding phone cleanly to ear (exact same colors!)
+      rightArmPivot.clear();
+      const gCoatMat = new THREE.MeshStandardMaterial({ color: 0x6f7f94, roughness: 0.78 });
+      const gCuffMat = new THREE.MeshStandardMaterial({ color: 0xf0e4ce, roughness: 0.85 });
+      const gSkinMat = new THREE.MeshStandardMaterial({ color: 0xf6d5be, roughness: 0.65 });
+      const phoneBodyMat = new THREE.MeshStandardMaterial({ color: 0x1e222b, roughness: 0.35, metalness: 0.45 });
+      const phoneScreenMat = new THREE.MeshStandardMaterial({
+        color: 0xaad4ff,
+        emissive: 0x76b4ff,
+        emissiveIntensity: 0.48,
+        roughness: 0.25
+      });
+
+      const UP = new THREE.Vector3(0, 1, 0);
+      function makeArmLimb(p0, p1, rTop, rBot, mat) {
+        const diff = new THREE.Vector3().subVectors(p1, p0);
+        const len = diff.length();
+        const mesh = new THREE.Mesh(new THREE.CylinderGeometry(rTop, rBot, len, 8), mat);
+        mesh.position.copy(p0).addScaledVector(diff, 0.5);
+        mesh.quaternion.setFromUnitVectors(UP, diff.normalize());
+        return mesh;
+      }
+
+      const shoulderPt = new THREE.Vector3(0, 0, 0);
+      const elbowPt = new THREE.Vector3(0.092, -0.142, 0.072);
+      const wristPt = new THREE.Vector3(0.008, 0.168, 0.036);
+      const foreDir = new THREE.Vector3().subVectors(wristPt, elbowPt).normalize();
+
+      const shoulderCap = new THREE.Mesh(new THREE.SphereGeometry(0.048, 8, 8), gCoatMat);
+      rightArmPivot.add(shoulderCap);
+
+      rightArmPivot.add(makeArmLimb(shoulderPt, elbowPt, 0.046, 0.048, gCoatMat));
+
+      const elbowJoint = new THREE.Mesh(new THREE.SphereGeometry(0.047, 8, 8), gCoatMat);
+      elbowJoint.position.copy(elbowPt);
+      rightArmPivot.add(elbowJoint);
+
+      rightArmPivot.add(makeArmLimb(elbowPt, wristPt, 0.042, 0.046, gCoatMat));
+
+      const phoneCuff = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.048, 0.036, 8), gCuffMat);
+      phoneCuff.position.copy(wristPt).addScaledVector(foreDir, 0.008);
+      phoneCuff.quaternion.setFromUnitVectors(UP, foreDir);
+      rightArmPivot.add(phoneCuff);
+
+      const phoneHand = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), gSkinMat);
+      phoneHand.position.copy(wristPt).addScaledVector(foreDir, 0.048);
+      rightArmPivot.add(phoneHand);
+
+      const phoneGroup = new THREE.Group();
+      phoneGroup.position.set(-0.032, 0.258, 0.022);
+      phoneGroup.rotation.set(0.14, -0.22, 0.24);
+      const phoneChassis = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.106, 0.056), phoneBodyMat);
+      phoneGroup.add(phoneChassis);
+      const phoneScreen = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.09, 0.046), phoneScreenMat);
+      phoneScreen.position.x = -0.007;
+      phoneGroup.add(phoneScreen);
+      rightArmPivot.add(phoneGroup);
+    }
+  });
+
+  gureum.patrol = {
+    waypoints: [
+      { x: -9.6,  z: -5.6, pause: 3.2, lookX: -12.2, lookZ: -2.8 },
+      { x: -8.6,  z: -2.6, pause: 3.0, lookX: -12.2, lookZ: -2.8 },
+      { x: -8.6,  z: 0.4,  pause: 3.2, lookX: -10.8, lookZ: 3.4 },
+      { x: -11.0, z: -0.2, pause: 2.8, lookX: -10.8, lookZ: 3.4 },
+      { x: -10.4, z: -5.2, pause: 2.6, lookX: -13.4, lookZ: -9.5 }
+    ],
+    wpIdx: 0,
+    phase: 'pause',
+    pauseLeft: 2.4,
+    walkSpeed: 1.15,
+    walkPhase: 0
+  };
+
+  // 7. 루카 (Camera-carrying Scenic Photographer in Baseball Cap touring widest hill panorama)
+  const lukaStartX = 3.4;
+  const lukaStartZ = 12.2;
+  const lukaStartYaw = Math.atan2(1.2 - lukaStartX, 13.4 - lukaStartZ);
+
+  let lukaFlashMat = null;
+  let lukaCameraGroup = null;
+
+  const luka = buildNpc({
+    id: 'luka',
+    name: '루카',
+    coatColor: 0x5c6f52,
+    hatColor: 0x283244,
+    skipDefaultHeadwear: true,
+    showButtons: true,
+    x: lukaStartX,
+    z: lukaStartZ,
+    yaw: lukaStartYaw,
+    accessoryFn: ({ bodyGroup, headPivot, rightArmPivot }) => {
+      // Dark navy-charcoal Baseball Cap (볼캡)
+      const capMat = new THREE.MeshStandardMaterial({ color: 0x283244, roughness: 0.78 });
+      const capGroup = new THREE.Group();
+      capGroup.position.set(0, 0.036, 0);
+      capGroup.rotation.x = -0.1;
+
+      const capCrown = new THREE.Mesh(
+        new THREE.SphereGeometry(0.184, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.52),
+        capMat
+      );
+      capGroup.add(capCrown);
+
+      const capBtn = new THREE.Mesh(new THREE.SphereGeometry(0.018, 6, 6), capMat);
+      capBtn.scale.set(1, 0.55, 1);
+      capBtn.position.y = 0.184;
+      capGroup.add(capBtn);
+
+      const capVisor = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.148, 0.158, 0.02, 14, 1, false, -Math.PI * 0.42, Math.PI * 0.84),
+        capMat
+      );
+      capVisor.scale.set(1.04, 1, 1.38);
+      capVisor.position.set(0, 0.028, 0.115);
+      capVisor.rotation.x = 0.14;
+      capGroup.add(capVisor);
+      headPivot.add(capGroup);
+
+      // Compact retro camera in right hand (lens points naturally downward-forward when walking, horizontal when raised!)
+      const camBodyMat = new THREE.MeshStandardMaterial({ color: 0x1d2028, roughness: 0.48, metalness: 0.35 });
+      const camSilverMat = new THREE.MeshStandardMaterial({ color: 0xd0d6de, roughness: 0.28, metalness: 0.78 });
+      const camGlassMat = new THREE.MeshStandardMaterial({ color: 0x386694, roughness: 0.15, metalness: 0.7 });
+      lukaFlashMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0xfff3cc,
+        emissiveIntensity: 0.25,
+        roughness: 0.2
+      });
+
+      const cameraGroup = new THREE.Group();
+      cameraGroup.position.set(0, -0.345, 0.068);
+      cameraGroup.rotation.x = 1.88;
+
+      const camBody = new THREE.Mesh(new THREE.BoxGeometry(0.165, 0.105, 0.068), camBodyMat);
+      cameraGroup.add(camBody);
+
+      const camTopPlate = new THREE.Mesh(new THREE.BoxGeometry(0.166, 0.026, 0.07), camSilverMat);
+      camTopPlate.position.y = 0.045;
+      cameraGroup.add(camTopPlate);
+
+      const camLens = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.04, 0.046, 12), camSilverMat);
+      camLens.rotation.x = Math.PI / 2;
+      camLens.position.set(-0.012, -0.004, 0.052);
+      cameraGroup.add(camLens);
+
+      const camGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 0.01, 10), camGlassMat);
+      camGlass.rotation.x = Math.PI / 2;
+      camGlass.position.set(-0.012, -0.004, 0.076);
+      cameraGroup.add(camGlass);
+
+      const camFlash = new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.022, 0.01), lukaFlashMat);
+      camFlash.position.set(0.048, 0.024, 0.036);
+      cameraGroup.add(camFlash);
+
+      rightArmPivot.add(cameraGroup);
+      lukaCameraGroup = cameraGroup;
+    }
+  });
+
+  luka.flashMat = lukaFlashMat;
+  luka.cameraGroup = lukaCameraGroup;
+  luka.patrol = {
+    waypoints: [
+      { x: 3.4,  z: 12.2, pause: 4.5, takePhoto: true,  lookX: 1.2,   lookZ: 13.4 },  // Signpost
+      { x: 6.0,  z: 9.6,  pause: 4.5, takePhoto: true,  lookX: 10.2,  lookZ: 8.8 },   // Bosingak Pavilion
+      { x: 7.8,  z: -7.6, pause: 4.6, takePhoto: true,  lookX: 8.4,   lookZ: -4.0 },  // Christmas Tree & Mailbox overlook
+      { x: -2.4, z: -6.8, pause: 4.8, takePhoto: true,  lookX: 2.0,   lookZ: -96.0 }, // N Seoul Tower & Han River
+      { x: -7.2, z: -7.6, pause: 4.8, takePhoto: true,  lookX: -13.4, lookZ: -9.5 },  // Namsan Cable Car & Station
+      { x: -1.6, z: -3.5, pause: 4.4, takePhoto: true,  lookX: 2.0,   lookZ: -70.0 }, // Mid-hill Han River panorama
+      { x: -1.2, z: 4.5,  pause: 0.0, takePhoto: false },                              // Clear center corridor
+      { x: -4.2, z: 10.2, pause: 4.6, takePhoto: true,  lookX: -10.5, lookZ: 5.5 }    // Lantern Rack & Cozy Stalls
+    ],
+    wpIdx: 0,
+    phase: 'pause',
+    pauseLeft: 4.2,
+    pauseDur: 4.5,
+    walkSpeed: 1.22,
+    walkPhase: 0
+  };
+
+  return [momo, beat, tori, naru, romi, gureum, luka];
 }
 
 // ===================================================================
@@ -4431,16 +5315,16 @@ function createSignpostPlaqueTexture() {
   canvas.height = 576;
   const ctx = canvas.getContext('2d');
 
-  // Warm honey-oak plank base gradient for crisp dark lettering contrast
+  // Warm light honey-oak plank base gradient so ultra-dark woodburned text stands out clearly
   const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  bg.addColorStop(0, '#dcb278');
-  bg.addColorStop(0.5, '#cfa064');
-  bg.addColorStop(1, '#bc8b4e');
+  bg.addColorStop(0, '#ead09e');
+  bg.addColorStop(0.5, '#dfc085');
+  bg.addColorStop(1, '#cfab6c');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Subtle horizontal plank seams & organic wood grain lines
-  ctx.strokeStyle = 'rgba(72, 40, 18, 0.2)';
+  ctx.strokeStyle = 'rgba(72, 40, 18, 0.16)';
   ctx.lineWidth = 4;
   [192, 384].forEach((py) => {
     ctx.beginPath();
@@ -4449,7 +5333,7 @@ function createSignpostPlaqueTexture() {
     ctx.stroke();
   });
 
-  ctx.strokeStyle = 'rgba(92, 54, 24, 0.1)';
+  ctx.strokeStyle = 'rgba(92, 54, 24, 0.08)';
   ctx.lineWidth = 2;
   for (let i = 0; i < 24; i++) {
     const gy = 18 + i * 23;
@@ -4464,10 +5348,10 @@ function createSignpostPlaqueTexture() {
   }
 
   // Carved inner wooden border + brass corner nails
-  ctx.strokeStyle = '#5a341b';
+  ctx.strokeStyle = '#4e2b14';
   ctx.lineWidth = 10;
   ctx.strokeRect(24, 24, canvas.width - 48, canvas.height - 48);
-  ctx.strokeStyle = 'rgba(255, 240, 204, 0.34)';
+  ctx.strokeStyle = 'rgba(255, 244, 214, 0.4)';
   ctx.lineWidth = 3;
   ctx.strokeRect(36, 36, canvas.width - 72, canvas.height - 72);
 
@@ -4490,19 +5374,23 @@ function createSignpostPlaqueTexture() {
   // Top decorative little star crest
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#fff5d6';
+  ctx.fillStyle = '#3a1d0b';
   ctx.font = '700 34px "Gowun Batang", serif';
   ctx.fillText('✦  •  ✦', canvas.width / 2, 92);
 
-  // Prominent main title: 은하재 (much larger & crisp carved dark woodburned feel)
-  ctx.font = '800 148px "Gowun Batang", serif';
-  ctx.fillStyle = 'rgba(255, 242, 210, 0.45)';
+  // Prominent main title: 은하재 (ultra-dark high-contrast woodburned thick stroke + fill)
+  ctx.font = '900 158px "Gowun Batang", "PretendardVariable", serif';
+  ctx.fillStyle = 'rgba(255, 248, 226, 0.55)';
   ctx.fillText('은하재', canvas.width / 2, 248);
-  ctx.fillStyle = '#210f05';
-  ctx.fillText('은하재', canvas.width / 2, 244);
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#090301';
+  ctx.lineWidth = 5;
+  ctx.strokeText('은하재', canvas.width / 2, 242);
+  ctx.fillStyle = '#0e0502';
+  ctx.fillText('은하재', canvas.width / 2, 242);
 
   // Clean horizontal divider
-  ctx.strokeStyle = 'rgba(72, 40, 18, 0.45)';
+  ctx.strokeStyle = 'rgba(56, 28, 10, 0.55)';
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(220, 352);
@@ -4511,9 +5399,10 @@ function createSignpostPlaqueTexture() {
 
   // Subtitle: 작은 순간들이 머무는 곳
   ctx.font = '700 46px "Gowun Batang", serif';
-  ctx.fillStyle = 'rgba(255, 244, 214, 0.42)';
-  ctx.fillText('작은 순간들이 머무는 곳', canvas.width / 2, 434);
-  ctx.fillStyle = '#2d1609';
+  ctx.strokeStyle = '#180903';
+  ctx.lineWidth = 1.6;
+  ctx.strokeText('작은 순간들이 머무는 곳', canvas.width / 2, 430);
+  ctx.fillStyle = '#1c0b04';
   ctx.fillText('작은 순간들이 머무는 곳', canvas.width / 2, 430);
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -4570,8 +5459,8 @@ export function createEunhajaeSignpost(x, z, yaw = Math.PI - 0.15, glowTexture, 
     map: signTex,
     emissive: 0xffe4ad,
     emissiveMap: signTex,
-    emissiveIntensity: 0.28,
-    roughness: 0.76,
+    emissiveIntensity: 0.15,
+    roughness: 0.78,
     polygonOffset: true,
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1
@@ -4647,5 +5536,374 @@ export function createEunhajaeSignpost(x, z, yaw = Math.PI - 0.15, glowTexture, 
   }
 
   g.userData.worldCenter = new THREE.Vector3(x, baseY + 1.24, z);
+  return g;
+}
+
+// Namsan Cable Car (Hilltop Lower Station & Upper Namsan Station with Open Boarding Bays, Realistic Twin-Cable Bogie Grip, Wrap-around Panoramic Windows & Slow Scenic Cycle)
+export function createNamsanCableCar(glowTexture) {
+  const g = new THREE.Group();
+
+  const stoneMat = new THREE.MeshStandardMaterial({ color: 0x4b4757, roughness: 0.9 });
+  const brickMat = new THREE.MeshStandardMaterial({ color: 0x8b3e30, roughness: 0.8 });
+  const trimStoneMat = new THREE.MeshStandardMaterial({ color: 0xc8bca8, roughness: 0.76 });
+  const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3b28, roughness: 0.78 });
+  const doorMat = new THREE.MeshStandardMaterial({ color: 0x3b2416, roughness: 0.68 });
+  const roofMat = new THREE.MeshStandardMaterial({ color: 0x223346, roughness: 0.7 });
+  const cableMat = new THREE.MeshStandardMaterial({ color: 0x2c2e38, roughness: 0.38, metalness: 0.82 });
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x4d5462, roughness: 0.42, metalness: 0.72 });
+  const cabinRedMat = new THREE.MeshStandardMaterial({ color: 0xd93838, roughness: 0.52 });
+  const cabinCreamMat = new THREE.MeshStandardMaterial({ color: 0xf5ebd0, roughness: 0.68 });
+  const warmWinMat = new THREE.MeshStandardMaterial({
+    color: 0xffebb8,
+    emissive: 0xffbc5e,
+    emissiveIntensity: 0.78,
+    roughness: 0.3
+  });
+  const cabinGlassMat = new THREE.MeshStandardMaterial({
+    color: 0xbee4ff,
+    emissive: 0x7ac3ff,
+    emissiveIntensity: 0.25,
+    transparent: true,
+    opacity: 0.42,
+    roughness: 0.14,
+    side: THREE.DoubleSide,
+    depthWrite: false
+  });
+  const safetyStripeMat = new THREE.MeshStandardMaterial({ color: 0xe6b447, roughness: 0.65 });
+
+  // Coordinates: Hilltop Lower Station (-13.4, -9.5) -> Upper Station at Namsan Tower Plaza (2.8, -86.0)
+  const lowX = -13.4;
+  const lowZ = -9.5;
+  const lowY = groundHeightAt(lowX, lowZ);
+
+  const highX = 2.8;
+  const highZ = -86.0;
+  const highY = northLandElevation(highX, highZ);
+
+  const dx = highX - lowX;
+  const dz = highZ - lowZ;
+  const horizLen = Math.hypot(dx, dz) || 1;
+  const dirX = dx / horizLen;
+  const dirZ = dz / horizLen;
+  const perpX = -dirZ;
+  const perpZ = dirX;
+  const cableYaw = Math.atan2(dx, dz); // Local +Z faces along cable from Low -> High
+
+  function buildCableStation({ isUpper = false }) {
+    const st = new THREE.Group();
+
+    // Raised stone foundation plinth
+    const plinth = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.38, 4.1), stoneMat);
+    plinth.position.y = 0.19;
+    plinth.receiveShadow = true;
+    plinth.castShadow = true;
+    st.add(plinth);
+
+    // Inner recessed boarding floor + yellow safety edge strip
+    const floorDeck = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.08, 3.6), woodMat);
+    floorDeck.position.set(0, 0.4, 0);
+    floorDeck.receiveShadow = true;
+    st.add(floorDeck);
+
+    const safetyEdge = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.02, 0.12), safetyStripeMat);
+    safetyEdge.position.set(0, 0.45, 1.72);
+    st.add(safetyEdge);
+
+    // Left & right brick side walls framing the hollow boarding hangar
+    [-1.68, 1.68].forEach((sx) => {
+      const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.68, 2.38, 3.85), brickMat);
+      sideWall.position.set(sx, 1.56, 0);
+      sideWall.castShadow = true;
+      sideWall.receiveShadow = true;
+      st.add(sideWall);
+
+      const wallCornice = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.14, 3.96), trimStoneMat);
+      wallCornice.position.set(sx, 2.74, 0);
+      st.add(wallCornice);
+
+      // Warm glazed lobby windows on outer brick walls
+      [-0.75, 0.75].forEach((wz) => {
+        const winFrame = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.76, 0.64), trimStoneMat);
+        winFrame.position.set(sx + (sx > 0 ? 0.34 : -0.34), 1.62, wz);
+        st.add(winFrame);
+
+        const winPane = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.62, 0.5), warmWinMat);
+        winPane.position.set(sx + (sx > 0 ? 0.37 : -0.37), 1.62, wz);
+        st.add(winPane);
+      });
+    });
+
+    // Rear ticket/boarding lobby wall
+    const rearWall = new THREE.Mesh(new THREE.BoxGeometry(4.04, 2.38, 0.54), brickMat);
+    rearWall.position.set(0, 1.56, -1.72);
+    rearWall.castShadow = true;
+    st.add(rearWall);
+
+    // Front portal header & stone corner columns leaving central bay OPEN (width 2.68, height 2.58)
+    [-1.42, 1.42].forEach((px) => {
+      const col = new THREE.Mesh(new THREE.BoxGeometry(0.32, 2.42, 0.36), trimStoneMat);
+      col.position.set(px, 1.58, 1.82);
+      col.castShadow = true;
+      st.add(col);
+    });
+    const portalHeader = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.34, 0.44), trimStoneMat);
+    portalHeader.position.set(0, 2.74, 1.82);
+    st.add(portalHeader);
+
+    // Warm interior hangar ceiling & ceiling light fixture
+    const interiorCeiling = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.12, 3.9), woodMat);
+    interiorCeiling.position.set(0, 2.76, 0);
+    st.add(interiorCeiling);
+
+    const hangarLamp = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.06, 0.32), warmWinMat);
+    hangarLamp.position.set(0, 2.68, 0.2);
+    st.add(hangarLamp);
+
+    // Architectural Pitched Gable Roof + Ridge Beam (clears bogie at y=2.55 completely)
+    const roofSlopeGeo = new THREE.BoxGeometry(2.55, 0.16, 4.36);
+    const roofL = new THREE.Mesh(roofSlopeGeo, roofMat);
+    roofL.position.set(-1.12, 3.36, 0);
+    roofL.rotation.z = 0.48;
+    roofL.castShadow = true;
+    st.add(roofL);
+
+    const roofR = new THREE.Mesh(roofSlopeGeo, roofMat);
+    roofR.position.set(1.12, 3.36, 0);
+    roofR.rotation.z = -0.48;
+    roofR.castShadow = true;
+    st.add(roofR);
+
+    const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.2, 4.44), trimStoneMat);
+    ridge.position.set(0, 3.92, 0);
+    st.add(ridge);
+
+    // Front gable triangle infill plate above portal (does not enter open doorway height)
+    const gableFill = new THREE.Mesh(new THREE.ConeGeometry(1.85, 1.02, 4), brickMat);
+    gableFill.scale.set(1.18, 1.0, 0.12);
+    gableFill.rotation.y = Math.PI / 4;
+    gableFill.position.set(0, 3.35, 1.82);
+    st.add(gableFill);
+
+    // Authentic Glazed Double Boarding Doors + Canopy + Exterior Stone Steps
+    const doorGroup = new THREE.Group();
+    if (isUpper) {
+      // Upper station faces Namsan plaza on its rear wall (-Z local)
+      doorGroup.position.set(0, 0, -2.02);
+      doorGroup.rotation.y = Math.PI;
+    } else {
+      // Lower station faces central hill plaza on its left-east side wall (-X local when rotated toward Namsan)
+      doorGroup.position.set(-2.06, 0, -0.1);
+      doorGroup.rotation.y = -Math.PI / 2;
+    }
+
+    const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.48, 1.85, 0.14), trimStoneMat);
+    doorFrame.position.y = 1.28;
+    doorGroup.add(doorFrame);
+
+    const doorLeaves = new THREE.Mesh(new THREE.BoxGeometry(1.24, 1.66, 0.16), doorMat);
+    doorLeaves.position.y = 1.22;
+    doorGroup.add(doorLeaves);
+
+    [-0.31, 0.31].forEach((lx) => {
+      const doorGlass = new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.08, 0.18), warmWinMat);
+      doorGlass.position.set(lx, 1.38, 0);
+      doorGroup.add(doorGlass);
+    });
+
+    const doorCanopy = new THREE.Mesh(new THREE.BoxGeometry(1.75, 0.1, 0.62), roofMat);
+    doorCanopy.position.set(0, 2.26, 0.28);
+    doorCanopy.rotation.x = 0.14;
+    doorGroup.add(doorCanopy);
+
+    const step1 = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.18, 0.48), trimStoneMat);
+    step1.position.set(0, 0.24, 0.24);
+    doorGroup.add(step1);
+    const step2 = new THREE.Mesh(new THREE.BoxGeometry(1.96, 0.16, 0.56), stoneMat);
+    step2.position.set(0, 0.08, 0.56);
+    doorGroup.add(step2);
+
+    st.add(doorGroup);
+    return st;
+  }
+
+  // 1. Lower Station on West Hill (-13.4, -9.5), portal aligned with cable toward Namsan
+  const lowGroup = buildCableStation({ isUpper: false });
+  lowGroup.position.set(lowX, lowY, lowZ);
+  lowGroup.rotation.y = cableYaw;
+  g.add(lowGroup);
+
+  // 2. Upper Station near N Seoul Tower Plaza (2.8, -86.0), portal facing Lower Station
+  const highGroup = buildCableStation({ isUpper: true });
+  highGroup.position.set(highX, highY, highZ);
+  highGroup.rotation.y = cableYaw + Math.PI;
+  g.add(highGroup);
+
+  // 3. Parallel Steel Carrier Cables entering cleanly inside each station's open boarding bay
+  const cableMountHeight = 2.34;
+  const halfTrack = 0.36;
+
+  const lowCenter = new THREE.Vector3(lowX, lowY + cableMountHeight, lowZ);
+  const highCenter = new THREE.Vector3(highX, highY + cableMountHeight, highZ);
+  const centerMid = new THREE.Vector3().addVectors(lowCenter, highCenter).multiplyScalar(0.5);
+  centerMid.y -= 3.6; // Gentle natural 1.8m catenary sag high over Han River
+
+  const curve = new THREE.QuadraticBezierCurve3(lowCenter, centerMid, highCenter);
+
+  const trackOffsetX = perpX * halfTrack;
+  const trackOffsetZ = perpZ * halfTrack;
+
+  const curve1 = new THREE.QuadraticBezierCurve3(
+    new THREE.Vector3(lowCenter.x - trackOffsetX, lowCenter.y, lowCenter.z - trackOffsetZ),
+    new THREE.Vector3(centerMid.x - trackOffsetX, centerMid.y, centerMid.z - trackOffsetZ),
+    new THREE.Vector3(highCenter.x - trackOffsetX, highCenter.y, highCenter.z - trackOffsetZ)
+  );
+  const curve2 = new THREE.QuadraticBezierCurve3(
+    new THREE.Vector3(lowCenter.x + trackOffsetX, lowCenter.y, lowCenter.z + trackOffsetZ),
+    new THREE.Vector3(centerMid.x + trackOffsetX, centerMid.y, centerMid.z + trackOffsetZ),
+    new THREE.Vector3(highCenter.x + trackOffsetX, highCenter.y, highCenter.z + trackOffsetZ)
+  );
+
+  const cable1 = new THREE.Mesh(new THREE.TubeGeometry(curve1, 48, 0.032, 6, false), cableMat);
+  const cable2 = new THREE.Mesh(new THREE.TubeGeometry(curve2, 48, 0.032, 6, false), cableMat);
+  g.add(cable1, cable2);
+
+  // 4. Scenic Gondola Cabin: Overhead Twin-Cable Pulley Bogie at y=0, Plumb Hanger Arm Below, Panoramic Windows
+  const carGroup = new THREE.Group();
+
+  // Bogie carriage sitting directly ON both parallel steel cables at y = 0
+  const bogieGroup = new THREE.Group();
+  const carriageBeam = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.06, 0.84), steelMat);
+  carriageBeam.position.set(0, 0.075, 0);
+  bogieGroup.add(carriageBeam);
+
+  const wheelGeo = new THREE.CylinderGeometry(0.068, 0.068, 0.045, 10);
+  [-halfTrack, halfTrack].forEach((tx) => {
+    // Lower clamp shoe hugging the steel wire
+    const clampRail = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.055, 0.72), cableMat);
+    clampRail.position.set(tx, 0.005, 0);
+    bogieGroup.add(clampRail);
+
+    // Front & rear grooved pulley wheels rolling along cable top
+    [-0.28, 0.28].forEach((wz) => {
+      const wheel = new THREE.Mesh(wheelGeo, steelMat);
+      wheel.rotation.z = Math.PI / 2;
+      wheel.position.set(tx, 0.058, wz);
+      bogieGroup.add(wheel);
+    });
+  });
+  carGroup.add(bogieGroup);
+
+  // Plumb Suspension Hanger & Cabin Body hanging cleanly beneath the cables
+  const cabinRoot = new THREE.Group();
+
+  // Twin Y-yoke suspension arms from bogie centerline down to cabin roof damper
+  [-0.22, 0.22].forEach((sx) => {
+    const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.028, 0.66, 7), cableMat);
+    strut.position.set(sx * 0.55, -0.32, 0);
+    strut.rotation.z = sx > 0 ? -0.34 : 0.34;
+    cabinRoot.add(strut);
+  });
+  const roofClamp = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.08, 0.34), steelMat);
+  roofClamp.position.set(0, -0.62, 0);
+  cabinRoot.add(roofClamp);
+
+  // Cabin Roof + Top Vent
+  const carRoof = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.085, 1.56), cabinCreamMat);
+  carRoof.position.set(0, -0.69, 0);
+  carRoof.castShadow = true;
+  cabinRoot.add(carRoof);
+
+  const carVent = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.05, 0.56), roofMat);
+  carVent.position.set(0, -0.635, 0);
+  cabinRoot.add(carVent);
+
+  // Lower Crimson Skirt & Cream Mid-Stripe (leaves upper window band 100% open & translucent!)
+  const carSkirt = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.42, 1.52), cabinRedMat);
+  carSkirt.position.set(0, -1.34, 0);
+  carSkirt.castShadow = true;
+  cabinRoot.add(carSkirt);
+
+  const carCreamStripe = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.11, 1.54), cabinCreamMat);
+  carCreamStripe.position.set(0, -1.11, 0);
+  cabinRoot.add(carCreamStripe);
+
+  // Warm Interior Cabin Core (visible through wrap-around glass windows on all 4 sides)
+  const carFloor = new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.05, 1.38), woodMat);
+  carFloor.position.set(0, -1.14, 0);
+  cabinRoot.add(carFloor);
+
+  const interiorCeilingLight = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.03, 1.05), warmWinMat);
+  interiorCeilingLight.position.set(0, -0.74, 0);
+  cabinRoot.add(interiorCeilingLight);
+
+  // Open Translucent Panoramic Glass Enclosure
+  const glassShell = new THREE.Mesh(new THREE.BoxGeometry(0.93, 0.34, 1.49), cabinGlassMat);
+  glassShell.position.set(0, -0.90, 0);
+  cabinRoot.add(glassShell);
+
+  // Dark Corner Pillars & Window Mullions dividing panoramic glass cleanly on all 4 faces
+  const pillarGeo = new THREE.BoxGeometry(0.055, 0.36, 0.055);
+  [-0.455, 0.455].forEach((px) => {
+    [-0.725, -0.24, 0.24, 0.725].forEach((pz) => {
+      const mullion = new THREE.Mesh(pillarGeo, cableMat);
+      mullion.position.set(px, -0.90, pz);
+      cabinRoot.add(mullion);
+    });
+  });
+  [-0.735, 0.735].forEach((pz) => {
+    const centerMullion = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.36, 0.045), cableMat);
+    centerMullion.position.set(0, -0.90, pz);
+    cabinRoot.add(centerMullion);
+
+    // Warm nose/tail marker lights
+    const marker = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 6), warmWinMat);
+    marker.position.set(0, -1.12, pz + (pz > 0 ? 0.035 : -0.035));
+    cabinRoot.add(marker);
+  });
+
+  carGroup.add(cabinRoot);
+  g.add(carGroup);
+
+  // Pre-allocated vectors for zero-GC animation updates
+  const _ccPt = new THREE.Vector3();
+  const _ccNextPt = new THREE.Vector3();
+  const _ccTan = new THREE.Vector3();
+
+  function updateCableCar(timeSec) {
+    // 180s majestic cycle: 8s dwell Lower Station, 82s slow serene climb, 8s dwell Upper Station, 82s slow descent
+    const cycleTime = 180.0;
+    const tMod = timeSec % cycleTime;
+    let p = 0;
+
+    if (tMod < 8.0) {
+      p = 0;
+    } else if (tMod < 90.0) {
+      const u = (tMod - 8.0) / 82.0;
+      p = u * u * (3 - 2 * u);
+    } else if (tMod < 98.0) {
+      p = 1;
+    } else {
+      const u = (tMod - 98.0) / 82.0;
+      const s = u * u * (3 - 2 * u);
+      p = 1 - s;
+    }
+
+    curve.getPoint(p, _ccPt);
+    carGroup.position.copy(_ccPt);
+
+    const nextP = Math.min(1, p + 0.008);
+    const prevP = Math.max(0, nextP - 0.016);
+    curve.getPoint(nextP, _ccNextPt);
+    curve.getPoint(prevP, _ccPt);
+    _ccTan.subVectors(_ccNextPt, _ccPt).normalize();
+
+    carGroup.rotation.y = Math.atan2(_ccTan.x, _ccTan.z);
+    // Only the overhead bogie tilts with cable slope; cabin hangs naturally plumb beneath cables
+    bogieGroup.rotation.x = -Math.asin(THREE.MathUtils.clamp(_ccTan.y, -0.6, 0.6));
+  }
+
+  g.userData.updateCableCar = updateCableCar;
+  g.userData.lowStation = lowGroup;
+  g.userData.highStation = highGroup;
   return g;
 }

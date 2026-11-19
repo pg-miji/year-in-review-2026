@@ -121,6 +121,43 @@
       </div>
     </section>
 
+    <!-- Separate West-Hill Winter Drink Stand Sheet -->
+    <section id="drink-sheet" class="floating-sheet" aria-label="겨울 음료 스탠드">
+      <div class="bungeoppang-sheet-header">
+        <div>
+          <strong class="bungeoppang-sheet-title">☕ 겨울 음료 스탠드</strong>
+          <p class="bungeoppang-sheet-desc">나나 사장님이 준비한 따뜻한 겨울 음료를 골라 손에 들고 산책해보세요.</p>
+        </div>
+        <button type="button" id="btn-close-drink" class="sheet-close-btn" aria-label="겨울 음료 스탠드 닫기">✕</button>
+      </div>
+      <p id="drink-hold-notice" class="drink-hold-notice is-hidden" role="status">
+        이미 따뜻한 음료를 들고 있어요. 다 마신 뒤에 다른 음료를 고를 수 있습니다.
+      </p>
+      <div class="drink-choices">
+        <button type="button" class="drink-choice-btn" data-drink="coffee">
+          <span class="bungeoppang-choice-emoji">☕</span>
+          <span class="bungeoppang-choice-text">
+            <strong>커피</strong>
+            <small>차분하고 깔끔한 로스팅 아메리카노</small>
+          </span>
+        </button>
+        <button type="button" class="drink-choice-btn" data-drink="hotchoco">
+          <span class="bungeoppang-choice-emoji">🍫</span>
+          <span class="bungeoppang-choice-text">
+            <strong>핫초코</strong>
+            <small>폭신한 마시멜로가 올라간 달콤함</small>
+          </span>
+        </button>
+        <button type="button" class="drink-choice-btn" data-drink="vinchaud">
+          <span class="bungeoppang-choice-emoji">🍊</span>
+          <span class="bungeoppang-choice-text">
+            <strong>뱅쇼</strong>
+            <small>오렌지와 시나몬 스틱의 깊은 향기</small>
+          </span>
+        </button>
+      </div>
+    </section>
+
     <!-- Separate Tabbed Settings Sheet (Anchored under top-right bar) -->
     <section id="settings-sheet" class="floating-sheet floating-sheet-top" aria-label="환경 설정">
       <div class="settings-tabs-bar">
@@ -261,7 +298,7 @@
         <div class="controls-guide-box">
           <span>WASD / 방향키 / 패드 : 언덕 이동</span>
           <span>드래그 / 스크롤 : 시점 회전, 남산 줌인</span>
-          <span>캐릭터 / 보신각 / 벤치 / 붕어빵 / 우체통 클릭 : 상호작용</span>
+          <span>캐릭터 / 보신각 / 벤치 / 붕어빵 / 음료 / 우체통 클릭 : 상호작용</span>
           <span>하늘 터치 / 스페이스 : 불꽃 발사</span>
         </div>
       </div>

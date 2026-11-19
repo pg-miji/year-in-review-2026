@@ -18,6 +18,7 @@ import {
   createParkBench,
   createCliffRailing,
   createBungeoppangStall,
+  createWinterDrinkStand,
   createVisitorAvatar,
   createWishLanternMesh,
   createLanternRack,
@@ -36,7 +37,8 @@ import {
   createCozyMailbox,
   createShootingStar,
   createFirewoodStack,
-  createEunhajaeSignpost
+  createEunhajaeSignpost,
+  createNamsanCableCar
 } from './fireworks_entities.js';
 import { EUNHAJAE_LETTERS } from './fireworks_letters.js';
 import { MAILBOX_CONFIG } from './mailbox_config.js';
@@ -195,36 +197,64 @@ const NPC_DIALOGUES = {
   ],
   mongi: [
     '멍멍! 오늘 밤하늘 별이 반짝반짝해요 🐾',
-    '왈왈! 간식이나 따뜻한 불꽃 구경 같이 볼래요?',
+    '멍멍! 혹시 간식 있으세요?',
+    '멍멍! 오늘은 모모랑 꽤 오래 걸었어요!',
     '멍! 바람 냄새가 참 기분 좋아요!'
   ],
   romi: [
-    '모닥불만 보고 있으면 시간 가는 줄 모르겠어요… 멍… 🔥',
+    '모닥불만 보고 있으면 시간 가는 줄 모르겠어요…',
     '슈크림 붕어빵은 따뜻할 때 한 입 베어 무는 게 제일 행복해요.',
     '아… 바람이 차서 손이 시려요. 불 옆에서 한 발짝도 못 떨어지겠어요.',
-    '팥도 좋지만 저는 역시 달콤한 슈크림파예요! 속이 꽉 차면 기분까지 포근해지거든요.',
-    '어라, 잠깐 불멍 때리다 보니 방금 무슨 생각 했는지 또 까먹었네요… 헤헤.',
+    '팥도 좋지만 저는 역시 슈크림파예요! 속이 꽉 차면 기분까지 포근해지거든요.',
+    '어라, 불멍을 하다 보니 무슨 생각을 하고 있었는지 까먹었네요… 헤헤.',
     '추워서 목도리를 꽁꽁 감았는데도 슈크림 냄새는 뚫고 들어오네요!',
     '산책하다 춥다 싶으면 저처럼 불 근처를 빙글빙글 돌아보세요. 딱 좋아요.',
-    '밤하늘 불꽃도 예쁘지만, 제 손에 들린 따끈한 슈크림 붕어빵도 꽤 빛나지 않나요?'
+    '밤하늘 불꽃도 예쁘지만, 제 손에 있는 붕어빵도 꽤 빛나지 않나요?'
+  ],
+  nana: [
+    '어서 와요! 따뜻한 음료 한 잔 어떠세요?',
+    '오늘은 핫초코가 특히 맛있게 나왔어요!',
+    '추운 날에는 따뜻한 커피가 최고죠!',
+    '뱅쇼에는 시나몬을 듬뿍 넣었답니다!',
+    '갓 내린 커피 향이 언덕까지 퍼지는 밤이네요.',
+    '달콤한 마시멜로 올린 핫초코 한 잔이면 추위도 금세 녹아요.',
+    '오렌지 조각을 띄운 따뜻한 뱅쇼도 아주 향긋하답니다!'
+  ],
+  gureum: [
+    '어, 제가 통화 중이라서요…!',
+    '응, 나 지금 산책 중이야! 잠깐만, 누가 부르네…',
+    '죄송해요, 통화 중이라 오래 얘기는 어려워요! 음료는 저쪽 스탠드에서 샀어요!',
+    '오늘 밤엔 핫초코가 딱이더라고요. 마시멜로도 잔뜩 올려주셨어요!',
+    '음료 스탠드가 새로 생긴 거 아세요? 이런 날씨에 딱이에요.'
+  ],
+  luka: [
+    '방금 저쪽 풍경이 너무 예뻐서 사진으로 남겼어요!',
+    '남산타워랑 케이블카가 같이 나오는 구도가 정말 멋져요.',
+    '밤하늘에 불꽃이 터질 때마다 셔터를 누르게 되네요!',
+    '은하재는 어느 곳을 찍어도 그림 같은 장면이 나와요.',
+    '잠깐만요, 이 각도에서 한 컷만 더 찍어볼게요!'
   ]
 };
 
-// NPC Firework Reaction profiles (restricted strictly to beat, tori, naru, momo, romi)
+// NPC Firework Reaction profiles (restricted strictly to beat, tori, naru, momo, romi, gureum, luka)
 const NPC_FIREWORK_PROFILE = {
-  beat: { delayMin: 80,  delayMax: 240, lookProb: 1.0,  burstJumpProb: 0.72, burstWaveProb: 0.65, cooldownMs: 2200 },
-  tori: { delayMin: 140, delayMax: 380, lookProb: 0.9,  burstJumpProb: 0.15, burstWaveProb: 0.55, cooldownMs: 2800 },
-  naru: { delayMin: 210, delayMax: 460, lookProb: 0.95, burstJumpProb: 0.05, burstWaveProb: 0.08, cooldownMs: 3200 },
-  momo: { delayMin: 160, delayMax: 400, lookProb: 0.85, burstJumpProb: 0.0,  burstWaveProb: 0.25, cooldownMs: 3100 },
-  romi: { delayMin: 240, delayMax: 500, lookProb: 0.78, burstJumpProb: 0.0,  burstWaveProb: 0.12, cooldownMs: 3600 }
+  beat:   { delayMin: 80,  delayMax: 240, lookProb: 1.0,  burstJumpProb: 0.72, burstWaveProb: 0.65, cooldownMs: 2200 },
+  tori:   { delayMin: 140, delayMax: 380, lookProb: 0.9,  burstJumpProb: 0.15, burstWaveProb: 0.55, cooldownMs: 2800 },
+  naru:   { delayMin: 210, delayMax: 460, lookProb: 0.95, burstJumpProb: 0.05, burstWaveProb: 0.08, cooldownMs: 3200 },
+  momo:   { delayMin: 160, delayMax: 400, lookProb: 0.85, burstJumpProb: 0.0,  burstWaveProb: 0.25, cooldownMs: 3100 },
+  romi:   { delayMin: 240, delayMax: 500, lookProb: 0.78, burstJumpProb: 0.0,  burstWaveProb: 0.12, cooldownMs: 3600 },
+  gureum: { delayMin: 220, delayMax: 480, lookProb: 0.72, burstJumpProb: 0.0,  burstWaveProb: 0.0,  cooldownMs: 3600 },
+  luka:   { delayMin: 160, delayMax: 380, lookProb: 0.9,  burstJumpProb: 0.05, burstWaveProb: 0.12, cooldownMs: 3000 }
 };
+
+const DRINK_KEYS = ['coffee', 'hotchoco', 'vinchaud'];
 
 // Discoverable Golden Ticket candidate spots tucked partway behind, beside, or under prop edges
 const TICKET_HIDING_SPOTS = [
   { x: 7.05,   z: -3.22,  rotY: 0.48,  tiltX: 0.12, tiltZ: -0.06, yOffset: 0.036 }, // Half under crimson tree gift box
   { x: 9.02,   z: 6.14,   rotY: 0.42,  tiltX: 0.16, tiltZ: 0.08,  yOffset: 0.042 }, // Tucked beside Bosingak north step corner
-  { x: -11.04, z: 3.44,   rotY: 0.92,  tiltX: 0.18, tiltZ: 0.10,  yOffset: 0.042 }, // Peeking beside Bungeoppang cart wheel
-  { x: -11.54, z: -10.14, rotY: -0.45, tiltX: 0.20, tiltZ: -0.12, yOffset: 0.048 }, // Behind hilltop mailbox stone footing
+  { x: -11.25, z: 4.35,   rotY: 0.92,  tiltX: 0.18, tiltZ: 0.10,  yOffset: 0.042 }, // Peeking beside Bungeoppang cart wheel
+  { x: -0.65,  z: 13.42,  rotY: 0.45,  tiltX: 0.20, tiltZ: -0.12, yOffset: 0.048 }, // Behind hilltop mailbox stone footing
   { x: -5.42,  z: -8.62,  rotY: 0.36,  tiltX: 0.14, tiltZ: 0.08,  yOffset: 0.034 }, // Half under left cliff bench overhang
   { x: -4.24,  z: 4.82,   rotY: 0.70,  tiltX: 0.22, tiltZ: -0.14, yOffset: 0.046 }, // Tucked against campfire hearth stone
   { x: 1.86,   z: -8.98,  rotY: -0.58, tiltX: 0.16, tiltZ: 0.08,  yOffset: 0.036 }, // Peeking beside cliffside puppy Mongi
@@ -370,6 +400,11 @@ export async function initEunhajaeScene() {
   const bungeoppangSheet = document.getElementById('bungeoppang-sheet');
   const btnCloseBungeoppang = document.getElementById('btn-close-bungeoppang');
 
+  const drinkSheet = document.getElementById('drink-sheet');
+  const btnCloseDrink = document.getElementById('btn-close-drink');
+  const drinkHoldNotice = document.getElementById('drink-hold-notice');
+  const drinkChoiceBtns = document.querySelectorAll('.drink-choice-btn[data-drink]');
+
   const settingsSheet = document.getElementById('settings-sheet');
   const btnCloseSettings = document.getElementById('btn-close-settings');
   const guideSheet = document.getElementById('guide-sheet');
@@ -492,7 +527,9 @@ export async function initEunhajaeScene() {
     moving: false,
     sitting: false,
     dancing: false,
-    eating: false
+    eating: false,
+    holdingDrink: false,
+    drinkType: null
   };
 
   if (rawSavedName === '나') {
@@ -556,9 +593,10 @@ export async function initEunhajaeScene() {
     snowRefs
   } = createTerrainAndBay(scene, glowTexture, { isMobile });
 
-  // Spread landmarks with unobstructed sightlines between Bosingak & Christmas Tree
-  const stallX = -10.2;
-  const stallZ = 2.8;
+  // Spread landmarks with unobstructed sightlines to Lower Cable Car Station (-13.4, -9.5), Bosingak & Christmas Tree
+  const stallX = -10.8;
+  const stallZ = 3.4;
+  const stallYaw = 2.02;
   const treeX = 8.4;
   const treeZ = -4.0;
   const pavilionX = 10.2;
@@ -572,8 +610,19 @@ export async function initEunhajaeScene() {
   const christmasTree = createChristmasTree(treeX, treeZ, glowTexture);
   scene.add(christmasTree);
 
-  const bungeoppangStall = createBungeoppangStall(stallX, stallZ, glowTexture, true);
+  const bungeoppangStall = createBungeoppangStall(stallX, stallZ, glowTexture, !isMobile, stallYaw);
   scene.add(bungeoppangStall);
+
+  // Cozy West-Hill Winter Drink Stand angled clearly beside Lower Cable Car Station & facing plaza/bungeoppang corner
+  const drinkStandX = -12.2;
+  const drinkStandZ = -2.8;
+  const drinkStandYaw = 1.15;
+  const winterDrinkStand = createWinterDrinkStand(drinkStandX, drinkStandZ, glowTexture, !isMobile, drinkStandYaw);
+  scene.add(winterDrinkStand);
+
+  // Namsan Cable Car (Hilltop Lower Station to Upper Station near N Seoul Tower plaza entrance)
+  const namsanCableCar = createNamsanCableCar(glowTexture);
+  scene.add(namsanCableCar);
 
   const cozyFirepit = createCozyFirepit(firepitX, firepitZ, glowTexture, true);
   scene.add(cozyFirepit.group);
@@ -600,14 +649,14 @@ export async function initEunhajaeScene() {
   ];
   lanternPosts.forEach((lp) => scene.add(lp));
 
-  // Cozy Hilltop Mailbox beside leftmost lantern post
-  const mailboxX = -11.75;
-  const mailboxZ = -9.95;
-  const cozyMailbox = createCozyMailbox(mailboxX, mailboxZ, 0.55, glowTexture);
+  // Cozy Hilltop Mailbox standing closely beside the Eunhajae Wooden Signpost (1.2, 13.4)
+  const mailboxX = -0.65;
+  const mailboxZ = 13.15;
+  const cozyMailbox = createCozyMailbox(mailboxX, mailboxZ, Math.PI - 0.28, glowTexture);
   scene.add(cozyMailbox);
 
-  // Stacked Firewood & Chopping Stump tucked cleanly in SW corner by the lantern rack
-  const firewoodStack = createFirewoodStack(-11.0, 10.4, 0.52);
+  // Stacked Firewood & Chopping Stump placed cleanly beside (not beneath) the SW wooden lantern rack
+  const firewoodStack = createFirewoodStack(-6.2, 11.3, 0.35);
   scene.add(firewoodStack);
 
   // Animal Crossing-style Wooden Signpost at southern walkable boundary between lantern rack & Bosingak
@@ -619,7 +668,7 @@ export async function initEunhajaeScene() {
   const shootingStar = createShootingStar(scene, glowTexture);
 
   const hillLampLights = [];
-  [pavilionGroup, christmasTree, bungeoppangStall, cozyFirepit.group, ...lanternPosts].forEach((grp) => {
+  [pavilionGroup, christmasTree, bungeoppangStall, winterDrinkStand, cozyFirepit.group, ...lanternPosts].forEach((grp) => {
     grp.traverse((node) => {
       if (node.isPointLight) {
         hillLampLights.push({ light: node, baseIntensity: node.intensity });
@@ -656,6 +705,7 @@ export async function initEunhajaeScene() {
   const groundLightPools = createGroundLightPools(glowTexture, [
     { x: pavilionX, z: pavilionZ, radius: 7.2, color: 0xffc66e, opacity: 0.34 },
     { x: stallX, z: stallZ, radius: 5.6, color: 0xffb357, opacity: 0.36 },
+    { x: drinkStandX, z: drinkStandZ, radius: 5.0, color: 0xffc472, opacity: 0.32 },
     { x: treeX, z: treeZ, radius: 6.2, color: 0xffe08a, opacity: 0.34 },
     { x: firepitX, z: firepitZ, radius: 4.8, color: 0xff8c42, opacity: 0.44, flicker: true },
     { x: -10.5, z: -10.5, radius: 3.6, color: 0xffd175, opacity: 0.28 },
@@ -669,12 +719,13 @@ export async function initEunhajaeScene() {
   const clickRipple = createClickRippleRing();
   scene.add(clickRipple.mesh);
 
+  snowRefs.drinkStandPos = { x: drinkStandX, z: drinkStandZ, yaw: drinkStandYaw };
   const snowEnv = createSnowEnvironment(
     scene,
     snowRefs,
     benchSpecs,
     { x: pavilionX, z: pavilionZ },
-    { x: stallX, z: stallZ },
+    { x: stallX, z: stallZ, yaw: stallYaw },
     { x: treeX, z: treeZ },
     { isMobile }
   );
@@ -705,6 +756,19 @@ export async function initEunhajaeScene() {
   eatBubbleEl.style.opacity = '0';
   labelsLayer?.appendChild(eatBubbleEl);
 
+  const drinkBubbleEl = document.createElement('div');
+  drinkBubbleEl.className = 'world-drink-bubble';
+  drinkBubbleEl.style.opacity = '0';
+  labelsLayer?.appendChild(drinkBubbleEl);
+
+  const fireBubbleEl = document.createElement('div');
+  fireBubbleEl.className = 'world-fire-bubble';
+  fireBubbleEl.style.opacity = '0';
+  labelsLayer?.appendChild(fireBubbleEl);
+
+  let fireBubbleUntilMs = 0;
+  let nextFireBubbleAllowedMs = 0;
+
   const npcBubbleEl = document.createElement('div');
   npcBubbleEl.className = 'world-npc-bubble';
   npcBubbleEl.style.opacity = '0';
@@ -717,11 +781,14 @@ export async function initEunhajaeScene() {
 
   const NPC_SPEAKER_NAMES = {
     manbok: '만복',
+    nana: '나나',
     momo: '모모',
     beat: '비트',
     tori: '토리',
     naru: '나루',
     romi: '로미',
+    gureum: '구름',
+    luka: '루카',
     chichi: '치치',
     mongi: '몽이'
   };
@@ -787,8 +854,8 @@ export async function initEunhajaeScene() {
   let bellSoundPending = false;
   let bellSwayAge = 10;
 
-  // Audio Engine (BGM + SFX + Spatial Ambient)
-  const audio = new FireworksAudioEngine();
+  // Audio Engine (BGM + SFX + Spatial Ambient with mobile loudness boost)
+  const audio = new FireworksAudioEngine({ isMobile });
   let isMuted = false;
 
   function triggerBosingakBell() {
@@ -824,9 +891,9 @@ export async function initEunhajaeScene() {
   }
 
   // =================================================================
-  // NPC Firework Reaction Helpers (Restricted to Beat, Tori, Naru, Momo, Romi)
+  // NPC Firework Reaction Helpers (Restricted to Beat, Tori, Naru, Momo, Romi, Gureum, Luka)
   // =================================================================
-  const FIREWORK_REACT_IDS = new Set(['beat', 'tori', 'naru', 'momo', 'romi']);
+  const FIREWORK_REACT_IDS = new Set(['beat', 'tori', 'naru', 'momo', 'romi', 'gureum', 'luka']);
 
   function notifyNpcsFireworkLaunch() {
     const now = performance.now();
@@ -1137,7 +1204,9 @@ export async function initEunhajaeScene() {
     moving: false,
     sitting: false,
     dancing: false,
-    eating: false
+    eating: false,
+    holdingDrink: false,
+    drinkType: null
   };
 
   function updateSelfStyle() {
@@ -1354,7 +1423,7 @@ export async function initEunhajaeScene() {
   });
 
   // =================================================================
-  // Popover Sheets (Wish / Bungeoppang Shop / Tabbed Settings / Guide)
+  // Popover Sheets (Wish / Bungeoppang Shop / Winter Drink / Settings / Guide)
   // =================================================================
   let openSheetName = null;
 
@@ -1362,11 +1431,13 @@ export async function initEunhajaeScene() {
     openSheetName = !forceOpen && openSheetName === name ? null : name;
     const isWish = openSheetName === 'wish';
     const isBungeoppang = openSheetName === 'bungeoppang';
+    const isDrink = openSheetName === 'drink';
     const isSettings = openSheetName === 'settings';
     const isGuide = openSheetName === 'guide';
 
     wishSheet?.classList.toggle('is-open', isWish);
     bungeoppangSheet?.classList.toggle('is-open', isBungeoppang);
+    drinkSheet?.classList.toggle('is-open', isDrink);
     settingsSheet?.classList.toggle('is-open', isSettings);
     guideSheet?.classList.toggle('is-open', isGuide);
 
@@ -1379,9 +1450,12 @@ export async function initEunhajaeScene() {
 
     mobileMovePad?.classList.toggle(
       'is-obscured',
-      isWish || isBungeoppang || isSettings || isGuide || mailboxModalOpen || ticketModalOpen
+      isWish || isBungeoppang || isDrink || isSettings || isGuide || mailboxModalOpen || ticketModalOpen
     );
 
+    if (isDrink && typeof syncDrinkSheetUi === 'function') {
+      syncDrinkSheetUi();
+    }
     if (isWish) {
       window.setTimeout(() => inputWish?.focus(), 60);
     }
@@ -1390,6 +1464,7 @@ export async function initEunhajaeScene() {
   btnToggleWish?.addEventListener('click', () => setSheetOpen('wish'));
   btnCloseWish?.addEventListener('click', () => setSheetOpen(null));
   btnCloseBungeoppang?.addEventListener('click', () => setSheetOpen(null));
+  btnCloseDrink?.addEventListener('click', () => setSheetOpen(null));
   btnToggleSettings?.addEventListener('click', () => setSheetOpen('settings'));
   btnCloseSettings?.addEventListener('click', () => setSheetOpen(null));
   btnToggleGuide?.addEventListener('click', () => setSheetOpen('guide'));
@@ -1795,6 +1870,54 @@ export async function initEunhajaeScene() {
     });
   });
 
+  // Winter Drink Stand Purchase & Hold Sequence (Duplicate purchase blocked while holding)
+  const DRINK_BUBBLE_TEXT = {
+    coffee: '따끈하고 향긋한 커피 한 모금 ☕',
+    hotchoco: '달콤한 마시멜로 핫초코 🍫',
+    vinchaud: '시나몬 향 가득 따뜻한 뱅쇼 🍊'
+  };
+  let selfDrinkUntilMs = 0;
+  let drinkBubbleUntilMs = 0;
+
+  function syncDrinkSheetUi() {
+    const holding = Boolean(selfState.holdingDrink && performance.now() < selfDrinkUntilMs);
+    drinkHoldNotice?.classList.toggle('is-hidden', !holding);
+    drinkChoiceBtns.forEach((btn) => {
+      btn.disabled = holding;
+      btn.classList.toggle('is-disabled', holding);
+      btn.setAttribute('aria-disabled', String(holding));
+    });
+  }
+
+  drinkChoiceBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const now = performance.now();
+      if (selfState.holdingDrink && now < selfDrinkUntilMs) {
+        syncDrinkSheetUi();
+        return;
+      }
+      const chosen = btn.getAttribute('data-drink');
+      if (chosen !== 'coffee' && chosen !== 'hotchoco' && chosen !== 'vinchaud') return;
+
+      audio.ensureContext();
+      audio.playDrinkOrder();
+
+      selfState.holdingDrink = true;
+      selfState.drinkType = chosen;
+      selfEntry.holdingDrink = true;
+      selfEntry.drinkType = chosen;
+      selfDrinkUntilMs = now + 30000;
+      drinkBubbleUntilMs = now + 6000;
+
+      if (drinkBubbleEl) {
+        drinkBubbleEl.textContent = DRINK_BUBBLE_TEXT[chosen] || '따뜻한 겨울 음료 한 잔 ☕';
+      }
+
+      syncDrinkSheetUi();
+      setSheetOpen(null);
+    });
+  });
+
   // =================================================================
   // 3-Mode Time-of-Day System (자동 / 낮 / 노을 / 밤)
   // =================================================================
@@ -1899,6 +2022,14 @@ export async function initEunhajaeScene() {
       bungeoppangStall.userData.haloMat.opacity = THREE.MathUtils.lerp(
         bungeoppangStall.userData.haloMat.opacity,
         stallHaloTarget,
+        alpha
+      );
+    }
+    if (winterDrinkStand.userData.haloMat) {
+      const drinkHaloTarget = 0.1 + 0.52 * preset.lampScale;
+      winterDrinkStand.userData.haloMat.opacity = THREE.MathUtils.lerp(
+        winterDrinkStand.userData.haloMat.opacity,
+        drinkHaloTarget,
         alpha
       );
     }
@@ -2675,6 +2806,26 @@ export async function initEunhajaeScene() {
       return;
     }
 
+    // 3.25 Check Winter Drink Stand & Nana (vendor clicked -> dialogue; kiosk clicked -> drink menu)
+    if (winterDrinkStand.userData.vendor) {
+      const nanaHits = _raycaster.intersectObject(winterDrinkStand.userData.vendor, true);
+      if (nanaHits.length > 0) {
+        audio.ensureContext();
+        const vp = winterDrinkStand.userData.vendorWorldPos;
+        clickRipple.trigger(vp.x, vp.z, 0xffd166);
+        showNpcDialogue('nana', () => ({ x: vp.x, y: vp.y + 1.52, z: vp.z }));
+        return;
+      }
+    }
+    const drinkStandHits = _raycaster.intersectObject(winterDrinkStand, true);
+    if (drinkStandHits.length > 0) {
+      audio.ensureContext();
+      clickRipple.trigger(drinkStandX, drinkStandZ, 0xffc472);
+      syncDrinkSheetUi();
+      setSheetOpen('drink', true);
+      return;
+    }
+
     // 3.5 Check Cozy Hilltop Mailbox -> Paper Stationery Letter Modal
     const mailboxHits = _raycaster.intersectObject(cozyMailbox, true);
     if (mailboxHits.length > 0) {
@@ -2833,6 +2984,7 @@ export async function initEunhajaeScene() {
   }
 
   function stepSimulation(dt, nowMs) {
+    const timeSec = nowMs * 0.001;
     frameCounter += 1;
     avgDt = avgDt * 0.92 + dt * 0.08;
     // Adaptive performance scaling when heavy effects overlap
@@ -2904,6 +3056,14 @@ export async function initEunhajaeScene() {
       selfEntry.eating = false;
     }
 
+    if (selfState.holdingDrink && nowMs >= selfDrinkUntilMs) {
+      selfState.holdingDrink = false;
+      selfState.drinkType = null;
+      selfEntry.holdingDrink = false;
+      selfEntry.drinkType = null;
+      syncDrinkSheetUi();
+    }
+
     // 2. Camera Smooth Glide & Safe Bounds Clamp
     if (cameraGlideActive) {
       const k = 1 - Math.exp(-5.8 * dt);
@@ -2943,6 +3103,10 @@ export async function initEunhajaeScene() {
     selfEntry.mesh.rotation.y = selfEntry.curYaw;
 
     const ud = selfEntry.mesh.userData;
+    const isHoldingDrink = Boolean(selfEntry.holdingDrink && selfEntry.drinkType);
+    const drinkInRightHand = Boolean(selfEntry.eating && isHoldingDrink);
+    const drinkInLeftHand = Boolean(!selfEntry.eating && isHoldingDrink);
+
     if (selfEntry.sitting) {
       ud.bodyGroup.position.y = THREE.MathUtils.lerp(ud.bodyGroup.position.y, -0.04, posLerp);
       ud.bodyGroup.position.z = THREE.MathUtils.lerp(ud.bodyGroup.position.z, 0.02, posLerp);
@@ -2950,7 +3114,9 @@ export async function initEunhajaeScene() {
       ud.bodyGroup.rotation.y = THREE.MathUtils.lerp(ud.bodyGroup.rotation.y, 0, posLerp);
       ud.leftLegPivot.rotation.x = THREE.MathUtils.lerp(ud.leftLegPivot.rotation.x, -Math.PI * 0.44, posLerp);
       ud.rightLegPivot.rotation.x = THREE.MathUtils.lerp(ud.rightLegPivot.rotation.x, -Math.PI * 0.44, posLerp);
-      ud.armGroup.rotation.x = Math.sin(nowMs * 0.0018 + ud.walkPhase) * 0.04;
+      if (!drinkInRightHand) {
+        ud.armGroup.rotation.x = Math.sin(nowMs * 0.0018 + ud.walkPhase) * 0.04;
+      }
       ud.armGroup.rotation.z = THREE.MathUtils.lerp(ud.armGroup.rotation.z, 0, posLerp);
     } else if (selfEntry.dancing && !selfEntry.moving) {
       ud.walkPhase += dt * 7.2;
@@ -2974,38 +3140,159 @@ export async function initEunhajaeScene() {
         const swing = Math.sin(ud.walkPhase) * 0.45;
         ud.leftLegPivot.rotation.x = swing;
         ud.rightLegPivot.rotation.x = -swing;
-        ud.armGroup.rotation.x = -swing * 0.3;
+        if (!drinkInRightHand) {
+          ud.armGroup.rotation.x = -swing * 0.3;
+        }
       } else {
         ud.walkPhase += dt * 2.0;
         ud.leftLegPivot.rotation.x *= 0.85;
         ud.rightLegPivot.rotation.x *= 0.85;
-        ud.armGroup.rotation.x = Math.sin(ud.walkPhase) * 0.05;
+        if (!drinkInRightHand) {
+          ud.armGroup.rotation.x = Math.sin(ud.walkPhase) * 0.05;
+        }
       }
     }
 
     if (ud.bungeoppangGroup && ud.leftArmPivot) {
+
       if (selfEntry.eating) {
         ud.bungeoppangGroup.visible = true;
         const nibble = Math.sin(nowMs * 0.0068 + ud.walkPhase) * 0.18;
         ud.leftArmPivot.rotation.x = THREE.MathUtils.lerp(ud.leftArmPivot.rotation.x, -1.18 + nibble, posLerp);
         ud.leftArmPivot.rotation.z = THREE.MathUtils.lerp(ud.leftArmPivot.rotation.z, -0.26, posLerp);
+      } else if (drinkInLeftHand) {
+        ud.bungeoppangGroup.visible = false;
+        const holdPoseX = selfEntry.dancing && !selfEntry.moving
+          ? -0.82 + Math.sin(ud.walkPhase) * 0.14
+          : -0.78 + Math.sin(nowMs * 0.0028) * 0.035;
+        const holdPoseZ = selfEntry.dancing && !selfEntry.moving ? -0.16 : -0.12;
+        ud.leftArmPivot.rotation.x = THREE.MathUtils.lerp(ud.leftArmPivot.rotation.x, holdPoseX, posLerp);
+        ud.leftArmPivot.rotation.z = THREE.MathUtils.lerp(ud.leftArmPivot.rotation.z, holdPoseZ, posLerp);
       } else {
         ud.bungeoppangGroup.visible = false;
         const idleSwing = selfEntry.moving ? Math.sin(ud.walkPhase) * 0.32 : Math.sin(ud.walkPhase * 0.7) * 0.04;
         ud.leftArmPivot.rotation.x = THREE.MathUtils.lerp(ud.leftArmPivot.rotation.x, idleSwing, posLerp);
         ud.leftArmPivot.rotation.z = THREE.MathUtils.lerp(ud.leftArmPivot.rotation.z, 0, posLerp);
       }
+
+      if (ud.heldLantern && ud.lanternCord) {
+        ud.heldLantern.visible = !drinkInRightHand;
+        ud.lanternCord.visible = !drinkInRightHand;
+      }
+
+      if (ud.leftDrinkHold && ud.leftDrinkVariants) {
+        ud.leftDrinkHold.visible = drinkInLeftHand;
+        if (drinkInLeftHand) {
+          ud.leftDrinkHold.rotation.x = -ud.leftArmPivot.rotation.x;
+          ud.leftDrinkHold.rotation.z = -ud.leftArmPivot.rotation.z * 0.6;
+          for (let dIdx = 0; dIdx < DRINK_KEYS.length; dIdx++) {
+            const dk = DRINK_KEYS[dIdx];
+            const cup = ud.leftDrinkVariants[dk];
+            if (!cup) continue;
+            const active = dk === selfEntry.drinkType;
+            cup.visible = active;
+            if (active && cup.userData.steams) {
+              const steams = cup.userData.steams;
+              for (let sIdx = 0; sIdx < steams.length; sIdx++) {
+                const st = steams[sIdx];
+                const cyc = ((nowMs * 0.00065 + st.phase * 0.25) % 1 + 1) % 1;
+                st.sprite.position.y = 0.10 + cyc * 0.14;
+                st.sprite.position.x = Math.sin(nowMs * 0.0028 + st.phase) * 0.018;
+                const sc = 0.075 + cyc * 0.085;
+                st.sprite.scale.set(sc, sc, 1);
+                st.sprite.material.opacity = Math.sin(cyc * Math.PI) * 0.14;
+              }
+            }
+          }
+        }
+      }
+
+      if (ud.rightDrinkHold && ud.rightDrinkVariants && ud.armGroup) {
+        ud.rightDrinkHold.visible = drinkInRightHand;
+        if (drinkInRightHand) {
+          if (!selfEntry.dancing || selfEntry.moving) {
+            ud.armGroup.rotation.x = THREE.MathUtils.lerp(
+              ud.armGroup.rotation.x,
+              -0.38 + Math.sin(nowMs * 0.0026) * 0.04,
+              posLerp
+            );
+          }
+          ud.rightDrinkHold.rotation.x = -ud.armGroup.rotation.x;
+          ud.rightDrinkHold.rotation.z = -ud.armGroup.rotation.z * 0.6;
+          for (let dIdx = 0; dIdx < DRINK_KEYS.length; dIdx++) {
+            const dk = DRINK_KEYS[dIdx];
+            const cup = ud.rightDrinkVariants[dk];
+            if (!cup) continue;
+            const active = dk === selfEntry.drinkType;
+            cup.visible = active;
+            if (active && cup.userData.steams) {
+              const steams = cup.userData.steams;
+              for (let sIdx = 0; sIdx < steams.length; sIdx++) {
+                const st = steams[sIdx];
+                const cyc = ((nowMs * 0.00065 + st.phase * 0.25) % 1 + 1) % 1;
+                st.sprite.position.y = 0.10 + cyc * 0.14;
+                st.sprite.position.x = Math.sin(nowMs * 0.0028 + st.phase) * 0.018;
+                const sc = 0.075 + cyc * 0.085;
+                st.sprite.scale.set(sc, sc, 1);
+                st.sprite.material.opacity = Math.sin(cyc * Math.PI) * 0.14;
+              }
+            }
+          }
+        }
+      }
     }
 
     const labelY = gy + (selfEntry.sitting ? 1.68 : 1.72);
     projectLabelToScreen(selfEntry.curX, labelY, selfEntry.curZ, selfEntry.labelEl, halfW, halfH, -8);
 
+    const showEatBubble = Boolean(eatBubbleEl && selfEntry.eating && nowMs < eatBubbleUntilMs);
+    const showDrinkBubble = Boolean(drinkBubbleEl && selfEntry.holdingDrink && nowMs < drinkBubbleUntilMs);
+
+    const fireDist = Math.hypot(selfEntry.curX - firepitX, selfEntry.curZ - firepitZ);
+    if (fireDist < 1.8 && nowMs >= nextFireBubbleAllowedMs) {
+      nextFireBubbleAllowedMs = nowMs + 18000;
+      fireBubbleUntilMs = nowMs + 3200;
+      if (fireBubbleEl) {
+        fireBubbleEl.textContent = '앗 뜨거! 🔥';
+      }
+    }
+    const showFireBubble = Boolean(fireBubbleEl && nowMs < fireBubbleUntilMs);
+
     if (eatBubbleEl) {
-      if (selfEntry.eating && nowMs < eatBubbleUntilMs) {
+      if (showEatBubble) {
         projectLabelToScreen(selfEntry.curX, labelY, selfEntry.curZ, eatBubbleEl, halfW, halfH, -33);
       } else {
         eatBubbleEl.style.opacity = '0';
       }
+    }
+    if (drinkBubbleEl) {
+      if (showDrinkBubble) {
+        projectLabelToScreen(
+          selfEntry.curX,
+          labelY,
+          selfEntry.curZ,
+          drinkBubbleEl,
+          halfW,
+          halfH,
+          showEatBubble ? -58 : -33
+        );
+      } else {
+        drinkBubbleEl.style.opacity = '0';
+      }
+    }
+    if (fireBubbleEl) {
+      if (showFireBubble) {
+        let stackOffset = -33;
+        if (showEatBubble) stackOffset -= 25;
+        if (showDrinkBubble) stackOffset -= 25;
+        projectLabelToScreen(selfEntry.curX, labelY, selfEntry.curZ, fireBubbleEl, halfW, halfH, stackOffset);
+      } else {
+        fireBubbleEl.style.opacity = '0';
+      }
+    }
+
+    if (namsanCableCar && namsanCableCar.userData.updateCableCar) {
+      namsanCableCar.userData.updateCableCar(timeSec);
     }
 
     // 3.5 Throttled NPC Proximity Check + Spatial Audio Update (~8x/sec instead of per frame)
@@ -3047,7 +3334,6 @@ export async function initEunhajaeScene() {
     }
 
     // 3.6 Update Named NPC Animations (Base Loops + Firework Sky Reaction + Head-Only Proximity Gaze)
-    const timeSec = nowMs * 0.001;
     const headLerp = 1 - Math.exp(-7.5 * dt);
 
     for (let i = 0; i < hillNpcs.length; i++) {
@@ -3158,6 +3444,168 @@ export async function initEunhajaeScene() {
           npc.bodyGroup.rotation.z = Math.sin(timeSec * 1.3) * 0.025;
           baseHeadYaw = Math.sin(timeSec * 0.52) * 0.08;
           baseHeadPitch = 0.07 + Math.sin(timeSec * 0.85) * 0.04;
+
+          pt.pauseLeft -= dt;
+          if (pt.pauseLeft <= 0) {
+            pt.wpIdx = (pt.wpIdx + 1) % wps.length;
+            pt.phase = 'walk';
+          }
+        }
+      } else if (npc.id === 'gureum' && npc.patrol) {
+        const pt = npc.patrol;
+        const wps = pt.waypoints;
+        const targetWp = wps[pt.wpIdx];
+        const yawAlpha = 1 - Math.exp(-5.2 * dt);
+
+        if (pt.phase === 'walk') {
+          const dx = targetWp.x - npc.basePos.x;
+          const dz = targetWp.z - npc.basePos.z;
+          const dist = Math.hypot(dx, dz);
+          const step = pt.walkSpeed * dt;
+
+          if (dist <= Math.max(0.08, step)) {
+            npc.basePos.x = targetWp.x;
+            npc.basePos.z = targetWp.z;
+            pt.phase = 'pause';
+            pt.pauseLeft = targetWp.pause;
+          } else {
+            npc.basePos.x += (dx / dist) * step;
+            npc.basePos.z += (dz / dist) * step;
+            const moveYaw = Math.atan2(dx, dz);
+            npc.baseYaw = lerpAngle(npc.baseYaw, moveYaw, yawAlpha);
+          }
+
+          npc.basePos.y = groundHeightAt(npc.basePos.x, npc.basePos.z);
+          npc.group.position.copy(npc.basePos);
+          npc.group.rotation.y = npc.baseYaw;
+
+          pt.walkPhase += dt * 6.8;
+          const legSwing = Math.sin(pt.walkPhase) * 0.34;
+          npc.leftLegPivot.rotation.x = legSwing;
+          npc.rightLegPivot.rotation.x = -legSwing;
+          npc.leftArmPivot.rotation.x = -0.78 + Math.sin(pt.walkPhase) * 0.035;
+          npc.leftArmPivot.rotation.z = -0.12;
+          npc.rightArmPivot.rotation.x = Math.sin(timeSec * 2.1) * 0.025;
+          npc.rightArmPivot.rotation.z = Math.cos(timeSec * 1.7) * 0.02;
+          npc.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.025;
+          baseJumpY = Math.abs(Math.sin(pt.walkPhase)) * 0.025;
+          baseHeadYaw = Math.sin(timeSec * 1.15) * 0.09;
+          baseHeadPitch = Math.sin(timeSec * 2.8) * 0.05;
+        } else {
+          const lookYaw = Math.atan2(targetWp.lookX - npc.basePos.x, targetWp.lookZ - npc.basePos.z);
+          npc.baseYaw = lerpAngle(npc.baseYaw, lookYaw, yawAlpha);
+          npc.group.rotation.y = npc.baseYaw;
+
+          const legSettle = 1 - Math.exp(-10 * dt);
+          npc.leftLegPivot.rotation.x *= (1 - legSettle);
+          npc.rightLegPivot.rotation.x *= (1 - legSettle);
+
+          npc.leftArmPivot.rotation.x = -0.78 + Math.sin(timeSec * 1.4) * 0.03;
+          npc.leftArmPivot.rotation.z = -0.12;
+          npc.rightArmPivot.rotation.x = Math.sin(timeSec * 2.4) * 0.03;
+          npc.rightArmPivot.rotation.z = Math.cos(timeSec * 1.9) * 0.02;
+          npc.bodyGroup.rotation.z = Math.sin(timeSec * 1.2) * 0.02;
+          baseHeadYaw = Math.sin(timeSec * 1.35) * 0.11;
+          baseHeadPitch = 0.02 + Math.sin(timeSec * 3.1) * 0.06;
+
+          pt.pauseLeft -= dt;
+          if (pt.pauseLeft <= 0) {
+            pt.wpIdx = (pt.wpIdx + 1) % wps.length;
+            pt.phase = 'walk';
+          }
+        }
+      } else if (npc.id === 'luka' && npc.patrol) {
+        const pt = npc.patrol;
+        const wps = pt.waypoints;
+        const targetWp = wps[pt.wpIdx];
+        const yawAlpha = 1 - Math.exp(-5.0 * dt);
+        const armAlpha = 1 - Math.exp(-7.0 * dt);
+
+        if (pt.phase === 'walk') {
+          const dx = targetWp.x - npc.basePos.x;
+          const dz = targetWp.z - npc.basePos.z;
+          const dist = Math.hypot(dx, dz);
+          const step = pt.walkSpeed * dt;
+
+          if (dist <= Math.max(0.1, step)) {
+            npc.basePos.x = targetWp.x;
+            npc.basePos.z = targetWp.z;
+            if (targetWp.pause > 0.05) {
+              pt.phase = 'pause';
+              pt.pauseLeft = targetWp.pause;
+              pt.pauseDur = targetWp.pause;
+            } else {
+              pt.wpIdx = (pt.wpIdx + 1) % wps.length;
+            }
+          } else {
+            npc.basePos.x += (dx / dist) * step;
+            npc.basePos.z += (dz / dist) * step;
+            const moveYaw = Math.atan2(dx, dz);
+            npc.baseYaw = lerpAngle(npc.baseYaw, moveYaw, yawAlpha);
+          }
+
+          npc.basePos.y = groundHeightAt(npc.basePos.x, npc.basePos.z);
+          npc.group.position.copy(npc.basePos);
+          npc.group.rotation.y = npc.baseYaw;
+
+          pt.walkPhase += dt * 7.0;
+          const legSwing = Math.sin(pt.walkPhase) * 0.35;
+          npc.leftLegPivot.rotation.x = legSwing;
+          npc.rightLegPivot.rotation.x = -legSwing;
+          npc.leftArmPivot.rotation.x = THREE.MathUtils.lerp(npc.leftArmPivot.rotation.x, -legSwing * 0.34, armAlpha);
+          npc.leftArmPivot.rotation.z = THREE.MathUtils.lerp(npc.leftArmPivot.rotation.z, 0, armAlpha);
+          npc.rightArmPivot.rotation.x = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.x, legSwing * 0.25 - 0.14, armAlpha);
+          npc.rightArmPivot.rotation.z = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.z, 0.06, armAlpha);
+          npc.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.028;
+          baseJumpY = Math.abs(Math.sin(pt.walkPhase)) * 0.026;
+          baseHeadYaw = Math.sin(timeSec * 0.8) * 0.07;
+          baseHeadPitch = 0.02;
+          if (npc.flashMat) npc.flashMat.emissiveIntensity = 0.22;
+        } else {
+          const lookYaw = Math.atan2(targetWp.lookX - npc.basePos.x, targetWp.lookZ - npc.basePos.z);
+          npc.baseYaw = lerpAngle(npc.baseYaw, lookYaw, yawAlpha);
+          npc.group.rotation.y = npc.baseYaw;
+
+          const legSettle = 1 - Math.exp(-10 * dt);
+          npc.leftLegPivot.rotation.x *= (1 - legSettle);
+          npc.rightLegPivot.rotation.x *= (1 - legSettle);
+          npc.bodyGroup.rotation.z *= (1 - legSettle);
+
+          const elapsedPause = Math.max(0, (pt.pauseDur || 4.5) - pt.pauseLeft);
+          let targetRightX = -0.14;
+          let targetRightZ = 0.06;
+          let targetLeftX = -0.1;
+          let targetLeftZ = 0.0;
+          let flashGlow = 0.22;
+
+          if (targetWp.takePhoto) {
+            if (elapsedPause < 1.25) {
+              // Curiously scan the horizon left & right before framing shot
+              baseHeadYaw = Math.sin((elapsedPause / 1.25) * Math.PI * 2) * 0.34;
+              baseHeadPitch = -0.04;
+            } else if (elapsedPause < 3.45) {
+              // Raise camera steadily to eye height & click shutter
+              targetRightX = -2.06;
+              targetRightZ = -0.36;
+              targetLeftX = -1.18;
+              targetLeftZ = 0.26;
+              baseHeadYaw = 0;
+              baseHeadPitch = -0.06;
+              if (elapsedPause > 2.35 && elapsedPause < 2.52) {
+                flashGlow = 3.2; // crisp momentary shutter flash highlight
+              }
+            } else {
+              // Lower camera calmly and admire preview
+              baseHeadYaw = Math.sin(timeSec * 1.1) * 0.08;
+              baseHeadPitch = 0.14;
+            }
+          }
+
+          npc.rightArmPivot.rotation.x = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.x, targetRightX, armAlpha);
+          npc.rightArmPivot.rotation.z = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.z, targetRightZ, armAlpha);
+          npc.leftArmPivot.rotation.x = THREE.MathUtils.lerp(npc.leftArmPivot.rotation.x, targetLeftX, armAlpha);
+          npc.leftArmPivot.rotation.z = THREE.MathUtils.lerp(npc.leftArmPivot.rotation.z, targetLeftZ, armAlpha);
+          if (npc.flashMat) npc.flashMat.emissiveIntensity = flashGlow;
 
           pt.pauseLeft -= dt;
           if (pt.pauseLeft <= 0) {
@@ -3562,6 +4010,31 @@ export async function initEunhajaeScene() {
         const s = 0.24 + cycle * 0.34;
         st.sprite.scale.set(s, s, 1);
         st.sprite.material.opacity = Math.sin(cycle * Math.PI) * 0.32;
+      }
+    }
+
+    // Nana (Winter Drink Stand Vendor) & Kettle/Drink Steam
+    if (winterDrinkStand.userData.vendorBody) {
+      winterDrinkStand.userData.vendorBody.rotation.z = Math.sin(nowMs * 0.002 + 1.1) * 0.045;
+    }
+    if (winterDrinkStand.userData.vendorRightArm) {
+      winterDrinkStand.userData.vendorRightArm.rotation.x = -0.14 + Math.sin(nowMs * 0.004 + 0.8) * 0.24;
+      winterDrinkStand.userData.vendorRightArm.rotation.z = -0.12 + Math.cos(nowMs * 0.0021) * 0.09;
+    }
+    if (winterDrinkStand.userData.vendorHead) {
+      winterDrinkStand.userData.vendorHead.rotation.y = Math.sin(nowMs * 0.0013 + 0.7) * 0.3;
+      winterDrinkStand.userData.vendorHead.rotation.x = 0.03 + Math.sin(nowMs * 0.0025) * 0.045;
+    }
+    if (winterDrinkStand.userData.steams) {
+      const steams = winterDrinkStand.userData.steams;
+      for (let i = 0; i < steams.length; i++) {
+        const st = steams[i];
+        const cycle = ((nowMs * 0.0005 + st.phase * 0.16) % 1 + 1) % 1;
+        st.sprite.position.y = 1.38 + cycle * 0.78;
+        st.sprite.position.x = st.baseX + Math.sin(nowMs * 0.0018 + st.phase) * 0.11;
+        const s = 0.2 + cycle * 0.3;
+        st.sprite.scale.set(s, s, 1);
+        st.sprite.material.opacity = Math.sin(cycle * Math.PI) * 0.26;
       }
     }
 
