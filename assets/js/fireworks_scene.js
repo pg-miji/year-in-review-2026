@@ -209,7 +209,7 @@ const NPC_DIALOGUES = {
     '어라, 불멍을 하다 보니 무슨 생각을 하고 있었는지 까먹었네요… 헤헤.',
     '추워서 목도리를 꽁꽁 감았는데도 슈크림 냄새는 뚫고 들어오네요!',
     '산책하다 춥다 싶으면 저처럼 불 근처를 빙글빙글 돌아보세요. 딱 좋아요.',
-    '밤하늘 불꽃도 예쁘지만, 제 손에 있는 붕어빵도 꽤 빛나지 않나요?'
+    '밤하늘 불꽃도 예쁘지만, 제 손에 있는 붕어빵도 아름답지 않나요?'
   ],
   nana: [
     '어서 와요! 따뜻한 음료 한 잔 어떠세요?',
@@ -223,7 +223,7 @@ const NPC_DIALOGUES = {
   gureum: [
     '어, 제가 통화 중이라서요…!',
     '응, 나 지금 산책 중이야! 잠깐만, 누가 부르네…',
-    '죄송해요, 통화 중이라 오래 얘기는 어려워요! 음료는 저쪽 스탠드에서 샀어요!',
+    '죄송해요, 통화 중이라 얘기는 어려워요! 음료는 저쪽 스탠드에서 샀어요!',
     '오늘 밤엔 핫초코가 딱이더라고요. 마시멜로도 잔뜩 올려주셨어요!',
     '음료 스탠드가 새로 생긴 거 아세요? 이런 날씨에 딱이에요.'
   ],
@@ -442,6 +442,7 @@ export async function initEunhajaeScene() {
   const soundToggleBtn = document.getElementById('btn-sound-toggle');
   const soundIcon = document.getElementById('sound-icon');
   const btnBackToHill = document.getElementById('btn-back-to-hill');
+  const btnResetView = document.getElementById('btn-reset-view');
 
   const countdownLiveEl = document.getElementById('midnight-countdown');
   const nextMidnightTimerEl = document.getElementById('next-midnight-timer');
@@ -2467,12 +2468,21 @@ export async function initEunhajaeScene() {
 
   function returnToHillView() {
     const gy = selfEntry.curY || groundHeightAt(selfEntry.curX, selfEntry.curZ);
+    const wasDamping = controls.enableDamping;
+    controls.enableDamping = false;
+    controls.update();
+    controls.enableDamping = wasDamping;
     _vCamTargetGoal.set(selfEntry.curX, gy + 2.0, selfEntry.curZ - 6.5);
     _vCamPosGoal.set(selfEntry.curX, gy + 3.8, selfEntry.curZ + 9.6);
     cameraGlideActive = true;
   }
 
   btnBackToHill?.addEventListener('click', () => {
+    audio.ensureContext();
+    returnToHillView();
+  });
+
+  btnResetView?.addEventListener('click', () => {
     audio.ensureContext();
     returnToHillView();
   });

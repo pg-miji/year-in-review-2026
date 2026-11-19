@@ -3846,12 +3846,12 @@ export function createHillNpcs() {
       rightArmPivot.add(phoneHand);
 
       const phoneGroup = new THREE.Group();
-      phoneGroup.position.set(-0.032, 0.258, 0.022);
-      phoneGroup.rotation.set(0.14, -0.22, 0.24);
-      const phoneChassis = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.106, 0.056), phoneBodyMat);
+      phoneGroup.position.set(-0.024, 0.264, 0.022);
+      phoneGroup.rotation.set(0.14, -0.22, 0.22);
+      const phoneChassis = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.164, 0.088), phoneBodyMat);
       phoneGroup.add(phoneChassis);
-      const phoneScreen = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.09, 0.046), phoneScreenMat);
-      phoneScreen.position.x = -0.007;
+      const phoneScreen = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.142, 0.074), phoneScreenMat);
+      phoneScreen.position.x = -0.010;
       phoneGroup.add(phoneScreen);
       rightArmPivot.add(phoneGroup);
     }
