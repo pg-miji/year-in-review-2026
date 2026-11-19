@@ -47,6 +47,10 @@ export class FireworksAudioEngine {
     this.ambientGain = null;
     this._sizzleGain = null;
     this._sizzlePanner = null;
+    this._fireGain = null;
+    this._fireCrackleBus = null;
+    this._firePanner = null;
+    this._fireProximity = 0;
     this._ambientStarted = false;
     this._ambientSources = [];
 
@@ -161,6 +165,60 @@ export class FireworksAudioEngine {
       }
       sizzleSrc.start(now);
       this._ambientSources.push(sizzleSrc);
+      // 3. 3D-attenuated Campfire Wood Burning & Hearth Warmth (fades out smoothly with distance)
+      this._firePanner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+      this._fireGain = ctx.createGain();
+      this._fireGain.gain.setValueAtTime(0, now);
+
+      this._fireCrackleBus = ctx.createGain();
+      this._fireCrackleBus.gain.setValueAtTime(0, now);
+
+      // Warm low hearth flame rumble
+      const fireRumbleSrc = ctx.createBufferSource();
+      fireRumbleSrc.buffer = this.noiseBuffer;
+      fireRumbleSrc.loop = true;
+      fireRumbleSrc.start(now, 0.2);
+
+      const fireLpf = ctx.createBiquadFilter();
+      fireLpf.type = 'lowpass';
+      fireLpf.frequency.setValueAtTime(195, now);
+      fireLpf.Q.value = 0.75;
+
+      const fireRumbleMix = ctx.createGain();
+      fireRumbleMix.gain.setValueAtTime(0.42, now);
+
+      fireRumbleSrc.connect(fireLpf);
+      fireLpf.connect(fireRumbleMix);
+      fireRumbleMix.connect(this._fireGain);
+      this._ambientSources.push(fireRumbleSrc);
+
+      // Soft airy flame whisper / ember rustle
+      const fireFlameSrc = ctx.createBufferSource();
+      fireFlameSrc.buffer = this.noiseBuffer;
+      fireFlameSrc.loop = true;
+      fireFlameSrc.start(now, 0.75);
+
+      const fireBpf = ctx.createBiquadFilter();
+      fireBpf.type = 'bandpass';
+      fireBpf.frequency.setValueAtTime(760, now);
+      fireBpf.Q.value = 0.7;
+
+      const fireFlameMix = ctx.createGain();
+      fireFlameMix.gain.setValueAtTime(0.11, now);
+
+      fireFlameSrc.connect(fireBpf);
+      fireBpf.connect(fireFlameMix);
+      fireFlameMix.connect(this._fireGain);
+      this._ambientSources.push(fireFlameSrc);
+
+      if (this._firePanner) {
+        this._fireGain.connect(this._firePanner);
+        this._fireCrackleBus.connect(this._firePanner);
+        this._firePanner.connect(this.ambientGain);
+      } else {
+        this._fireGain.connect(this.ambientGain);
+        this._fireCrackleBus.connect(this.ambientGain);
+      }
     } catch (e) {}
   }
 
@@ -183,6 +241,65 @@ export class FireworksAudioEngine {
       this._sizzleGain.gain.setTargetAtTime(targetGain, now, 0.1);
       if (this._sizzlePanner) {
         this._sizzlePanner.pan.setTargetAtTime(Math.max(-0.9, Math.min(0.9, stallPan)), now, 0.1);
+      }
+    } catch (e) {}
+  }
+
+  updateCampfireAudio(fireDist, firePan = 0) {
+    if (!this.ctx || !this._fireGain || !this._fireCrackleBus) return;
+    try {
+      const now = this.ctx.currentTime;
+      if (this.ctx.state !== 'running' || this.muted || !this.ambientEnabled || document.hidden) {
+        this._fireProximity = 0;
+        this._fireGain.gain.setTargetAtTime(0, now, 0.08);
+        this._fireCrackleBus.gain.setTargetAtTime(0, now, 0.08);
+        return;
+      }
+
+      const dist = Math.max(0, Number(fireDist) || 0);
+      // Full warmth within 1.5m of hearth; smooth cubic fade-out over 1.5m -> 12.8m
+      const u = Math.max(0, Math.min(1, 1 - Math.max(0, dist - 1.5) / 11.3));
+      const atten = u * u * (3 - 2 * u);
+      this._fireProximity = atten;
+
+      this._fireGain.gain.setTargetAtTime(atten * 0.25, now, 0.16);
+      this._fireCrackleBus.gain.setTargetAtTime(atten, now, 0.15);
+      if (this._firePanner) {
+        this._firePanner.pan.setTargetAtTime(Math.max(-0.88, Math.min(0.88, firePan)), now, 0.12);
+      }
+
+      // Schedule subtle random wood-crackle & spark pops only when audible
+      if (atten > 0.04 && this.noiseBuffer) {
+        const roll = Math.random();
+        const count = roll < 0.42 ? 1 : (roll < 0.62 ? 2 : 0);
+        for (let i = 0; i < count; i++) {
+          const t0 = now + Math.random() * 0.1;
+          const isDeepSnap = Math.random() < 0.34;
+          const dur = isDeepSnap ? 0.026 + Math.random() * 0.014 : 0.015 + Math.random() * 0.012;
+
+          const crackle = this.ctx.createBufferSource();
+          crackle.buffer = this.noiseBuffer;
+          const offset = Math.random() * Math.max(0.1, this.noiseBuffer.duration - 0.1);
+
+          const bpf = this.ctx.createBiquadFilter();
+          bpf.type = 'bandpass';
+          bpf.frequency.setValueAtTime(
+            isDeepSnap ? 680 + Math.random() * 380 : 1950 + Math.random() * 2500,
+            t0
+          );
+          bpf.Q.value = isDeepSnap ? 2.1 : 3.2;
+
+          const cGain = this.ctx.createGain();
+          const peak = isDeepSnap ? 0.11 + Math.random() * 0.06 : 0.08 + Math.random() * 0.07;
+          cGain.gain.setValueAtTime(0.0005, t0);
+          cGain.gain.linearRampToValueAtTime(peak, t0 + 0.0025);
+          cGain.gain.exponentialRampToValueAtTime(0.0004, t0 + dur);
+
+          crackle.connect(bpf);
+          bpf.connect(cGain);
+          cGain.connect(this._fireCrackleBus);
+          crackle.start(t0, offset, dur + 0.01);
+        }
       }
     } catch (e) {}
   }
@@ -785,6 +902,63 @@ export class FireworksAudioEngine {
     } catch (e) {}
   }
 
+  playCameraShutter(pan = 0, distanceScale = 1) {
+    if (!this.ctx || this.ctx.state !== 'running' || this.muted || !this.sfxEnabled || document.hidden) return;
+    const scale = Math.max(0, Math.min(1, Number(distanceScale) || 0));
+    if (scale <= 0.04) return;
+
+    try {
+      const ctx = this.ctx;
+      const now = ctx.currentTime;
+      const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+      if (panner) {
+        panner.pan.value = Math.max(-0.85, Math.min(0.85, pan));
+        panner.connect(this.sfxGain);
+      }
+      const dest = panner || this.sfxGain;
+
+      // Crisp two-stage DSLR/film mechanical shutter click ("찰-칵!")
+      const clicks = [
+        { offset: 0.0,   freq: 2700, q: 1.8, amp: 0.22 * scale, dur: 0.028, thumpHz: 230 },
+        { offset: 0.056, freq: 3450, q: 2.1, amp: 0.18 * scale, dur: 0.032, thumpHz: 310 }
+      ];
+
+      clicks.forEach((c) => {
+        const t0 = now + c.offset;
+        if (this.noiseBuffer) {
+          const snap = ctx.createBufferSource();
+          snap.buffer = this.noiseBuffer;
+          const bpf = ctx.createBiquadFilter();
+          bpf.type = 'bandpass';
+          bpf.frequency.setValueAtTime(c.freq, t0);
+          bpf.Q.value = c.q;
+
+          const nGain = ctx.createGain();
+          nGain.gain.setValueAtTime(0.0005, t0);
+          nGain.gain.linearRampToValueAtTime(c.amp, t0 + 0.002);
+          nGain.gain.exponentialRampToValueAtTime(0.0004, t0 + c.dur);
+
+          snap.connect(bpf);
+          bpf.connect(nGain);
+          nGain.connect(dest);
+          snap.start(t0, Math.random() * 0.4, c.dur + 0.01);
+        }
+
+        const thump = ctx.createOscillator();
+        const tGain = ctx.createGain();
+        thump.type = 'triangle';
+        thump.frequency.setValueAtTime(c.thumpHz, t0);
+        thump.frequency.exponentialRampToValueAtTime(85, t0 + 0.022);
+        tGain.gain.setValueAtTime(0.065 * scale, t0);
+        tGain.gain.exponentialRampToValueAtTime(0.0004, t0 + 0.025);
+        thump.connect(tGain);
+        tGain.connect(dest);
+        thump.start(t0);
+        thump.stop(t0 + 0.03);
+      });
+    } catch (e) {}
+  }
+
   dispose() {
     this._stopBgmLoop();
     this._ambientStarted = false;
@@ -799,6 +973,9 @@ export class FireworksAudioEngine {
     }
     this._sizzleGain = null;
     this._sizzlePanner = null;
+    this._fireGain = null;
+    this._fireCrackleBus = null;
+    this._firePanner = null;
     if (this.ctx) {
       this.ctx.close().catch(() => {});
       this.ctx = null;
