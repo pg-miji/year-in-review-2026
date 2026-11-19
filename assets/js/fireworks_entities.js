@@ -1788,8 +1788,9 @@ export function createCliffRailing() {
   const woodMat = new THREE.MeshStandardMaterial({ color: 0x4c3224, roughness: 0.82 });
   const postGeo = new THREE.CylinderGeometry(0.06, 0.075, 1.05, 8);
 
+  // Continuous main lookout railing east of Lower Cable Car Station (-13.4, -9.5) so posts never clip station walls/roof
   const points = [];
-  for (let x = -14; x <= 14; x += 2.8) {
+  for (let x = -10.2; x <= 14.2; x += 2.7) {
     const z = -11.9 - Math.cos(x * 0.1) * 0.6;
     const y = groundHeightAt(x, z);
     points.push(new THREE.Vector3(x, y, z));
@@ -5548,7 +5549,13 @@ export function createNamsanCableCar(glowTexture) {
   const trimStoneMat = new THREE.MeshStandardMaterial({ color: 0xc8bca8, roughness: 0.76 });
   const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3b28, roughness: 0.78 });
   const doorMat = new THREE.MeshStandardMaterial({ color: 0x3b2416, roughness: 0.68 });
-  const roofMat = new THREE.MeshStandardMaterial({ color: 0x223346, roughness: 0.7 });
+  const roofMat = new THREE.MeshStandardMaterial({
+    color: 0x2c3b4c,
+    emissive: 0x101928,
+    emissiveIntensity: 0.24,
+    roughness: 0.64,
+    metalness: 0.08
+  });
   const cableMat = new THREE.MeshStandardMaterial({ color: 0x2c2e38, roughness: 0.38, metalness: 0.82 });
   const steelMat = new THREE.MeshStandardMaterial({ color: 0x4d5462, roughness: 0.42, metalness: 0.72 });
   const cabinRedMat = new THREE.MeshStandardMaterial({ color: 0xd93838, roughness: 0.52 });
@@ -5589,12 +5596,37 @@ export function createNamsanCableCar(glowTexture) {
   const perpZ = dirX;
   const cableYaw = Math.atan2(dx, dz); // Local +Z faces along cable from Low -> High
 
+  // Shared extruded gable triangle & side-eave seal geometries tucked cleanly beneath pitched navy roof slabs
+  const gableShape = new THREE.Shape();
+  gableShape.moveTo(-1.86, 2.72);
+  gableShape.lineTo(0, 3.74);
+  gableShape.lineTo(1.86, 2.72);
+  gableShape.closePath();
+  const gableGeo = new THREE.ExtrudeGeometry(gableShape, { depth: 0.34, bevelEnabled: false });
+
+  const sideEaveRShape = new THREE.Shape();
+  sideEaveRShape.moveTo(1.33, 2.70);
+  sideEaveRShape.lineTo(1.94, 2.70);
+  sideEaveRShape.lineTo(1.94, 2.76);
+  sideEaveRShape.lineTo(1.33, 3.08);
+  sideEaveRShape.closePath();
+  const sideEaveRGeo = new THREE.ExtrudeGeometry(sideEaveRShape, { depth: 3.84, bevelEnabled: false });
+
+  const sideEaveLShape = new THREE.Shape();
+  sideEaveLShape.moveTo(-1.94, 2.70);
+  sideEaveLShape.lineTo(-1.33, 2.70);
+  sideEaveLShape.lineTo(-1.33, 3.08);
+  sideEaveLShape.lineTo(-1.94, 2.76);
+  sideEaveLShape.closePath();
+  const sideEaveLGeo = new THREE.ExtrudeGeometry(sideEaveLShape, { depth: 3.84, bevelEnabled: false });
+
   function buildCableStation({ isUpper = false }) {
     const st = new THREE.Group();
 
-    // Raised stone foundation plinth
-    const plinth = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.38, 4.1), stoneMat);
-    plinth.position.y = 0.19;
+    // Raised stone foundation plinth (extra deep retaining base on steep Upper Namsan slope)
+    const plinthH = isUpper ? 2.8 : 0.38;
+    const plinth = new THREE.Mesh(new THREE.BoxGeometry(4.5, plinthH, 4.1), stoneMat);
+    plinth.position.y = isUpper ? (0.38 - plinthH * 0.5) : 0.19;
     plinth.receiveShadow = true;
     plinth.castShadow = true;
     st.add(plinth);
@@ -5611,14 +5643,14 @@ export function createNamsanCableCar(glowTexture) {
 
     // Left & right brick side walls framing the hollow boarding hangar
     [-1.68, 1.68].forEach((sx) => {
-      const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.68, 2.38, 3.85), brickMat);
-      sideWall.position.set(sx, 1.56, 0);
+      const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.68, 2.34, 3.85), brickMat);
+      sideWall.position.set(sx, 1.54, 0);
       sideWall.castShadow = true;
       sideWall.receiveShadow = true;
       st.add(sideWall);
 
-      const wallCornice = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.14, 3.96), trimStoneMat);
-      wallCornice.position.set(sx, 2.74, 0);
+      const wallCornice = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.10, 3.92), trimStoneMat);
+      wallCornice.position.set(sx, 2.68, 0);
       st.add(wallCornice);
 
       // Warm glazed lobby windows on outer brick walls
@@ -5633,56 +5665,71 @@ export function createNamsanCableCar(glowTexture) {
       });
     });
 
+    // Sloped navy slate side-eave seals closing the gap cleanly beneath the pitched navy roof
+    const eaveSealR = new THREE.Mesh(sideEaveRGeo, roofMat);
+    eaveSealR.position.z = -1.92;
+    st.add(eaveSealR);
+
+    const eaveSealL = new THREE.Mesh(sideEaveLGeo, roofMat);
+    eaveSealL.position.z = -1.92;
+    st.add(eaveSealL);
+
     // Rear ticket/boarding lobby wall
-    const rearWall = new THREE.Mesh(new THREE.BoxGeometry(4.04, 2.38, 0.54), brickMat);
-    rearWall.position.set(0, 1.56, -1.72);
+    const rearWall = new THREE.Mesh(new THREE.BoxGeometry(4.04, 2.34, 0.54), brickMat);
+    rearWall.position.set(0, 1.54, -1.72);
     rearWall.castShadow = true;
     st.add(rearWall);
 
-    // Front portal header & stone corner columns leaving central bay OPEN (width 2.68, height 2.58)
+    const rearCornice = new THREE.Mesh(new THREE.BoxGeometry(3.96, 0.10, 0.58), trimStoneMat);
+    rearCornice.position.set(0, 2.68, -1.72);
+    st.add(rearCornice);
+
+    // Front portal header & stone corner columns tucked cleanly under roof overhang (zero corner poke-through)
     [-1.42, 1.42].forEach((px) => {
-      const col = new THREE.Mesh(new THREE.BoxGeometry(0.32, 2.42, 0.36), trimStoneMat);
-      col.position.set(px, 1.58, 1.82);
+      const col = new THREE.Mesh(new THREE.BoxGeometry(0.32, 2.36, 0.36), trimStoneMat);
+      col.position.set(px, 1.55, 1.82);
       col.castShadow = true;
       st.add(col);
     });
-    const portalHeader = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.34, 0.44), trimStoneMat);
-    portalHeader.position.set(0, 2.74, 1.82);
+    const portalHeader = new THREE.Mesh(new THREE.BoxGeometry(3.64, 0.24, 0.42), trimStoneMat);
+    portalHeader.position.set(0, 2.66, 1.82);
     st.add(portalHeader);
 
     // Warm interior hangar ceiling & ceiling light fixture
-    const interiorCeiling = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.12, 3.9), woodMat);
-    interiorCeiling.position.set(0, 2.76, 0);
+    const interiorCeiling = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.10, 3.84), woodMat);
+    interiorCeiling.position.set(0, 2.72, 0);
     st.add(interiorCeiling);
 
     const hangarLamp = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.06, 0.32), warmWinMat);
-    hangarLamp.position.set(0, 2.68, 0.2);
+    hangarLamp.position.set(0, 2.64, 0.2);
     st.add(hangarLamp);
 
-    // Architectural Pitched Gable Roof + Ridge Beam (clears bogie at y=2.55 completely)
-    const roofSlopeGeo = new THREE.BoxGeometry(2.55, 0.16, 4.36);
+    // Architectural Pitched Navy Gable Roof + Raised Ridge Cap (identical dark slate navy on both stations)
+    const roofSlopeGeo = new THREE.BoxGeometry(2.50, 0.18, 4.38);
     const roofL = new THREE.Mesh(roofSlopeGeo, roofMat);
-    roofL.position.set(-1.12, 3.36, 0);
+    roofL.position.set(-1.12, 3.28, 0);
     roofL.rotation.z = 0.48;
     roofL.castShadow = true;
     st.add(roofL);
 
     const roofR = new THREE.Mesh(roofSlopeGeo, roofMat);
-    roofR.position.set(1.12, 3.36, 0);
+    roofR.position.set(1.12, 3.28, 0);
     roofR.rotation.z = -0.48;
     roofR.castShadow = true;
     st.add(roofR);
 
-    const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.2, 4.44), trimStoneMat);
-    ridge.position.set(0, 3.92, 0);
+    const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.22, 4.44), trimStoneMat);
+    ridge.position.set(0, 3.88, 0);
     st.add(ridge);
 
-    // Front gable triangle infill plate above portal (does not enter open doorway height)
-    const gableFill = new THREE.Mesh(new THREE.ConeGeometry(1.85, 1.02, 4), brickMat);
-    gableFill.scale.set(1.18, 1.0, 0.12);
-    gableFill.rotation.y = Math.PI / 4;
-    gableFill.position.set(0, 3.35, 1.82);
-    st.add(gableFill);
+    // Front & Rear solid extruded navy slate gables so Upper Station never reads as red-roofed from the plaza
+    const frontGable = new THREE.Mesh(gableGeo, roofMat);
+    frontGable.position.set(0, 0, 1.65);
+    st.add(frontGable);
+
+    const rearGable = new THREE.Mesh(gableGeo, roofMat);
+    rearGable.position.set(0, 0, -1.99);
+    st.add(rearGable);
 
     // Authentic Glazed Double Boarding Doors + Canopy + Exterior Stone Steps
     const doorGroup = new THREE.Group();
@@ -5723,6 +5770,14 @@ export function createNamsanCableCar(glowTexture) {
     doorGroup.add(step2);
 
     st.add(doorGroup);
+
+    // Cool moonlight fill on Upper Station so its navy slate roof matches Lower Station's true navy tone cleanly
+    if (isUpper) {
+      const upperFill = new THREE.PointLight(0xc2d6f6, 0.9, 12, 1.5);
+      upperFill.position.set(0, 4.3, 2.1);
+      st.add(upperFill);
+    }
+
     return st;
   }
 

@@ -712,7 +712,7 @@ export async function initEunhajaeScene() {
   scene.add(createCliffRailing());
 
   const lanternPosts = [
-    createLanternPost(-10.5, -10.5, glowTexture, false),
+    createLanternPost(-9.1, -10.7, glowTexture, false),
     createLanternPost(-3.5, -11.0, glowTexture, !isMobile),
     createLanternPost(4.2, -11.0, glowTexture, false),
     createLanternPost(11.0, -10.2, glowTexture, false)
@@ -825,12 +825,11 @@ export async function initEunhajaeScene() {
   const firewoodStumpX = -6.2 + 0.92 * Math.cos(firewoodYaw) + 0.2 * Math.sin(firewoodYaw);
   const firewoodStumpZ = 11.3 - 0.92 * Math.sin(firewoodYaw) + 0.2 * Math.cos(firewoodYaw);
 
-  const staticObbColliders = [
+  const commonStaticObbColliders = [
     makeObbCollider(-13.4, -9.5, 2.28, 2.12, cableYaw),                   // Lower Cable Car Station
     makeObbCollider(cableStepX, cableStepZ, 0.42, 1.02, cableYaw),       // Lower Station side entrance steps
     makeObbCollider(drinkStandX, drinkStandZ, 1.24, 0.72, drinkStandYaw),// Winter Drink Stand
     makeObbCollider(stallX, stallZ, 1.32, 0.72, stallYaw),               // Bungeoppang Stall
-    makeObbCollider(pavilionX, pavilionZ, 2.58, 2.58, 0),                // Bosingak Pavilion plinth & pillars
     makeObbCollider(firepitX - 1.18, firepitZ + 0.35, 0.62, 0.22, 0.45), // Firepit log seat L
     makeObbCollider(firepitX + 1.15, firepitZ + 0.48, 0.62, 0.22, -0.52),// Firepit log seat R
     makeObbCollider(-6.2, 11.3, 0.62, 0.42, firewoodYaw),                // Stacked Firewood
@@ -838,13 +837,25 @@ export async function initEunhajaeScene() {
     ...benchSpecs.map((b) => makeObbCollider(b.x, b.z, 0.98, 0.36, b.yaw))
   ];
 
+  // Wandering NPCs stay outside full Bosingak plinth; player can step onto deck while blocked by pillars, rails & central bell
+  const staticObbColliders = [
+    ...commonStaticObbColliders,
+    makeObbCollider(pavilionX, pavilionZ, 2.58, 2.58, 0)
+  ];
+
+  const playerObbColliders = [
+    ...commonStaticObbColliders,
+    makeObbCollider(pavilionX - 2.02, pavilionZ, 0.12, 1.96, 0), // Bosingak left balustrade rail
+    makeObbCollider(pavilionX + 2.02, pavilionZ, 0.12, 1.96, 0)  // Bosingak right balustrade rail
+  ];
+
   const staticCircleColliders = [
     { x: treeX, z: treeZ, r: 1.65 },         // Christmas Tree
-    { x: firepitX, z: firepitZ, r: 0.96 },   // Cozy Firepit Hearth
+    { x: firepitX, z: firepitZ, r: 0.96 },   // Cozy Firepit Hearth (r+0.34=1.30 < 1.8m fire alert)
     { x: mailboxX, z: mailboxZ, r: 0.35 },   // Cozy Mailbox
     { x: 1.65, z: -9.15, r: 0.36 },          // Cliffside Dog 몽이
     { x: firewoodStumpX, z: firewoodStumpZ, r: 0.38 },
-    { x: -10.5, z: -10.5, r: 0.26 },
+    { x: -9.1, z: -10.7, r: 0.26 },
     { x: -3.5, z: -11.0, r: 0.26 },
     { x: 4.2, z: -11.0, r: 0.26 },
     { x: 11.0, z: -10.2, r: 0.26 },
@@ -862,16 +873,29 @@ export async function initEunhajaeScene() {
     staticCircleColliders.push({ x: vp.x, z: vp.z, r: 0.38 }); // Nana
   }
 
+  const playerCircleColliders = [
+    ...staticCircleColliders,
+    { x: pavilionX - 0.14, z: pavilionZ - 0.1, r: 0.94 }, // Central Bosingak bronze bell
+    { x: pavilionX - 1.95, z: pavilionZ - 1.95, r: 0.24 }, // Bosingak pillars
+    { x: pavilionX + 1.95, z: pavilionZ - 1.95, r: 0.24 },
+    { x: pavilionX - 1.95, z: pavilionZ + 1.95, r: 0.24 },
+    { x: pavilionX + 1.95, z: pavilionZ + 1.95, r: 0.24 }
+  ];
+
   const staticNpcColliders = [];
   const roamingActors = [reindeerDani];
   reindeerDani.colRadius = 0.48;
   reindeerDani.steerSign = 1;
+  reindeerDani.latchedSteerSign = 0;
   reindeerDani.blockedTime = 0;
+  reindeerDani.yieldWaiting = false;
 
   let roamSteerIdx = 0;
   hillNpcs.forEach((npc) => {
     npc.colRadius = 0.38;
     npc.blockedTime = 0;
+    npc.yieldWaiting = false;
+    npc.latchedSteerSign = 0;
     if (npc.id === 'momo' || npc.id === 'tori' || npc.id === 'naru') {
       staticNpcColliders.push({ x: npc.basePos.x, z: npc.basePos.z, r: npc.colRadius, id: npc.id });
     } else {
@@ -881,7 +905,8 @@ export async function initEunhajaeScene() {
     }
   });
 
-  function resolveActorCollisions(actor, playerX, playerZ, playerActive) {
+  // Resolve actor against static world props, static NPCs, and overlapping roaming actors (prevents Dani/Luka merging)
+  function resolveActorCollisions(actor, resolveRoamingOverlap = true) {
     const ar = actor.colRadius || 0.38;
     let ax = actor.basePos.x;
     let az = actor.basePos.z;
@@ -889,6 +914,7 @@ export async function initEunhajaeScene() {
     const maxX = HILL_BOUNDS.maxX - ar * 0.5;
     const minZ = HILL_BOUNDS.minZ + ar * 0.5;
     const maxZ = HILL_BOUNDS.maxZ - ar * 0.5;
+    const myIdx = roamingActors.indexOf(actor);
 
     for (let pass = 0; pass < 3; pass++) {
       for (let i = 0; i < staticObbColliders.length; i++) {
@@ -912,18 +938,25 @@ export async function initEunhajaeScene() {
           az = _colPos.z;
         }
       }
-      for (let i = 0; i < roamingActors.length; i++) {
-        const other = roamingActors[i];
-        if (other === actor) continue;
-        if (pushOutCircle(ax, az, ar, other.basePos.x, other.basePos.z, other.colRadius || 0.38, _colPos, (i + 1) * 1.3)) {
-          ax = _colPos.x;
-          az = _colPos.z;
-        }
-      }
-      if (playerActive) {
-        if (pushOutCircle(ax, az, ar, playerX, playerZ, 0.38, _colPos, actor.steerSign > 0 ? 0.4 : -0.4)) {
-          ax = _colPos.x;
-          az = _colPos.z;
+      if (resolveRoamingOverlap) {
+        for (let i = 0; i < roamingActors.length; i++) {
+          const other = roamingActors[i];
+          if (other === actor) continue;
+          const otherPaused = Boolean(other.patrol && other.patrol.phase !== 'walk');
+          const actorPaused = Boolean(actor.patrol && actor.patrol.phase !== 'walk');
+          // Let walking or lower-priority actor yield space; paused actors stay steady unless both overlap
+          if (actorPaused && !otherPaused) continue;
+          const minR = ar + (other.colRadius || 0.38) + 0.04;
+          if (pushOutCircle(ax, az, ar + 0.02, other.basePos.x, other.basePos.z, (other.colRadius || 0.38) + 0.02, _colPos, (myIdx + i + 1) * 1.37)) {
+            if (!otherPaused && i > myIdx && !actorPaused) {
+              // Symmetric split between two simultaneously walking actors
+              ax = ax * 0.5 + _colPos.x * 0.5;
+              az = az * 0.5 + _colPos.z * 0.5;
+            } else if (Math.hypot(_colPos.x - ax, _colPos.z - az) <= minR + 0.5) {
+              ax = _colPos.x;
+              az = _colPos.z;
+            }
+          }
         }
       }
       ax = clamp(ax, minX, maxX);
@@ -934,56 +967,108 @@ export async function initEunhajaeScene() {
     actor.basePos.z = az;
   }
 
-  function computeSteeredDirection(actor, dirX, dirZ, playerX, playerZ, playerActive, out) {
+  function findForwardActorBlocker(actor, dirX, dirZ, playerX, playerZ, playerActive) {
     const ar = actor.colRadius || 0.38;
     const ax = actor.basePos.x;
     const az = actor.basePos.z;
-    const lookDist = 1.35;
+
+    if (playerActive) {
+      const rx = playerX - ax;
+      const rz = playerZ - az;
+      const dist = Math.hypot(rx, rz);
+      const minGap = ar + 0.36;
+      if (dist < minGap + 0.44) {
+        const dot = rx * dirX + rz * dirZ;
+        const absCross = Math.abs(dirX * rz - dirZ * rx);
+        // Never block an actor moving away from the player
+        if (dot > 0.14 * dist && absCross < minGap + 0.14) {
+          return true;
+        }
+      }
+    }
+
+    const myIdx = roamingActors.indexOf(actor);
+    for (let i = 0; i < roamingActors.length; i++) {
+      const other = roamingActors[i];
+      if (other === actor) continue;
+      const rx = other.basePos.x - ax;
+      const rz = other.basePos.z - az;
+      const dist = Math.hypot(rx, rz);
+      const minGap = ar + (other.colRadius || 0.38);
+      if (dist >= minGap + 0.24) continue;
+
+      // Strict priority tiebreak (never use other.yieldWaiting so mutual deadlock is impossible)
+      const otherIsPaused = Boolean(other.patrol && other.patrol.phase !== 'walk');
+      const mustYield = otherIsPaused || i < myIdx;
+      if (!mustYield) continue;
+
+      const dot = rx * dirX + rz * dirZ;
+      const absCross = Math.abs(dirX * rz - dirZ * rx);
+      // Only stop when blocker is squarely dead-ahead and cannot be bypassed smoothly
+      if (dot > 0.38 * dist && absCross < minGap * 0.78) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function computeSteeredDirection(actor, dirX, dirZ, out) {
+    const ar = actor.colRadius || 0.38;
+    const ax = actor.basePos.x;
+    const az = actor.basePos.z;
+    const lookDist = 1.45;
     let steerX = dirX;
     let steerZ = dirZ;
     let avoidLat = 0;
+    let activeObs = 0;
+    const myIdx = roamingActors.indexOf(actor);
 
-    function accumulateAvoidance(ox, oz, orad, biasSign) {
+    function accumulateAvoidance(ox, oz, orad, weight = 1.0) {
       const rx = ox - ax;
       const rz = oz - az;
       const proj = rx * dirX + rz * dirZ;
-      const rSum = ar + orad + 0.24;
-      if (proj < -0.15 || proj > lookDist + orad) return;
-      const cross = dirX * rz - dirZ * rx; // signed lateral offset
+      const rSum = ar + orad + 0.28;
+      if (proj < -0.18 || proj > lookDist + orad) return;
+      const cross = dirX * rz - dirZ * rx;
       const absCross = Math.abs(cross);
       if (absCross >= rSum) return;
+      activeObs++;
       const closeness = 1 - Math.max(0, proj) / (lookDist + orad);
       const latNeed = (rSum - absCross) / rSum;
-      const sign = absCross > 0.08 ? (cross > 0 ? -1 : 1) : biasSign;
-      avoidLat += sign * (0.65 + latNeed * 1.35) * (0.45 + closeness * 0.9);
+      if (!actor.latchedSteerSign) {
+        actor.latchedSteerSign = absCross > 0.14 ? (cross > 0 ? -1 : 1) : (actor.steerSign || 1);
+      }
+      avoidLat += actor.latchedSteerSign * (0.68 + latNeed * 1.32) * (0.45 + closeness * 0.85) * weight;
     }
 
     for (let i = 0; i < staticCircleColliders.length; i++) {
       const sc = staticCircleColliders[i];
       if (sc.activeFn && !sc.activeFn()) continue;
-      accumulateAvoidance(sc.x, sc.z, sc.r, actor.steerSign);
+      accumulateAvoidance(sc.x, sc.z, sc.r);
     }
     for (let i = 0; i < staticObbColliders.length; i++) {
       const obb = staticObbColliders[i];
       const approxR = Math.hypot(obb.hx, obb.hz) * 0.78;
-      accumulateAvoidance(obb.x, obb.z, approxR, actor.steerSign);
+      accumulateAvoidance(obb.x, obb.z, approxR);
     }
     for (let i = 0; i < staticNpcColliders.length; i++) {
       const sn = staticNpcColliders[i];
-      accumulateAvoidance(sn.x, sn.z, sn.r, actor.steerSign);
+      accumulateAvoidance(sn.x, sn.z, sn.r);
     }
     for (let i = 0; i < roamingActors.length; i++) {
       const other = roamingActors[i];
       if (other === actor) continue;
-      accumulateAvoidance(other.basePos.x, other.basePos.z, other.colRadius || 0.38, actor.steerSign);
-    }
-    if (playerActive) {
-      accumulateAvoidance(playerX, playerZ, 0.38, actor.steerSign);
+      const otherIsPaused = Boolean(other.patrol && other.patrol.phase !== 'walk');
+      if (otherIsPaused || i < myIdx) {
+        accumulateAvoidance(other.basePos.x, other.basePos.z, (other.colRadius || 0.38) + 0.12, 1.15);
+      }
     }
 
-    if (avoidLat !== 0) {
+    if (activeObs === 0) {
+      actor.latchedSteerSign = 0;
+    } else if (avoidLat !== 0) {
       const clampedLat = clamp(avoidLat, -1.75, 1.75);
-      // Perpendicular to (dirX, dirZ) is (-dirZ, dirX)
       steerX = dirX - dirZ * clampedLat;
       steerZ = dirZ + dirX * clampedLat;
       const len = Math.hypot(steerX, steerZ) || 1;
@@ -1001,23 +1086,32 @@ export async function initEunhajaeScene() {
     const dx = targetX - prevX;
     const dz = targetZ - prevZ;
     const dist = Math.hypot(dx, dz) || 1;
+    const dirX = dx / dist;
+    const dirZ = dz / dist;
+
+    if (findForwardActorBlocker(actor, dirX, dirZ, playerX, playerZ, playerActive)) {
+      actor.yieldWaiting = true;
+      resolveActorCollisions(actor, true);
+      return { movedLen: 0, progressToTarget: 0, yielded: true };
+    }
+
+    actor.yieldWaiting = false;
     const step = Math.min(speed * dt, dist);
 
-    computeSteeredDirection(actor, dx / dist, dz / dist, playerX, playerZ, playerActive, _steerVec);
+    computeSteeredDirection(actor, dirX, dirZ, _steerVec);
     actor.basePos.x = prevX + _steerVec.dx * step;
     actor.basePos.z = prevZ + _steerVec.dz * step;
-    resolveActorCollisions(actor, playerX, playerZ, playerActive);
+    resolveActorCollisions(actor, true);
 
     const movedX = actor.basePos.x - prevX;
     const movedZ = actor.basePos.z - prevZ;
     const movedLen = Math.hypot(movedX, movedZ);
-    const turnDirX = movedLen > 0.002 ? movedX / movedLen : _steerVec.dx;
-    const turnDirZ = movedLen > 0.002 ? movedZ / movedLen : _steerVec.dz;
-    const moveYaw = Math.atan2(turnDirX, turnDirZ);
+    // Keep yaw locked smoothly to intended travel vector so collision nudges never whip rotation backward
+    const moveYaw = Math.atan2(_steerVec.dx, _steerVec.dz);
     actor.baseYaw = lerpAngle(actor.baseYaw, moveYaw, yawAlpha);
 
     const progressToTarget = (movedX * dx + movedZ * dz) / dist;
-    return { movedLen, progressToTarget };
+    return { movedLen, progressToTarget, yielded: false };
   }
 
   // Self Nameplate Only (NPC overhead name tags removed per feedback!)
@@ -3309,9 +3403,23 @@ export async function initEunhajaeScene() {
         let nextX = clamp(selfEntry.curX + _vMove.x * walkSpeed * dt, HILL_BOUNDS.minX, HILL_BOUNDS.maxX);
         let nextZ = clamp(selfEntry.curZ + _vMove.z * walkSpeed * dt, HILL_BOUNDS.minZ, HILL_BOUNDS.maxZ);
 
-        // Prevent player from walking directly through NPCs & vendors
-        const rPlayer = 0.36;
-        for (let pass = 0; pass < 2; pass++) {
+        // Prevent player from walking directly through static world props, NPCs & vendors
+        const rPlayer = 0.34;
+        for (let pass = 0; pass < 3; pass++) {
+          for (let i = 0; i < playerObbColliders.length; i++) {
+            if (pushOutObb(nextX, nextZ, rPlayer, playerObbColliders[i], _colPos)) {
+              nextX = _colPos.x;
+              nextZ = _colPos.z;
+            }
+          }
+          for (let i = 0; i < playerCircleColliders.length; i++) {
+            const sc = playerCircleColliders[i];
+            if (sc.activeFn && !sc.activeFn()) continue;
+            if (pushOutCircle(nextX, nextZ, rPlayer, sc.x, sc.z, sc.r, _colPos, i * 1.1)) {
+              nextX = _colPos.x;
+              nextZ = _colPos.z;
+            }
+          }
           for (let i = 0; i < hillNpcs.length; i++) {
             const npc = hillNpcs[i];
             if (pushOutCircle(nextX, nextZ, rPlayer, npc.basePos.x, npc.basePos.z, npc.colRadius || 0.38, _colPos, i * 1.1)) {
@@ -3322,20 +3430,6 @@ export async function initEunhajaeScene() {
           if (pushOutCircle(nextX, nextZ, rPlayer, reindeerDani.basePos.x, reindeerDani.basePos.z, reindeerDani.colRadius || 0.48, _colPos, 2.2)) {
             nextX = _colPos.x;
             nextZ = _colPos.z;
-          }
-          if (bungeoppangStall.userData.vendorWorldPos) {
-            const vp = bungeoppangStall.userData.vendorWorldPos;
-            if (pushOutCircle(nextX, nextZ, rPlayer, vp.x, vp.z, 0.38, _colPos, 0.8)) {
-              nextX = _colPos.x;
-              nextZ = _colPos.z;
-            }
-          }
-          if (winterDrinkStand.userData.vendorWorldPos) {
-            const vp = winterDrinkStand.userData.vendorWorldPos;
-            if (pushOutCircle(nextX, nextZ, rPlayer, vp.x, vp.z, 0.38, _colPos, -0.8)) {
-              nextX = _colPos.x;
-              nextZ = _colPos.z;
-            }
           }
           nextX = clamp(nextX, HILL_BOUNDS.minX, HILL_BOUNDS.maxX);
           nextZ = clamp(nextZ, HILL_BOUNDS.minZ, HILL_BOUNDS.maxZ);
@@ -3674,7 +3768,7 @@ export async function initEunhajaeScene() {
         baseHeadYaw = Math.sin(timeSec * 0.7) * 0.09;
         baseHeadPitch = Math.sin(timeSec * 1.1) * 0.04;
       } else if (npc.id === 'beat') {
-        // Multi-phase musical dance groove moving smoothly in a compact local circle with obstacle & player collision avoidance
+        // Multi-phase musical dance groove moving smoothly in a compact local circle; politely holds beat if player blocks path
         const orbitAng = timeSec * 0.62;
         const bx = -4.2 + Math.cos(orbitAng) * 1.05;
         const bz = -1.4 + Math.sin(orbitAng) * 0.90;
@@ -3683,9 +3777,13 @@ export async function initEunhajaeScene() {
 
         const distOrbit = Math.hypot(bx - npc.basePos.x, bz - npc.basePos.z);
         if (distOrbit > 0.02) {
-          advanceActorToward(npc, bx, bz, 2.6, dt, selfEntry.curX, selfEntry.curZ, playerColActive, 1 - Math.exp(-8 * dt));
+          const res = advanceActorToward(npc, bx, bz, 2.6, dt, selfEntry.curX, selfEntry.curZ, playerColActive, 1 - Math.exp(-8 * dt));
+          if (res.yielded) {
+            npc.baseYaw = lerpAngle(npc.baseYaw, Math.atan2(tx, tz), 1 - Math.exp(-5 * dt));
+          }
         } else {
-          resolveActorCollisions(npc, selfEntry.curX, selfEntry.curZ, playerColActive);
+          npc.yieldWaiting = false;
+          resolveActorCollisions(npc);
           npc.baseYaw = lerpAngle(npc.baseYaw, Math.atan2(tx, tz), 1 - Math.exp(-7 * dt));
         }
 
@@ -3730,22 +3828,30 @@ export async function initEunhajaeScene() {
           const dz = targetWp.z - npc.basePos.z;
           const dist = Math.hypot(dx, dz);
           const step = pt.walkSpeed * dt;
+          let yieldedStop = false;
 
           if (dist <= Math.max(0.12, step)) {
             npc.basePos.x = targetWp.x;
             npc.basePos.z = targetWp.z;
-            resolveActorCollisions(npc, selfEntry.curX, selfEntry.curZ, playerColActive);
+            resolveActorCollisions(npc);
             npc.blockedTime = 0;
+            npc.yieldWaiting = false;
             pt.phase = 'pause';
             pt.pauseLeft = targetWp.pause;
           } else {
             const res = advanceActorToward(npc, targetWp.x, targetWp.z, pt.walkSpeed, dt, selfEntry.curX, selfEntry.curZ, playerColActive, yawAlpha);
-            if (dist < 1.25 && res.progressToTarget < 0.2 * step) {
+            yieldedStop = Boolean(res.yielded);
+            if (yieldedStop || (dist < 1.25 && res.progressToTarget < 0.2 * step)) {
               npc.blockedTime += dt;
-              if (npc.blockedTime > 1.35) {
+              if (npc.blockedTime > (dist < 1.4 ? 1.8 : 3.6)) {
                 npc.blockedTime = 0;
-                pt.phase = 'pause';
-                pt.pauseLeft = targetWp.pause;
+                npc.yieldWaiting = false;
+                if (dist < 1.4) {
+                  pt.phase = 'pause';
+                  pt.pauseLeft = targetWp.pause;
+                } else {
+                  pt.wpIdx = (pt.wpIdx + 1) % wps.length;
+                }
               }
             } else {
               npc.blockedTime = 0;
@@ -3756,21 +3862,36 @@ export async function initEunhajaeScene() {
           npc.group.position.copy(npc.basePos);
           npc.group.rotation.y = npc.baseYaw;
 
-          pt.walkPhase += dt * 7.2;
-          const legSwing = Math.sin(pt.walkPhase) * 0.36;
-          npc.leftLegPivot.rotation.x = legSwing;
-          npc.rightLegPivot.rotation.x = -legSwing;
-          npc.rightArmPivot.rotation.x = -0.16 - legSwing * 0.38;
-          npc.rightArmPivot.rotation.z = 0.04;
-          // Left hand holds warm custard bungeoppang up visibly while walking
-          npc.leftArmPivot.rotation.x = -0.58 + Math.sin(pt.walkPhase) * 0.05;
-          npc.leftArmPivot.rotation.z = -0.12;
-          npc.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.03;
-          baseJumpY = Math.abs(Math.sin(pt.walkPhase)) * 0.028;
-          baseHeadYaw = Math.sin(timeSec * 0.8) * 0.06;
-          baseHeadPitch = 0.04;
+          if (yieldedStop) {
+            const legSettle = 1 - Math.exp(-10 * dt);
+            npc.leftLegPivot.rotation.x *= (1 - legSettle);
+            npc.rightLegPivot.rotation.x *= (1 - legSettle);
+            npc.rightArmPivot.rotation.x = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.x, -0.16, legSettle);
+            npc.rightArmPivot.rotation.z = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.z, 0.04, legSettle);
+            npc.leftArmPivot.rotation.x = THREE.MathUtils.lerp(npc.leftArmPivot.rotation.x, -0.58, legSettle);
+            npc.leftArmPivot.rotation.z = -0.12;
+            npc.bodyGroup.rotation.z *= (1 - legSettle);
+            baseJumpY = 0;
+            baseHeadYaw = Math.sin(timeSec * 0.75) * 0.06;
+            baseHeadPitch = 0.04;
+          } else {
+            pt.walkPhase += dt * 7.2;
+            const legSwing = Math.sin(pt.walkPhase) * 0.36;
+            npc.leftLegPivot.rotation.x = legSwing;
+            npc.rightLegPivot.rotation.x = -legSwing;
+            npc.rightArmPivot.rotation.x = -0.16 - legSwing * 0.38;
+            npc.rightArmPivot.rotation.z = 0.04;
+            // Left hand holds warm custard bungeoppang up visibly while walking
+            npc.leftArmPivot.rotation.x = -0.58 + Math.sin(pt.walkPhase) * 0.05;
+            npc.leftArmPivot.rotation.z = -0.12;
+            npc.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.03;
+            baseJumpY = Math.abs(Math.sin(pt.walkPhase)) * 0.028;
+            baseHeadYaw = Math.sin(timeSec * 0.8) * 0.06;
+            baseHeadPitch = 0.04;
+          }
         } else {
-          resolveActorCollisions(npc, selfEntry.curX, selfEntry.curZ, playerColActive);
+          npc.yieldWaiting = false;
+          resolveActorCollisions(npc);
           npc.basePos.y = groundHeightAt(npc.basePos.x, npc.basePos.z);
           npc.group.position.copy(npc.basePos);
 
@@ -3811,22 +3932,30 @@ export async function initEunhajaeScene() {
           const dz = targetWp.z - npc.basePos.z;
           const dist = Math.hypot(dx, dz);
           const step = pt.walkSpeed * dt;
+          let yieldedStop = false;
 
           if (dist <= Math.max(0.12, step)) {
             npc.basePos.x = targetWp.x;
             npc.basePos.z = targetWp.z;
-            resolveActorCollisions(npc, selfEntry.curX, selfEntry.curZ, playerColActive);
+            resolveActorCollisions(npc);
             npc.blockedTime = 0;
+            npc.yieldWaiting = false;
             pt.phase = 'pause';
             pt.pauseLeft = targetWp.pause;
           } else {
             const res = advanceActorToward(npc, targetWp.x, targetWp.z, pt.walkSpeed, dt, selfEntry.curX, selfEntry.curZ, playerColActive, yawAlpha);
-            if (dist < 1.25 && res.progressToTarget < 0.2 * step) {
+            yieldedStop = Boolean(res.yielded);
+            if (yieldedStop || (dist < 1.25 && res.progressToTarget < 0.2 * step)) {
               npc.blockedTime += dt;
-              if (npc.blockedTime > 1.35) {
+              if (npc.blockedTime > (dist < 1.4 ? 1.8 : 3.6)) {
                 npc.blockedTime = 0;
-                pt.phase = 'pause';
-                pt.pauseLeft = targetWp.pause;
+                npc.yieldWaiting = false;
+                if (dist < 1.4) {
+                  pt.phase = 'pause';
+                  pt.pauseLeft = targetWp.pause;
+                } else {
+                  pt.wpIdx = (pt.wpIdx + 1) % wps.length;
+                }
               }
             } else {
               npc.blockedTime = 0;
@@ -3837,20 +3966,35 @@ export async function initEunhajaeScene() {
           npc.group.position.copy(npc.basePos);
           npc.group.rotation.y = npc.baseYaw;
 
-          pt.walkPhase += dt * 6.8;
-          const legSwing = Math.sin(pt.walkPhase) * 0.34;
-          npc.leftLegPivot.rotation.x = legSwing;
-          npc.rightLegPivot.rotation.x = -legSwing;
-          npc.leftArmPivot.rotation.x = -0.78 + Math.sin(pt.walkPhase) * 0.035;
-          npc.leftArmPivot.rotation.z = -0.12;
-          npc.rightArmPivot.rotation.x = Math.sin(timeSec * 2.1) * 0.025;
-          npc.rightArmPivot.rotation.z = Math.cos(timeSec * 1.7) * 0.02;
-          npc.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.025;
-          baseJumpY = Math.abs(Math.sin(pt.walkPhase)) * 0.025;
-          baseHeadYaw = Math.sin(timeSec * 1.15) * 0.09;
-          baseHeadPitch = Math.sin(timeSec * 2.8) * 0.05;
+          if (yieldedStop) {
+            const legSettle = 1 - Math.exp(-10 * dt);
+            npc.leftLegPivot.rotation.x *= (1 - legSettle);
+            npc.rightLegPivot.rotation.x *= (1 - legSettle);
+            npc.leftArmPivot.rotation.x = -0.78 + Math.sin(timeSec * 1.4) * 0.03;
+            npc.leftArmPivot.rotation.z = -0.12;
+            npc.rightArmPivot.rotation.x = Math.sin(timeSec * 2.1) * 0.025;
+            npc.rightArmPivot.rotation.z = Math.cos(timeSec * 1.7) * 0.02;
+            npc.bodyGroup.rotation.z *= (1 - legSettle);
+            baseJumpY = 0;
+            baseHeadYaw = Math.sin(timeSec * 1.15) * 0.09;
+            baseHeadPitch = Math.sin(timeSec * 2.8) * 0.05;
+          } else {
+            pt.walkPhase += dt * 6.8;
+            const legSwing = Math.sin(pt.walkPhase) * 0.34;
+            npc.leftLegPivot.rotation.x = legSwing;
+            npc.rightLegPivot.rotation.x = -legSwing;
+            npc.leftArmPivot.rotation.x = -0.78 + Math.sin(pt.walkPhase) * 0.035;
+            npc.leftArmPivot.rotation.z = -0.12;
+            npc.rightArmPivot.rotation.x = Math.sin(timeSec * 2.1) * 0.025;
+            npc.rightArmPivot.rotation.z = Math.cos(timeSec * 1.7) * 0.02;
+            npc.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.025;
+            baseJumpY = Math.abs(Math.sin(pt.walkPhase)) * 0.025;
+            baseHeadYaw = Math.sin(timeSec * 1.15) * 0.09;
+            baseHeadPitch = Math.sin(timeSec * 2.8) * 0.05;
+          }
         } else {
-          resolveActorCollisions(npc, selfEntry.curX, selfEntry.curZ, playerColActive);
+          npc.yieldWaiting = false;
+          resolveActorCollisions(npc);
           npc.basePos.y = groundHeightAt(npc.basePos.x, npc.basePos.z);
           npc.group.position.copy(npc.basePos);
 
@@ -3889,12 +4033,14 @@ export async function initEunhajaeScene() {
           const dz = targetWp.z - npc.basePos.z;
           const dist = Math.hypot(dx, dz);
           const step = pt.walkSpeed * dt;
+          let yieldedStop = false;
 
           if (dist <= Math.max(0.14, step)) {
             npc.basePos.x = targetWp.x;
             npc.basePos.z = targetWp.z;
-            resolveActorCollisions(npc, selfEntry.curX, selfEntry.curZ, playerColActive);
+            resolveActorCollisions(npc);
             npc.blockedTime = 0;
+            npc.yieldWaiting = false;
             if (targetWp.pause > 0.05) {
               pt.phase = 'pause';
               pt.pauseLeft = targetWp.pause;
@@ -3905,11 +4051,13 @@ export async function initEunhajaeScene() {
             }
           } else {
             const res = advanceActorToward(npc, targetWp.x, targetWp.z, pt.walkSpeed, dt, selfEntry.curX, selfEntry.curZ, playerColActive, yawAlpha);
-            if (dist < 1.35 && res.progressToTarget < 0.2 * step) {
+            yieldedStop = Boolean(res.yielded);
+            if (yieldedStop || (dist < 1.35 && res.progressToTarget < 0.2 * step)) {
               npc.blockedTime += dt;
-              if (npc.blockedTime > 1.35) {
+              if (npc.blockedTime > (dist < 1.5 ? 1.8 : 3.6)) {
                 npc.blockedTime = 0;
-                if (targetWp.pause > 0.05) {
+                npc.yieldWaiting = false;
+                if (dist < 1.5 && targetWp.pause > 0.05) {
                   pt.phase = 'pause';
                   pt.pauseLeft = targetWp.pause;
                   pt.pauseDur = targetWp.pause;
@@ -3927,21 +4075,36 @@ export async function initEunhajaeScene() {
           npc.group.position.copy(npc.basePos);
           npc.group.rotation.y = npc.baseYaw;
 
-          pt.walkPhase += dt * 7.0;
-          const legSwing = Math.sin(pt.walkPhase) * 0.35;
-          npc.leftLegPivot.rotation.x = legSwing;
-          npc.rightLegPivot.rotation.x = -legSwing;
-          npc.leftArmPivot.rotation.x = THREE.MathUtils.lerp(npc.leftArmPivot.rotation.x, -legSwing * 0.34, armAlpha);
-          npc.leftArmPivot.rotation.z = THREE.MathUtils.lerp(npc.leftArmPivot.rotation.z, 0, armAlpha);
-          npc.rightArmPivot.rotation.x = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.x, legSwing * 0.25 - 0.14, armAlpha);
-          npc.rightArmPivot.rotation.z = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.z, 0.06, armAlpha);
-          npc.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.028;
-          baseJumpY = Math.abs(Math.sin(pt.walkPhase)) * 0.026;
-          baseHeadYaw = Math.sin(timeSec * 0.8) * 0.07;
-          baseHeadPitch = 0.02;
+          if (yieldedStop) {
+            const legSettle = 1 - Math.exp(-10 * dt);
+            npc.leftLegPivot.rotation.x *= (1 - legSettle);
+            npc.rightLegPivot.rotation.x *= (1 - legSettle);
+            npc.leftArmPivot.rotation.x = THREE.MathUtils.lerp(npc.leftArmPivot.rotation.x, -0.08, armAlpha);
+            npc.leftArmPivot.rotation.z = THREE.MathUtils.lerp(npc.leftArmPivot.rotation.z, 0, armAlpha);
+            npc.rightArmPivot.rotation.x = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.x, -0.14, armAlpha);
+            npc.rightArmPivot.rotation.z = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.z, 0.06, armAlpha);
+            npc.bodyGroup.rotation.z *= (1 - legSettle);
+            baseJumpY = 0;
+            baseHeadYaw = Math.sin(timeSec * 0.8) * 0.07;
+            baseHeadPitch = 0.02;
+          } else {
+            pt.walkPhase += dt * 7.0;
+            const legSwing = Math.sin(pt.walkPhase) * 0.35;
+            npc.leftLegPivot.rotation.x = legSwing;
+            npc.rightLegPivot.rotation.x = -legSwing;
+            npc.leftArmPivot.rotation.x = THREE.MathUtils.lerp(npc.leftArmPivot.rotation.x, -legSwing * 0.34, armAlpha);
+            npc.leftArmPivot.rotation.z = THREE.MathUtils.lerp(npc.leftArmPivot.rotation.z, 0, armAlpha);
+            npc.rightArmPivot.rotation.x = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.x, legSwing * 0.25 - 0.14, armAlpha);
+            npc.rightArmPivot.rotation.z = THREE.MathUtils.lerp(npc.rightArmPivot.rotation.z, 0.06, armAlpha);
+            npc.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.028;
+            baseJumpY = Math.abs(Math.sin(pt.walkPhase)) * 0.026;
+            baseHeadYaw = Math.sin(timeSec * 0.8) * 0.07;
+            baseHeadPitch = 0.02;
+          }
           if (npc.flashMat) npc.flashMat.emissiveIntensity = 0.22;
         } else {
-          resolveActorCollisions(npc, selfEntry.curX, selfEntry.curZ, playerColActive);
+          npc.yieldWaiting = false;
+          resolveActorCollisions(npc);
           npc.basePos.y = groundHeightAt(npc.basePos.x, npc.basePos.z);
           npc.group.position.copy(npc.basePos);
 
@@ -3977,7 +4140,7 @@ export async function initEunhajaeScene() {
               if (elapsedPause >= 2.35 && !pt.shutterTriggered) {
                 pt.shutterTriggered = true;
                 const dCamPlayer = Math.hypot(npc.basePos.x - selfEntry.curX, npc.basePos.z - selfEntry.curZ);
-                const shutterDistScale = clamp(1 - Math.max(0, dCamPlayer - 4.0) / 20.0, 0, 1);
+                const shutterDistScale = clamp(1 - Math.max(0, dCamPlayer - 5.5) / 22.0, 0.14, 1);
                 camera.getWorldDirection(_vRight);
                 _vRight.y = 0;
                 if (_vRight.lengthSq() < 0.0001) _vRight.set(0, 0, -1);
@@ -3988,7 +4151,7 @@ export async function initEunhajaeScene() {
                   -0.85,
                   0.85
                 );
-                audio.playCameraShutter(shutterPan, shutterDistScale * shutterDistScale);
+                audio.playCameraShutter(shutterPan, Math.pow(shutterDistScale, 1.25));
               }
               if (elapsedPause > 2.35 && elapsedPause < 2.52) {
                 flashGlow = 3.2; // crisp momentary shutter flash highlight
@@ -4069,7 +4232,7 @@ export async function initEunhajaeScene() {
       npc.headPivot.rotation.x = THREE.MathUtils.lerp(npc.headPivot.rotation.x, targetHeadPitch, headLerp);
     }
 
-    // 3.7 Update Rudolph Reindeer (단이) East-Meadow Patrol + Neck Sleigh Bell Jingle (with collision avoidance)
+    // 3.7 Update Rudolph Reindeer (단이) East-Meadow Patrol + Neck Sleigh Bell Jingle (yields calmly when path blocked)
     {
       const pt = reindeerDani.patrol;
       const wps = pt.waypoints;
@@ -4082,22 +4245,30 @@ export async function initEunhajaeScene() {
         const dz = targetWp.z - reindeerDani.basePos.z;
         const dist = Math.hypot(dx, dz);
         const step = pt.walkSpeed * dt;
+        let yieldedStop = false;
 
         if (dist <= Math.max(0.14, step)) {
           reindeerDani.basePos.x = targetWp.x;
           reindeerDani.basePos.z = targetWp.z;
-          resolveActorCollisions(reindeerDani, selfEntry.curX, selfEntry.curZ, playerColActive);
+          resolveActorCollisions(reindeerDani);
           reindeerDani.blockedTime = 0;
+          reindeerDani.yieldWaiting = false;
           pt.phase = 'pause';
           pt.pauseLeft = targetWp.pause;
         } else {
           const res = advanceActorToward(reindeerDani, targetWp.x, targetWp.z, pt.walkSpeed, dt, selfEntry.curX, selfEntry.curZ, playerColActive, yawAlpha);
-          if (dist < 1.4 && res.progressToTarget < 0.2 * step) {
+          yieldedStop = Boolean(res.yielded);
+          if (yieldedStop || (dist < 1.4 && res.progressToTarget < 0.2 * step)) {
             reindeerDani.blockedTime += dt;
-            if (reindeerDani.blockedTime > 1.35) {
+            if (reindeerDani.blockedTime > (dist < 1.5 ? 1.8 : 3.6)) {
               reindeerDani.blockedTime = 0;
-              pt.phase = 'pause';
-              pt.pauseLeft = targetWp.pause;
+              reindeerDani.yieldWaiting = false;
+              if (dist < 1.5) {
+                pt.phase = 'pause';
+                pt.pauseLeft = targetWp.pause;
+              } else {
+                pt.wpIdx = (pt.wpIdx + 1) % wps.length;
+              }
             }
           } else {
             reindeerDani.blockedTime = 0;
@@ -4108,19 +4279,32 @@ export async function initEunhajaeScene() {
         reindeerDani.group.position.copy(reindeerDani.basePos);
         reindeerDani.group.rotation.y = reindeerDani.baseYaw;
 
-        pt.walkPhase += dt * 8.2;
-        const diagA = Math.sin(pt.walkPhase) * 0.36;
-        const diagB = -diagA;
-        reindeerDani.legFL.rotation.x = diagA;
-        reindeerDani.legBR.rotation.x = diagA;
-        reindeerDani.legFR.rotation.x = diagB;
-        reindeerDani.legBL.rotation.x = diagB;
-        reindeerDani.bodyGroup.position.y = Math.abs(Math.sin(pt.walkPhase)) * 0.032;
-        reindeerDani.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.025;
-        reindeerDani.headPivot.rotation.x = Math.sin(pt.walkPhase) * 0.05;
-        reindeerDani.headPivot.rotation.y = Math.sin(timeSec * 0.9) * 0.08;
+        if (yieldedStop) {
+          const legSettle = 1 - Math.exp(-10 * dt);
+          reindeerDani.legFL.rotation.x *= (1 - legSettle);
+          reindeerDani.legFR.rotation.x *= (1 - legSettle);
+          reindeerDani.legBL.rotation.x *= (1 - legSettle);
+          reindeerDani.legBR.rotation.x *= (1 - legSettle);
+          reindeerDani.bodyGroup.position.y *= (1 - legSettle);
+          reindeerDani.bodyGroup.rotation.z *= (1 - legSettle);
+          reindeerDani.headPivot.rotation.x = Math.sin(timeSec * 0.85) * 0.05;
+          reindeerDani.headPivot.rotation.y = Math.sin(timeSec * 0.9) * 0.1;
+        } else {
+          pt.walkPhase += dt * 8.2;
+          const diagA = Math.sin(pt.walkPhase) * 0.36;
+          const diagB = -diagA;
+          reindeerDani.legFL.rotation.x = diagA;
+          reindeerDani.legBR.rotation.x = diagA;
+          reindeerDani.legFR.rotation.x = diagB;
+          reindeerDani.legBL.rotation.x = diagB;
+          reindeerDani.bodyGroup.position.y = Math.abs(Math.sin(pt.walkPhase)) * 0.032;
+          reindeerDani.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.025;
+          reindeerDani.headPivot.rotation.x = Math.sin(pt.walkPhase) * 0.05;
+          reindeerDani.headPivot.rotation.y = Math.sin(timeSec * 0.9) * 0.08;
+        }
       } else {
-        resolveActorCollisions(reindeerDani, selfEntry.curX, selfEntry.curZ, playerColActive);
+        reindeerDani.yieldWaiting = false;
+        resolveActorCollisions(reindeerDani);
         reindeerDani.basePos.y = groundHeightAt(reindeerDani.basePos.x, reindeerDani.basePos.z);
         reindeerDani.group.position.copy(reindeerDani.basePos);
 
@@ -4154,7 +4338,7 @@ export async function initEunhajaeScene() {
       if (isRinging) {
         reindeerDani.bellPivot.rotation.z = Math.sin(timeSec * 28.0) * 0.42;
         reindeerDani.bellPivot.rotation.x = -0.26 + Math.cos(timeSec * 22.0) * 0.14;
-      } else if (pt.phase === 'walk') {
+      } else if (pt.phase === 'walk' && !reindeerDani.yieldWaiting) {
         reindeerDani.bellPivot.rotation.z = Math.sin(pt.walkPhase) * 0.16;
         reindeerDani.bellPivot.rotation.x = -0.22 + Math.abs(Math.sin(pt.walkPhase)) * 0.06;
       } else {

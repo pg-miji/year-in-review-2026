@@ -185,7 +185,7 @@ export class FireworksAudioEngine {
       fireLpf.Q.value = 0.75;
 
       const fireRumbleMix = ctx.createGain();
-      fireRumbleMix.gain.setValueAtTime(0.42, now);
+      fireRumbleMix.gain.setValueAtTime(0.56, now);
 
       fireRumbleSrc.connect(fireLpf);
       fireLpf.connect(fireRumbleMix);
@@ -204,7 +204,7 @@ export class FireworksAudioEngine {
       fireBpf.Q.value = 0.7;
 
       const fireFlameMix = ctx.createGain();
-      fireFlameMix.gain.setValueAtTime(0.11, now);
+      fireFlameMix.gain.setValueAtTime(0.24, now);
 
       fireFlameSrc.connect(fireBpf);
       fireBpf.connect(fireFlameMix);
@@ -257,25 +257,25 @@ export class FireworksAudioEngine {
       }
 
       const dist = Math.max(0, Number(fireDist) || 0);
-      // Full warmth within 1.5m of hearth; smooth cubic fade-out over 1.5m -> 12.8m
-      const u = Math.max(0, Math.min(1, 1 - Math.max(0, dist - 1.5) / 11.3));
+      // Full warmth within 1.8m of hearth; smooth cubic fade-out over 1.8m -> 13.5m
+      const u = Math.max(0, Math.min(1, 1 - Math.max(0, dist - 1.8) / 11.7));
       const atten = u * u * (3 - 2 * u);
       this._fireProximity = atten;
 
-      this._fireGain.gain.setTargetAtTime(atten * 0.25, now, 0.16);
+      this._fireGain.gain.setTargetAtTime(atten * 0.52, now, 0.16);
       this._fireCrackleBus.gain.setTargetAtTime(atten, now, 0.15);
       if (this._firePanner) {
         this._firePanner.pan.setTargetAtTime(Math.max(-0.88, Math.min(0.88, firePan)), now, 0.12);
       }
 
-      // Schedule subtle random wood-crackle & spark pops only when audible
+      // Schedule natural wood-crackle & spark pops while within earshot
       if (atten > 0.04 && this.noiseBuffer) {
         const roll = Math.random();
-        const count = roll < 0.42 ? 1 : (roll < 0.62 ? 2 : 0);
+        const count = roll < 0.52 ? 1 : (roll < 0.78 ? 2 : 0);
         for (let i = 0; i < count; i++) {
           const t0 = now + Math.random() * 0.1;
           const isDeepSnap = Math.random() < 0.34;
-          const dur = isDeepSnap ? 0.026 + Math.random() * 0.014 : 0.015 + Math.random() * 0.012;
+          const dur = isDeepSnap ? 0.028 + Math.random() * 0.015 : 0.016 + Math.random() * 0.013;
 
           const crackle = this.ctx.createBufferSource();
           crackle.buffer = this.noiseBuffer;
@@ -290,7 +290,7 @@ export class FireworksAudioEngine {
           bpf.Q.value = isDeepSnap ? 2.1 : 3.2;
 
           const cGain = this.ctx.createGain();
-          const peak = isDeepSnap ? 0.11 + Math.random() * 0.06 : 0.08 + Math.random() * 0.07;
+          const peak = isDeepSnap ? 0.26 + Math.random() * 0.12 : 0.22 + Math.random() * 0.14;
           cGain.gain.setValueAtTime(0.0005, t0);
           cGain.gain.linearRampToValueAtTime(peak, t0 + 0.0025);
           cGain.gain.exponentialRampToValueAtTime(0.0004, t0 + dur);
@@ -919,8 +919,8 @@ export class FireworksAudioEngine {
 
       // Crisp two-stage DSLR/film mechanical shutter click ("찰-칵!")
       const clicks = [
-        { offset: 0.0,   freq: 2700, q: 1.8, amp: 0.22 * scale, dur: 0.028, thumpHz: 230 },
-        { offset: 0.056, freq: 3450, q: 2.1, amp: 0.18 * scale, dur: 0.032, thumpHz: 310 }
+        { offset: 0.0,   freq: 2700, q: 1.7, amp: 0.5 * scale,  dur: 0.032, thumpHz: 240 },
+        { offset: 0.056, freq: 3450, q: 1.9, amp: 0.42 * scale, dur: 0.036, thumpHz: 320 }
       ];
 
       clicks.forEach((c) => {
@@ -949,8 +949,8 @@ export class FireworksAudioEngine {
         thump.type = 'triangle';
         thump.frequency.setValueAtTime(c.thumpHz, t0);
         thump.frequency.exponentialRampToValueAtTime(85, t0 + 0.022);
-        tGain.gain.setValueAtTime(0.065 * scale, t0);
-        tGain.gain.exponentialRampToValueAtTime(0.0004, t0 + 0.025);
+        tGain.gain.setValueAtTime(0.15 * scale, t0);
+        tGain.gain.exponentialRampToValueAtTime(0.0004, t0 + 0.028);
         thump.connect(tGain);
         tGain.connect(dest);
         thump.start(t0);
