@@ -2712,7 +2712,7 @@ export function createHillNpcs() {
     button: new THREE.MeshStandardMaterial({ color: 0xd9b36c, roughness: 0.4, metalness: 0.4 })
   };
 
-  function buildNpc({ id, name, coatColor, hatColor, hairMode = false, showButtons = true, x, z, yaw, sitting = false, accessoryFn = null }) {
+  function buildNpc({ id, name, coatColor, hatColor, hairMode = false, skipDefaultHeadwear = false, showButtons = true, x, z, yaw, sitting = false, accessoryFn = null }) {
     const g = new THREE.Group();
     const gy = groundHeightAt(x, z);
     g.position.set(x, gy, z);
@@ -2771,16 +2771,18 @@ export function createHillNpcs() {
       headPivot.add(eye);
     });
 
-    if (hairMode) {
-      const hair = new THREE.Mesh(sharedGeo.beanie, hatMat);
-      hair.position.y = 0.03;
-      hair.rotation.x = -0.18;
-      headPivot.add(hair);
-    } else {
-      const beanie = new THREE.Mesh(sharedGeo.beanie, hatMat);
-      beanie.position.y = 0.025;
-      beanie.rotation.x = -0.14;
-      headPivot.add(beanie);
+    if (!skipDefaultHeadwear) {
+      if (hairMode) {
+        const hair = new THREE.Mesh(sharedGeo.beanie, hatMat);
+        hair.position.y = 0.03;
+        hair.rotation.x = -0.18;
+        headPivot.add(hair);
+      } else {
+        const beanie = new THREE.Mesh(sharedGeo.beanie, hatMat);
+        beanie.position.y = 0.025;
+        beanie.rotation.x = -0.14;
+        headPivot.add(beanie);
+      }
     }
     bodyGroup.add(headPivot);
 
@@ -3023,7 +3025,285 @@ export function createHillNpcs() {
     }
   });
 
-  return [momo, beat, tori, naru];
+  // 5. 로미 (Patrolling near cozy campfire, spacing out at the flames, easily cold, holding golden custard bungeoppang)
+  const romiStartX = -3.1;
+  const romiStartZ = 3.1;
+  const romiStartYaw = Math.atan2(-4.8 - romiStartX, 4.4 - romiStartZ);
+
+  const romi = buildNpc({
+    id: 'romi',
+    name: '로미',
+    coatColor: 0xd8ccb8,
+    hatColor: 0x355c57,
+    skipDefaultHeadwear: true,
+    showButtons: true,
+    x: romiStartX,
+    z: romiStartZ,
+    yaw: romiStartYaw,
+    accessoryFn: ({ bodyGroup, headPivot, leftArmPivot }) => {
+      // Thick cozy winter scarf wrapped snugly around neck (sensitive to cold)
+      const scarfMat = new THREE.MeshStandardMaterial({ color: 0x9e4756, roughness: 0.86 });
+      const scarfRing = new THREE.Mesh(new THREE.TorusGeometry(0.182, 0.056, 8, 16), scarfMat);
+      scarfRing.rotation.x = Math.PI / 2;
+      scarfRing.position.set(0, 1.09, 0);
+      bodyGroup.add(scarfRing);
+
+      const scarfTail = new THREE.Mesh(new THREE.BoxGeometry(0.088, 0.27, 0.04), scarfMat);
+      scarfTail.position.set(0.085, 0.93, 0.205);
+      scarfTail.rotation.x = -0.14;
+      scarfTail.rotation.z = -0.1;
+      bodyGroup.add(scarfTail);
+
+      // Chichi-style snug bucket hat in calm deep moss-teal
+      const bucketHatMat = new THREE.MeshStandardMaterial({ color: 0x355c57, roughness: 0.82 });
+      const hatGroup = new THREE.Group();
+      hatGroup.position.set(0, 0.07, -0.005);
+      hatGroup.rotation.x = -0.06;
+
+      const hatCrown = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.19, 0.144, 16), bucketHatMat);
+      hatCrown.position.y = 0.065;
+      hatGroup.add(hatCrown);
+
+      const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.285, 0.052, 18), bucketHatMat);
+      hatBrim.position.y = -0.01;
+      hatGroup.add(hatBrim);
+      headPivot.add(hatGroup);
+
+      // Golden custard-cream bungeoppang held visibly in left hand
+      const custardPastryMat = new THREE.MeshStandardMaterial({ color: 0xf3c363, roughness: 0.58 });
+      const heldFish = createBungeoppangFishMesh(custardPastryMat, 1.12);
+      heldFish.position.set(0, -0.335, 0.115);
+      heldFish.rotation.set(0.2, 0.35, Math.PI / 2 - 0.12);
+      leftArmPivot.add(heldFish);
+      leftArmPivot.rotation.x = -0.52;
+      leftArmPivot.rotation.z = -0.12;
+    }
+  });
+
+  romi.patrol = {
+    waypoints: [
+      { x: -3.1, z: 3.1, pause: 4.5, lookX: -4.8, lookZ: 4.4 },
+      { x: -2.4, z: 5.8, pause: 2.4, lookX: -4.8, lookZ: 4.4 },
+      { x: -4.9, z: 6.7, pause: 4.2, lookX: -4.8, lookZ: 4.4 },
+      { x: -7.5, z: 4.2, pause: 3.2, lookX: -9.2, lookZ: 2.5 },
+      { x: -5.2, z: 2.2, pause: 3.6, lookX: -4.8, lookZ: 4.4 }
+    ],
+    wpIdx: 0,
+    phase: 'pause',
+    pauseLeft: 3.2,
+    walkSpeed: 1.25,
+    walkPhase: 0
+  };
+
+  return [momo, beat, tori, naru, romi];
+}
+
+// ===================================================================
+// Festive Walking Rudolph Reindeer (단이) Patrolling Bosingak & Christmas Tree
+// ===================================================================
+export function createReindeerDani(x = 5.8, z = 4.8) {
+  const g = new THREE.Group();
+  const gy = groundHeightAt(x, z);
+  g.position.set(x, gy, z);
+
+  const bodyGroup = new THREE.Group();
+  g.add(bodyGroup);
+
+  const furMat = new THREE.MeshStandardMaterial({ color: 0x7c4e32, roughness: 0.82 });
+  const tanMat = new THREE.MeshStandardMaterial({ color: 0xe6cfa8, roughness: 0.86 });
+  const hoofMat = new THREE.MeshStandardMaterial({ color: 0x221a1e, roughness: 0.65 });
+  const antlerMat = new THREE.MeshStandardMaterial({ color: 0x4b3222, roughness: 0.78 });
+  const noseMat = new THREE.MeshStandardMaterial({
+    color: 0xe82e3e,
+    emissive: 0xd91c2c,
+    emissiveIntensity: 0.78,
+    roughness: 0.24
+  });
+  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x18131a, roughness: 0.25 });
+  const collarMat = new THREE.MeshStandardMaterial({ color: 0xb82937, roughness: 0.68 });
+  const bellGoldMat = new THREE.MeshStandardMaterial({
+    color: 0xf6cf65,
+    emissive: 0x6b4c0a,
+    emissiveIntensity: 0.22,
+    roughness: 0.22,
+    metalness: 0.88
+  });
+
+  // 1. Quadruped Torso + Cream Chest Patch + Perky Tail Tuft
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.185, 0.42, 6, 12), furMat);
+  torso.rotation.x = Math.PI / 2;
+  torso.position.set(0, 0.56, 0);
+  torso.castShadow = true;
+  bodyGroup.add(torso);
+
+  const bellyPatch = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), tanMat);
+  bellyPatch.scale.set(0.84, 0.96, 0.78);
+  bellyPatch.position.set(0, 0.57, 0.21);
+  bodyGroup.add(bellyPatch);
+
+  const tail = new THREE.Mesh(new THREE.SphereGeometry(0.082, 8, 8), tanMat);
+  tail.scale.set(0.82, 0.95, 1.25);
+  tail.position.set(0, 0.66, -0.38);
+  tail.rotation.x = 0.45;
+  bodyGroup.add(tail);
+
+  // 2. Four Articulated Slender Legs + Dark Hooves (seated flush on ground y = 0)
+  const legGeo = new THREE.CylinderGeometry(0.044, 0.036, 0.36, 8);
+  const hoofGeo = new THREE.CylinderGeometry(0.038, 0.046, 0.08, 8);
+  function makeLeg(lx, lz) {
+    const pivot = new THREE.Group();
+    pivot.position.set(lx, 0.44, lz);
+    const legMesh = new THREE.Mesh(legGeo, furMat);
+    legMesh.position.y = -0.18;
+    legMesh.castShadow = true;
+    pivot.add(legMesh);
+    const hoof = new THREE.Mesh(hoofGeo, hoofMat);
+    hoof.position.y = -0.4;
+    pivot.add(hoof);
+    bodyGroup.add(pivot);
+    return pivot;
+  }
+
+  const legFL = makeLeg(-0.11, 0.21);
+  const legFR = makeLeg(0.11, 0.21);
+  const legBL = makeLeg(-0.11, -0.21);
+  const legBR = makeLeg(0.11, -0.21);
+
+  // 3. Neck, Head, Snout, Glowing Red Nose, Ears & Branched Antlers
+  const headPivot = new THREE.Group();
+  headPivot.position.set(0, 0.68, 0.26);
+
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.105, 0.145, 0.28, 10), furMat);
+  neck.position.set(0, 0.1, 0.04);
+  neck.rotation.x = 0.26;
+  neck.castShadow = true;
+  headPivot.add(neck);
+
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.155, 12, 10), furMat);
+  head.scale.set(0.92, 0.94, 1.14);
+  head.position.set(0, 0.25, 0.14);
+  head.castShadow = true;
+  headPivot.add(head);
+
+  const snout = new THREE.Mesh(new THREE.SphereGeometry(0.095, 10, 8), tanMat);
+  snout.scale.set(0.94, 0.82, 1.08);
+  snout.position.set(0, 0.21, 0.27);
+  headPivot.add(snout);
+
+  const redNose = new THREE.Mesh(new THREE.SphereGeometry(0.046, 10, 10), noseMat);
+  redNose.position.set(0, 0.23, 0.368);
+  headPivot.add(redNose);
+
+  [-0.078, 0.078].forEach((ex) => {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.022, 7, 7), eyeMat);
+    eye.position.set(ex, 0.295, 0.245);
+    headPivot.add(eye);
+  });
+
+  const earGeo = new THREE.SphereGeometry(0.068, 8, 7);
+  [-1, 1].forEach((side) => {
+    const ear = new THREE.Mesh(earGeo, furMat);
+    ear.scale.set(0.45, 0.95, 0.32);
+    ear.position.set(side * 0.142, 0.335, 0.085);
+    ear.rotation.z = side * -0.78;
+    ear.rotation.x = 0.18;
+    headPivot.add(ear);
+
+    const antlerPivot = new THREE.Group();
+    antlerPivot.position.set(side * 0.072, 0.365, 0.1);
+    antlerPivot.rotation.z = side * -0.26;
+    antlerPivot.rotation.x = -0.18;
+
+    const mainBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.022, 0.34, 6), antlerMat);
+    mainBeam.position.y = 0.16;
+    antlerPivot.add(mainBeam);
+
+    const tineA = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.014, 0.14, 6), antlerMat);
+    tineA.position.set(side * 0.045, 0.17, 0.025);
+    tineA.rotation.z = side * -0.68;
+    tineA.rotation.x = 0.38;
+    antlerPivot.add(tineA);
+
+    const tineB = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.014, 0.15, 6), antlerMat);
+    tineB.position.set(side * -0.02, 0.27, -0.02);
+    tineB.rotation.z = side * 0.45;
+    tineB.rotation.x = -0.3;
+    antlerPivot.add(tineB);
+
+    headPivot.add(antlerPivot);
+  });
+
+  bodyGroup.add(headPivot);
+
+  // 4. Crimson Winter Collar (aligned perpendicularly to neck axis) + Attached Golden Sleigh Bell
+  const collarGroup = new THREE.Group();
+  collarGroup.position.set(0, 0.052, 0.027);
+  collarGroup.rotation.x = 0.26; // Matches neck.rotation.x so collar wraps cleanly without tilting
+  headPivot.add(collarGroup);
+
+  const collar = new THREE.Mesh(new THREE.TorusGeometry(0.138, 0.028, 10, 22), collarMat);
+  collar.rotation.x = Math.PI / 2;
+  collarGroup.add(collar);
+
+  const collarClasp = new THREE.Mesh(new THREE.TorusGeometry(0.022, 0.0065, 8, 12), bellGoldMat);
+  collarClasp.position.set(0, -0.008, 0.16);
+  collarGroup.add(collarClasp);
+
+  const bellPivot = new THREE.Group();
+  bellPivot.position.set(0, -0.022, 0.162);
+  bellPivot.rotation.x = -0.26; // Counter-rotates collar tilt so bell hangs straight down
+
+  const bellLoop = new THREE.Mesh(new THREE.TorusGeometry(0.02, 0.0055, 6, 12), bellGoldMat);
+  bellLoop.rotation.y = Math.PI / 2;
+  bellLoop.position.y = -0.006;
+  bellPivot.add(bellLoop);
+
+  const bellSphere = new THREE.Mesh(new THREE.SphereGeometry(0.064, 12, 10), bellGoldMat);
+  bellSphere.position.y = -0.066;
+  bellPivot.add(bellSphere);
+
+  const bellRim = new THREE.Mesh(new THREE.TorusGeometry(0.064, 0.009, 6, 14), bellGoldMat);
+  bellRim.rotation.x = Math.PI / 2;
+  bellRim.position.y = -0.066;
+  bellPivot.add(bellRim);
+
+  collarGroup.add(bellPivot);
+
+  const waypoints = [
+    { x: 5.8,  z: 4.8,  pause: 2.6, lookX: 10.2, lookZ: 8.8 },
+    { x: 11.8, z: 4.2,  pause: 2.0, lookX: 10.2, lookZ: 8.8 },
+    { x: 12.0, z: -2.0, pause: 1.4, lookX: 8.4,  lookZ: -4.0 },
+    { x: 10.8, z: -6.4, pause: 3.0, lookX: 8.4,  lookZ: -4.0 },
+    { x: 6.2,  z: -6.2, pause: 2.5, lookX: 8.4,  lookZ: -4.0 },
+    { x: 5.5,  z: 0.4,  pause: 2.4, lookX: 8.4,  lookZ: -4.0 }
+  ];
+
+  const initYaw = Math.atan2(waypoints[0].lookX - x, waypoints[0].lookZ - z);
+  g.rotation.y = initYaw;
+
+  return {
+    id: 'dani',
+    name: '단이',
+    group: g,
+    bodyGroup,
+    headPivot,
+    bellPivot,
+    legFL,
+    legFR,
+    legBL,
+    legBR,
+    basePos: new THREE.Vector3(x, gy, z),
+    baseYaw: initYaw,
+    bellRingUntilMs: 0,
+    patrol: {
+      waypoints,
+      wpIdx: 0,
+      phase: 'pause',
+      pauseLeft: 2.2,
+      walkSpeed: 1.48,
+      walkPhase: 0
+    }
+  };
 }
 
 // ===================================================================
@@ -4032,4 +4312,340 @@ export function createShootingStar(scene, glowTexture) {
   }
 
   return { update, hideImmediate, dispose };
+}
+
+// ===================================================================
+// 9. Cozy Stacked Firewood Pile & Chopping Stump (Zero Dynamic Lights)
+// ===================================================================
+export function createFirewoodStack(x, z, yaw = 0.72) {
+  const g = new THREE.Group();
+  const baseY = groundHeightAt(x, z);
+  g.position.set(x, baseY, z);
+  g.rotation.y = yaw;
+
+  const barkMat = new THREE.MeshStandardMaterial({ color: 0x4a2f20, roughness: 0.92 });
+  const darkBarkMat = new THREE.MeshStandardMaterial({ color: 0x382318, roughness: 0.94 });
+  const cutEndMat = new THREE.MeshStandardMaterial({ color: 0xcfa168, roughness: 0.72 });
+  const logMultiMat = [barkMat, cutEndMat, cutEndMat];
+  const stumpMultiMat = [darkBarkMat, cutEndMat, darkBarkMat];
+  const handleMat = new THREE.MeshStandardMaterial({ color: 0x7a4e2d, roughness: 0.78 });
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x8e99a6, roughness: 0.28, metalness: 0.84 });
+
+  // Ground timber skids so firewood rests cleanly above terrain
+  const skidGeo = new THREE.BoxGeometry(0.085, 0.075, 0.76);
+  [-0.36, 0.36].forEach((sx) => {
+    const skid = new THREE.Mesh(skidGeo, darkBarkMat);
+    skid.position.set(sx, 0.038, 0);
+    skid.castShadow = true;
+    skid.receiveShadow = true;
+    g.add(skid);
+  });
+
+  // Crossed side cradle stakes holding the stack neatly
+  const stakeGeo = new THREE.CylinderGeometry(0.028, 0.036, 0.76, 6);
+  [-0.56, 0.56].forEach((sx) => {
+    [-0.22, 0.22].forEach((sz, idx) => {
+      const stake = new THREE.Mesh(stakeGeo, darkBarkMat);
+      stake.position.set(sx, 0.36, sz);
+      stake.rotation.x = idx === 0 ? 0.14 : -0.14;
+      stake.rotation.z = sx < 0 ? 0.08 : -0.08;
+      stake.castShadow = true;
+      g.add(stake);
+    });
+  });
+
+  // 3-tier stacked firewood logs with distinct bark sides and pale cut-wood end faces
+  const logSpecs = [
+    // Bottom tier (4 logs)
+    { z: -0.27, y: 0.155, r: 0.09, len: 1.02, ry: 0.02 },
+    { z: -0.09, y: 0.16,  r: 0.095, len: 1.06, ry: -0.015 },
+    { z: 0.1,   y: 0.155, r: 0.088, len: 1.0, ry: 0.018 },
+    { z: 0.28,  y: 0.152, r: 0.086, len: 1.04, ry: -0.02 },
+    // Middle tier (3 logs)
+    { z: -0.18, y: 0.315, r: 0.088, len: 0.98, ry: -0.01 },
+    { z: 0.005, y: 0.322, r: 0.092, len: 1.02, ry: 0.015 },
+    { z: 0.19,  y: 0.31,  r: 0.085, len: 0.96, ry: -0.016 },
+    // Top tier (2 logs + 1 cap)
+    { z: -0.09, y: 0.468, r: 0.082, len: 0.94, ry: 0.02 },
+    { z: 0.09,  y: 0.462, r: 0.08,  len: 0.92, ry: -0.018 },
+    { z: 0.0,   y: 0.60,  r: 0.074, len: 0.86, ry: 0.012 }
+  ];
+
+  logSpecs.forEach((ls) => {
+    const logGeo = new THREE.CylinderGeometry(ls.r, ls.r * 1.03, ls.len, 9);
+    const log = new THREE.Mesh(logGeo, logMultiMat);
+    log.rotation.z = Math.PI / 2;
+    log.rotation.y = ls.ry;
+    log.position.set(0, ls.y, ls.z);
+    log.castShadow = true;
+    log.receiveShadow = true;
+    g.add(log);
+  });
+
+  // Adjacent chopping stump + camp hatchet + freshly split side pieces
+  const stumpGroup = new THREE.Group();
+  stumpGroup.position.set(0.92, 0, 0.2);
+
+  const stump = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.275, 0.44, 11), stumpMultiMat);
+  stump.position.y = 0.22;
+  stump.castShadow = true;
+  stump.receiveShadow = true;
+  stumpGroup.add(stump);
+
+  const hatchetGroup = new THREE.Group();
+  hatchetGroup.position.set(0.02, 0.44, -0.02);
+  hatchetGroup.rotation.set(0.22, 0.48, -0.42);
+
+  const axeBlade = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.105, 0.026), steelMat);
+  axeBlade.position.set(0, 0.02, 0);
+  hatchetGroup.add(axeBlade);
+
+  const axeHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.022, 0.44, 7), handleMat);
+  axeHandle.position.set(-0.04, 0.23, 0);
+  axeHandle.rotation.z = 0.14;
+  hatchetGroup.add(axeHandle);
+  stumpGroup.add(hatchetGroup);
+
+  const splitA = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.075, 0.46, 6, 1, false, 0, Math.PI), logMultiMat);
+  splitA.position.set(-0.28, 0.18, 0.18);
+  splitA.rotation.set(0.32, 0.4, 0.36);
+  splitA.castShadow = true;
+  stumpGroup.add(splitA);
+
+  const splitB = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.07, 0.42, 6, 1, false, 0, Math.PI), logMultiMat);
+  splitB.position.set(-0.18, 0.068, 0.32);
+  splitB.rotation.set(Math.PI / 2, 0.15, 0.85);
+  splitB.castShadow = true;
+  stumpGroup.add(splitB);
+
+  g.add(stumpGroup);
+  return g;
+}
+
+// ===================================================================
+// 10. Animal Crossing-Style Wooden Signpost ("은하재 작은 순간들이 머무는 곳")
+// ===================================================================
+function createSignpostPlaqueTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 576;
+  const ctx = canvas.getContext('2d');
+
+  // Warm honey-oak plank base gradient for crisp dark lettering contrast
+  const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  bg.addColorStop(0, '#dcb278');
+  bg.addColorStop(0.5, '#cfa064');
+  bg.addColorStop(1, '#bc8b4e');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Subtle horizontal plank seams & organic wood grain lines
+  ctx.strokeStyle = 'rgba(72, 40, 18, 0.2)';
+  ctx.lineWidth = 4;
+  [192, 384].forEach((py) => {
+    ctx.beginPath();
+    ctx.moveTo(0, py);
+    ctx.lineTo(canvas.width, py);
+    ctx.stroke();
+  });
+
+  ctx.strokeStyle = 'rgba(92, 54, 24, 0.1)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 24; i++) {
+    const gy = 18 + i * 23;
+    ctx.beginPath();
+    ctx.moveTo(0, gy);
+    ctx.bezierCurveTo(
+      320, gy + Math.sin(i * 1.4) * 7,
+      680, gy - Math.cos(i * 0.9) * 7,
+      canvas.width, gy + Math.sin(i * 0.7) * 4
+    );
+    ctx.stroke();
+  }
+
+  // Carved inner wooden border + brass corner nails
+  ctx.strokeStyle = '#5a341b';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(24, 24, canvas.width - 48, canvas.height - 48);
+  ctx.strokeStyle = 'rgba(255, 240, 204, 0.34)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(36, 36, canvas.width - 72, canvas.height - 72);
+
+  [
+    [56, 56],
+    [canvas.width - 56, 56],
+    [56, canvas.height - 56],
+    [canvas.width - 56, canvas.height - 56]
+  ].forEach(([nx, ny]) => {
+    ctx.fillStyle = '#3b2414';
+    ctx.beginPath();
+    ctx.arc(nx, ny, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#e0b76e';
+    ctx.beginPath();
+    ctx.arc(nx - 2, ny - 2, 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Top decorative little star crest
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#fff5d6';
+  ctx.font = '700 34px "Gowun Batang", serif';
+  ctx.fillText('✦  •  ✦', canvas.width / 2, 92);
+
+  // Prominent main title: 은하재 (much larger & crisp carved dark woodburned feel)
+  ctx.font = '800 148px "Gowun Batang", serif';
+  ctx.fillStyle = 'rgba(255, 242, 210, 0.45)';
+  ctx.fillText('은하재', canvas.width / 2, 248);
+  ctx.fillStyle = '#210f05';
+  ctx.fillText('은하재', canvas.width / 2, 244);
+
+  // Clean horizontal divider
+  ctx.strokeStyle = 'rgba(72, 40, 18, 0.45)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(220, 352);
+  ctx.lineTo(canvas.width - 220, 352);
+  ctx.stroke();
+
+  // Subtitle: 작은 순간들이 머무는 곳
+  ctx.font = '700 46px "Gowun Batang", serif';
+  ctx.fillStyle = 'rgba(255, 244, 214, 0.42)';
+  ctx.fillText('작은 순간들이 머무는 곳', canvas.width / 2, 434);
+  ctx.fillStyle = '#2d1609';
+  ctx.fillText('작은 순간들이 머무는 곳', canvas.width / 2, 430);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+export function createEunhajaeSignpost(x, z, yaw = Math.PI - 0.15, glowTexture, maxAnisotropy = 4) {
+  const g = new THREE.Group();
+  const baseY = groundHeightAt(x, z);
+  g.position.set(x, baseY, z);
+  g.rotation.y = yaw;
+
+  const postWoodMat = new THREE.MeshStandardMaterial({ color: 0x563723, roughness: 0.88 });
+  const roofWoodMat = new THREE.MeshStandardMaterial({ color: 0x42291a, roughness: 0.86 });
+  const stoneMat = new THREE.MeshStandardMaterial({ color: 0x4c4756, roughness: 0.9 });
+  const ironMat = new THREE.MeshStandardMaterial({ color: 0x2a2732, roughness: 0.55, metalness: 0.55 });
+
+  // Grounded stone collar + 3 river pebbles so post sits firmly on hill turf
+  const baseCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.24, 0.12, 9), stoneMat);
+  baseCollar.position.y = 0.06;
+  baseCollar.receiveShadow = true;
+  g.add(baseCollar);
+
+  [
+    { px: -0.26, pz: 0.14, r: 0.08 },
+    { px: 0.24, pz: 0.16, r: 0.065 },
+    { px: 0.18, pz: -0.2, r: 0.072 }
+  ].forEach((p) => {
+    const pebble = new THREE.Mesh(new THREE.DodecahedronGeometry(p.r, 0), stoneMat);
+    pebble.scale.set(1.2, 0.65, 1.0);
+    pebble.position.set(p.px, p.r * 0.42, p.pz);
+    pebble.receiveShadow = true;
+    g.add(pebble);
+  });
+
+  // Main cedar signpost pole terminating cleanly inside bottom of board (never overlaps plaque faces)
+  const mainPost = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.102, 0.84, 10), postWoodMat);
+  mainPost.position.y = 0.42;
+  mainPost.castShadow = true;
+  g.add(mainPost);
+
+  // Thick dark walnut frame board backing
+  const boardBack = new THREE.Mesh(new THREE.BoxGeometry(1.58, 0.94, 0.16), roofWoodMat);
+  boardBack.position.y = 1.24;
+  boardBack.castShadow = true;
+  boardBack.receiveShadow = true;
+  g.add(boardBack);
+
+  // Double-sided high-res carved wooden plaque texture mounted cleanly outside boardBack
+  const signTex = createSignpostPlaqueTexture();
+  signTex.anisotropy = maxAnisotropy;
+  const plaqueMat = new THREE.MeshStandardMaterial({
+    map: signTex,
+    emissive: 0xffe4ad,
+    emissiveMap: signTex,
+    emissiveIntensity: 0.28,
+    roughness: 0.76,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1
+  });
+  const plaqueGeo = new THREE.PlaneGeometry(1.42, 0.8);
+
+  const frontPlaque = new THREE.Mesh(plaqueGeo, plaqueMat);
+  frontPlaque.position.set(0, 1.24, 0.084);
+  g.add(frontPlaque);
+
+  const backPlaque = new THREE.Mesh(plaqueGeo, plaqueMat);
+  backPlaque.position.set(0, 1.24, -0.084);
+  backPlaque.rotation.y = Math.PI;
+  g.add(backPlaque);
+
+  // Animal Crossing pitched wooden shingle hood + ridge beam + rounded end pegs
+  const roofPlankGeo = new THREE.BoxGeometry(0.92, 0.065, 0.46);
+  const leftRoof = new THREE.Mesh(roofPlankGeo, roofWoodMat);
+  leftRoof.position.set(-0.42, 1.81, 0);
+  leftRoof.rotation.z = 0.24;
+  leftRoof.castShadow = true;
+  g.add(leftRoof);
+
+  const rightRoof = new THREE.Mesh(roofPlankGeo, roofWoodMat);
+  rightRoof.position.set(0.42, 1.81, 0);
+  rightRoof.rotation.z = -0.24;
+  rightRoof.castShadow = true;
+  g.add(rightRoof);
+
+  const ridgeBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.052, 1.76, 8), postWoodMat);
+  ridgeBeam.rotation.z = Math.PI / 2;
+  ridgeBeam.position.set(0, 1.91, 0);
+  ridgeBeam.castShadow = true;
+  g.add(ridgeBeam);
+
+  // Side lantern peg + cozy warm glowing mini glass trail lantern
+  const armBracket = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.055, 0.055), postWoodMat);
+  armBracket.position.set(0.92, 1.56, 0);
+  g.add(armBracket);
+
+  const hookStem = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.14, 6), ironMat);
+  hookStem.position.set(1.03, 1.47, 0);
+  g.add(hookStem);
+
+  const lanternCap = new THREE.Mesh(new THREE.ConeGeometry(0.095, 0.075, 6), ironMat);
+  lanternCap.position.set(1.03, 1.39, 0);
+  g.add(lanternCap);
+
+  const lanternGlassMat = new THREE.MeshStandardMaterial({
+    color: 0xffe49e,
+    emissive: 0xffc663,
+    emissiveIntensity: 1.4,
+    roughness: 0.35
+  });
+  const lanternGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.048, 0.12, 6), lanternGlassMat);
+  lanternGlass.position.set(1.03, 1.30, 0);
+  g.add(lanternGlass);
+
+  if (glowTexture) {
+    const aura = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: glowTexture,
+        color: 0xffd584,
+        transparent: true,
+        opacity: 0.28,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      })
+    );
+    aura.position.set(1.03, 1.30, 0);
+    aura.scale.set(0.95, 0.95, 1);
+    g.add(aura);
+  }
+
+  g.userData.worldCenter = new THREE.Vector3(x, baseY + 1.24, z);
+  return g;
 }

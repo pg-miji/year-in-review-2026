@@ -667,6 +667,57 @@ export class FireworksAudioEngine {
     } catch (e) {}
   }
 
+  playReindeerBell() {
+    const ctx = this.ensureContext();
+    if (!ctx || this.muted || !this.sfxEnabled) return;
+
+    try {
+      const now = ctx.currentTime;
+      // Festive sleigh-bell double ring ("딸랑-딸랑!") with crisp metallic overtones
+      const rings = [0.0, 0.13];
+      rings.forEach((offset, rIdx) => {
+        const t0 = now + offset;
+        const baseFreq = rIdx === 0 ? 1567.98 : 1760.0; // G6 -> A6 cheerful jingle
+        const partials = [
+          { ratio: 1.0, amp: 0.11, dur: 0.42 },
+          { ratio: 2.02, amp: 0.065, dur: 0.3 },
+          { ratio: 2.76, amp: 0.04, dur: 0.22 },
+          { ratio: 3.98, amp: 0.025, dur: 0.14 }
+        ];
+        partials.forEach((p) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(baseFreq * p.ratio, t0);
+          gain.gain.setValueAtTime(0.0001, t0);
+          gain.gain.linearRampToValueAtTime(p.amp, t0 + 0.008);
+          gain.gain.exponentialRampToValueAtTime(0.0004, t0 + p.dur);
+          osc.connect(gain);
+          gain.connect(this.sfxGain);
+          osc.start(t0);
+          osc.stop(t0 + p.dur + 0.03);
+        });
+
+        if (this.noiseBuffer) {
+          const jingle = ctx.createBufferSource();
+          jingle.buffer = this.noiseBuffer;
+          const hpf = ctx.createBiquadFilter();
+          hpf.type = 'highpass';
+          hpf.frequency.setValueAtTime(4800, t0);
+          const jGain = ctx.createGain();
+          jGain.gain.setValueAtTime(0.0001, t0);
+          jGain.gain.linearRampToValueAtTime(0.045, t0 + 0.01);
+          jGain.gain.exponentialRampToValueAtTime(0.0004, t0 + 0.11);
+          jingle.connect(hpf);
+          hpf.connect(jGain);
+          jGain.connect(this.sfxGain);
+          jingle.start(t0);
+          jingle.stop(t0 + 0.12);
+        }
+      });
+    } catch (e) {}
+  }
+
   dispose() {
     this._stopBgmLoop();
     this._ambientStarted = false;

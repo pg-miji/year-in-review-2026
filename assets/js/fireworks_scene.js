@@ -23,6 +23,7 @@ import {
   createLanternRack,
   createSnowEnvironment,
   createHillNpcs,
+  createReindeerDani,
   createSkyCountdownSprite,
   createGoldenTicket,
   createGoldenSparkPool,
@@ -33,7 +34,9 @@ import {
   createGroundLightPools,
   createClickRippleRing,
   createCozyMailbox,
-  createShootingStar
+  createShootingStar,
+  createFirewoodStack,
+  createEunhajaeSignpost
 } from './fireworks_entities.js';
 import { EUNHAJAE_LETTERS } from './fireworks_letters.js';
 import { MAILBOX_CONFIG } from './mailbox_config.js';
@@ -194,15 +197,26 @@ const NPC_DIALOGUES = {
     '멍멍! 오늘 밤하늘 별이 반짝반짝해요 🐾',
     '왈왈! 간식이나 따뜻한 불꽃 구경 같이 볼래요?',
     '멍! 바람 냄새가 참 기분 좋아요!'
+  ],
+  romi: [
+    '모닥불만 보고 있으면 시간 가는 줄 모르겠어요… 멍… 🔥',
+    '슈크림 붕어빵은 따뜻할 때 한 입 베어 무는 게 제일 행복해요.',
+    '아… 바람이 차서 손이 시려요. 불 옆에서 한 발짝도 못 떨어지겠어요.',
+    '팥도 좋지만 저는 역시 달콤한 슈크림파예요! 속이 꽉 차면 기분까지 포근해지거든요.',
+    '어라, 잠깐 불멍 때리다 보니 방금 무슨 생각 했는지 또 까먹었네요… 헤헤.',
+    '추워서 목도리를 꽁꽁 감았는데도 슈크림 냄새는 뚫고 들어오네요!',
+    '산책하다 춥다 싶으면 저처럼 불 근처를 빙글빙글 돌아보세요. 딱 좋아요.',
+    '밤하늘 불꽃도 예쁘지만, 제 손에 들린 따끈한 슈크림 붕어빵도 꽤 빛나지 않나요?'
   ]
 };
 
-// NPC Firework Reaction profiles (restricted strictly to beat, tori, naru, momo)
+// NPC Firework Reaction profiles (restricted strictly to beat, tori, naru, momo, romi)
 const NPC_FIREWORK_PROFILE = {
   beat: { delayMin: 80,  delayMax: 240, lookProb: 1.0,  burstJumpProb: 0.72, burstWaveProb: 0.65, cooldownMs: 2200 },
   tori: { delayMin: 140, delayMax: 380, lookProb: 0.9,  burstJumpProb: 0.15, burstWaveProb: 0.55, cooldownMs: 2800 },
   naru: { delayMin: 210, delayMax: 460, lookProb: 0.95, burstJumpProb: 0.05, burstWaveProb: 0.08, cooldownMs: 3200 },
-  momo: { delayMin: 160, delayMax: 400, lookProb: 0.85, burstJumpProb: 0.0,  burstWaveProb: 0.25, cooldownMs: 3100 }
+  momo: { delayMin: 160, delayMax: 400, lookProb: 0.85, burstJumpProb: 0.0,  burstWaveProb: 0.25, cooldownMs: 3100 },
+  romi: { delayMin: 240, delayMax: 500, lookProb: 0.78, burstJumpProb: 0.0,  burstWaveProb: 0.12, cooldownMs: 3600 }
 };
 
 // Discoverable Golden Ticket candidate spots tucked partway behind, beside, or under prop edges
@@ -592,6 +606,15 @@ export async function initEunhajaeScene() {
   const cozyMailbox = createCozyMailbox(mailboxX, mailboxZ, 0.55, glowTexture);
   scene.add(cozyMailbox);
 
+  // Stacked Firewood & Chopping Stump tucked cleanly in SW corner by the lantern rack
+  const firewoodStack = createFirewoodStack(-11.0, 10.4, 0.52);
+  scene.add(firewoodStack);
+
+  // Animal Crossing-style Wooden Signpost at southern walkable boundary between lantern rack & Bosingak
+  const maxSignAniso = isMobile ? 1 : Math.min(4, renderer.capabilities.getMaxAnisotropy());
+  const eunhajaeSignpost = createEunhajaeSignpost(1.2, 13.4, Math.PI - 0.15, glowTexture, maxSignAniso);
+  scene.add(eunhajaeSignpost);
+
   // Night-only subtle irregular shooting star
   const shootingStar = createShootingStar(scene, glowTexture);
 
@@ -638,7 +661,8 @@ export async function initEunhajaeScene() {
     { x: -10.5, z: -10.5, radius: 3.6, color: 0xffd175, opacity: 0.28 },
     { x: -3.5, z: -11.0, radius: 3.8, color: 0xffd175, opacity: 0.3 },
     { x: 4.2, z: -11.0, radius: 3.6, color: 0xffd175, opacity: 0.28 },
-    { x: 11.0, z: -10.2, radius: 3.6, color: 0xffd175, opacity: 0.28 }
+    { x: 11.0, z: -10.2, radius: 3.6, color: 0xffd175, opacity: 0.28 },
+    { x: 1.2, z: 13.4, radius: 2.5, color: 0xffd27a, opacity: 0.22 }
   ]);
   scene.add(groundLightPools.group);
 
@@ -655,13 +679,17 @@ export async function initEunhajaeScene() {
     { isMobile }
   );
 
-  // Named NPCs: 모모, 비트, 토리, 나루
+  // Named NPCs: 모모, 비트, 토리, 나루, 로미
   const hillNpcs = createHillNpcs();
   const npcClickMeshes = [];
   hillNpcs.forEach((npc) => {
     scene.add(npc.group);
     npcClickMeshes.push(npc.group);
   });
+
+  // Walking Rudolph Reindeer (단이) patrolling around Bosingak & Christmas Tree
+  const reindeerDani = createReindeerDani(5.8, 4.8);
+  scene.add(reindeerDani.group);
 
   // Self Nameplate Only (NPC overhead name tags removed per feedback!)
   function createWorldLabelEl(text, extraClass = '') {
@@ -693,6 +721,7 @@ export async function initEunhajaeScene() {
     beat: '비트',
     tori: '토리',
     naru: '나루',
+    romi: '로미',
     chichi: '치치',
     mongi: '몽이'
   };
@@ -795,9 +824,9 @@ export async function initEunhajaeScene() {
   }
 
   // =================================================================
-  // NPC Firework Reaction Helpers (Restricted to Beat, Tori, Naru, Momo)
+  // NPC Firework Reaction Helpers (Restricted to Beat, Tori, Naru, Momo, Romi)
   // =================================================================
-  const FIREWORK_REACT_IDS = new Set(['beat', 'tori', 'naru', 'momo']);
+  const FIREWORK_REACT_IDS = new Set(['beat', 'tori', 'naru', 'momo', 'romi']);
 
   function notifyNpcsFireworkLaunch() {
     const now = performance.now();
@@ -2562,7 +2591,7 @@ export async function initEunhajaeScene() {
       }
     }
 
-    // 1. Check Named NPCs (모모, 비트, 토리, 나루)
+    // 1. Check Named NPCs (모모, 비트, 토리, 나루, 로미)
     const npcHits = _raycaster.intersectObjects(npcClickMeshes, true);
     if (npcHits.length > 0) {
       let node = npcHits[0].object;
@@ -2574,6 +2603,10 @@ export async function initEunhajaeScene() {
         if (clickedNpc) {
           audio.ensureContext();
           clickRipple.trigger(clickedNpc.basePos.x, clickedNpc.basePos.z, 0xffe08a);
+          if (clickedNpc.patrol) {
+            clickedNpc.patrol.phase = 'pause';
+            clickedNpc.patrol.pauseLeft = Math.max(clickedNpc.patrol.pauseLeft, 3.6);
+          }
           showNpcDialogue(clickedNpc.id, () => ({
             x: clickedNpc.basePos.x,
             y: clickedNpc.basePos.y + (clickedNpc.sitting ? 1.32 : 1.52),
@@ -2591,6 +2624,35 @@ export async function initEunhajaeScene() {
       puppyExcitedUntilMs = performance.now() + 1800;
       audio.playPuppyBark();
       clickRipple.trigger(1.65, -9.15, 0xffd166);
+      return;
+    }
+
+    // 2.5 Check Rudolph Reindeer (단이) -> Sleigh Bell Chime (No dialogue)
+    const daniHits = _raycaster.intersectObject(reindeerDani.group, true);
+    if (daniHits.length > 0) {
+      audio.ensureContext();
+      reindeerDani.bellRingUntilMs = performance.now() + 1400;
+      reindeerDani.patrol.phase = 'pause';
+      reindeerDani.patrol.pauseLeft = Math.max(reindeerDani.patrol.pauseLeft, 1.8);
+      audio.playReindeerBell();
+      clickRipple.trigger(reindeerDani.basePos.x, reindeerDani.basePos.z, 0xffd166);
+      return;
+    }
+
+    // 2.6 Check Southern-Boundary Wooden Signpost -> Gentle ripple + signpost inscription
+    const signHits = _raycaster.intersectObject(eunhajaeSignpost, true);
+    if (signHits.length > 0) {
+      audio.ensureContext();
+      clickRipple.trigger(1.2, 13.4, 0xffe08a);
+      if (npcBubbleEl) {
+        npcBubbleSpeakerEl.style.display = 'none';
+        npcBubbleTextEl.textContent = '은하재 — 작은 순간들이 머무는 곳 ✨';
+        const wp = eunhajaeSignpost.userData.worldCenter;
+        activeBubbleNpc = {
+          getWorldPos: () => ({ x: wp.x, y: wp.y + 0.95, z: wp.z })
+        };
+        npcBubbleUntilMs = performance.now() + 3000;
+      }
       return;
     }
 
@@ -2998,7 +3060,18 @@ export async function initEunhajaeScene() {
         baseHeadYaw = Math.sin(timeSec * 0.7) * 0.09;
         baseHeadPitch = Math.sin(timeSec * 1.1) * 0.04;
       } else if (npc.id === 'beat') {
-        // Multi-phase musical dance groove (bounce + upper groove + arm wave + subtle step)
+        // Multi-phase musical dance groove moving smoothly in a compact local circle
+        const orbitAng = timeSec * 0.62;
+        const bx = -4.2 + Math.cos(orbitAng) * 1.05;
+        const bz = -1.4 + Math.sin(orbitAng) * 0.90;
+        const tx = -Math.sin(orbitAng) * 1.05;
+        const tz = Math.cos(orbitAng) * 0.90;
+
+        npc.basePos.set(bx, groundHeightAt(bx, bz), bz);
+        npc.group.position.copy(npc.basePos);
+        npc.baseYaw = Math.atan2(tx, tz);
+        npc.group.rotation.y = npc.baseYaw;
+
         const beat = timeSec * 5.4;
         const barPhase = Math.sin(beat * 0.25);
         baseJumpY = Math.abs(Math.sin(beat)) * 0.09;
@@ -3025,6 +3098,73 @@ export async function initEunhajaeScene() {
         npc.leftArmPivot.rotation.x = -0.14 + Math.cos(p * 1.1) * 0.12 * talkWeight;
         baseHeadYaw = Math.sin(p * 0.65) * 0.12;
         baseHeadPitch = Math.sin(p * 1.3) * 0.08;
+      } else if (npc.id === 'romi' && npc.patrol) {
+        const pt = npc.patrol;
+        const wps = pt.waypoints;
+        const targetWp = wps[pt.wpIdx];
+        const yawAlpha = 1 - Math.exp(-5.5 * dt);
+
+        if (pt.phase === 'walk') {
+          const dx = targetWp.x - npc.basePos.x;
+          const dz = targetWp.z - npc.basePos.z;
+          const dist = Math.hypot(dx, dz);
+          const step = pt.walkSpeed * dt;
+
+          if (dist <= Math.max(0.08, step)) {
+            npc.basePos.x = targetWp.x;
+            npc.basePos.z = targetWp.z;
+            pt.phase = 'pause';
+            pt.pauseLeft = targetWp.pause;
+          } else {
+            npc.basePos.x += (dx / dist) * step;
+            npc.basePos.z += (dz / dist) * step;
+            const moveYaw = Math.atan2(dx, dz);
+            npc.baseYaw = lerpAngle(npc.baseYaw, moveYaw, yawAlpha);
+          }
+
+          npc.basePos.y = groundHeightAt(npc.basePos.x, npc.basePos.z);
+          npc.group.position.copy(npc.basePos);
+          npc.group.rotation.y = npc.baseYaw;
+
+          pt.walkPhase += dt * 7.2;
+          const legSwing = Math.sin(pt.walkPhase) * 0.36;
+          npc.leftLegPivot.rotation.x = legSwing;
+          npc.rightLegPivot.rotation.x = -legSwing;
+          npc.rightArmPivot.rotation.x = -0.16 - legSwing * 0.38;
+          npc.rightArmPivot.rotation.z = 0.04;
+          // Left hand holds warm custard bungeoppang up visibly while walking
+          npc.leftArmPivot.rotation.x = -0.58 + Math.sin(pt.walkPhase) * 0.05;
+          npc.leftArmPivot.rotation.z = -0.12;
+          npc.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.03;
+          baseJumpY = Math.abs(Math.sin(pt.walkPhase)) * 0.028;
+          baseHeadYaw = Math.sin(timeSec * 0.8) * 0.06;
+          baseHeadPitch = 0.04;
+        } else {
+          // Pause by the fire / stall: face focus point, space out & occasionally lift custard bungeoppang
+          const lookYaw = Math.atan2(targetWp.lookX - npc.basePos.x, targetWp.lookZ - npc.basePos.z);
+          npc.baseYaw = lerpAngle(npc.baseYaw, lookYaw, yawAlpha);
+          npc.group.rotation.y = npc.baseYaw;
+
+          const legSettle = 1 - Math.exp(-10 * dt);
+          npc.leftLegPivot.rotation.x *= (1 - legSettle);
+          npc.rightLegPivot.rotation.x *= (1 - legSettle);
+
+          // Cozy gentle shiver / hand-warming toward fire + dreamy zoning-out head drift
+          const nibblePhase = Math.max(0, Math.sin(timeSec * 0.72));
+          npc.leftArmPivot.rotation.x = THREE.MathUtils.lerp(-0.56, -1.04, nibblePhase * 0.75);
+          npc.leftArmPivot.rotation.z = THREE.MathUtils.lerp(-0.12, -0.24, nibblePhase * 0.6);
+          npc.rightArmPivot.rotation.x = -0.34 + Math.sin(timeSec * 2.2) * 0.05;
+          npc.rightArmPivot.rotation.z = 0.1 + Math.sin(timeSec * 1.4) * 0.03;
+          npc.bodyGroup.rotation.z = Math.sin(timeSec * 1.3) * 0.025;
+          baseHeadYaw = Math.sin(timeSec * 0.52) * 0.08;
+          baseHeadPitch = 0.07 + Math.sin(timeSec * 0.85) * 0.04;
+
+          pt.pauseLeft -= dt;
+          if (pt.pauseLeft <= 0) {
+            pt.wpIdx = (pt.wpIdx + 1) % wps.length;
+            pt.phase = 'walk';
+          }
+        }
       }
 
       // Overlay Firework Reaction (Priority over proximity gaze; preserves underlying loop)
@@ -3078,6 +3218,87 @@ export async function initEunhajaeScene() {
 
       npc.headPivot.rotation.y = THREE.MathUtils.lerp(npc.headPivot.rotation.y, targetHeadYaw, headLerp);
       npc.headPivot.rotation.x = THREE.MathUtils.lerp(npc.headPivot.rotation.x, targetHeadPitch, headLerp);
+    }
+
+    // 3.7 Update Rudolph Reindeer (단이) East-Meadow Patrol + Neck Sleigh Bell Jingle
+    {
+      const pt = reindeerDani.patrol;
+      const wps = pt.waypoints;
+      const targetWp = wps[pt.wpIdx];
+      const yawAlpha = 1 - Math.exp(-5.0 * dt);
+      const isRinging = nowMs < reindeerDani.bellRingUntilMs;
+
+      if (pt.phase === 'walk') {
+        const dx = targetWp.x - reindeerDani.basePos.x;
+        const dz = targetWp.z - reindeerDani.basePos.z;
+        const dist = Math.hypot(dx, dz);
+        const step = pt.walkSpeed * dt;
+
+        if (dist <= Math.max(0.08, step)) {
+          reindeerDani.basePos.x = targetWp.x;
+          reindeerDani.basePos.z = targetWp.z;
+          pt.phase = 'pause';
+          pt.pauseLeft = targetWp.pause;
+        } else {
+          reindeerDani.basePos.x += (dx / dist) * step;
+          reindeerDani.basePos.z += (dz / dist) * step;
+          const moveYaw = Math.atan2(dx, dz);
+          reindeerDani.baseYaw = lerpAngle(reindeerDani.baseYaw, moveYaw, yawAlpha);
+        }
+
+        reindeerDani.basePos.y = groundHeightAt(reindeerDani.basePos.x, reindeerDani.basePos.z);
+        reindeerDani.group.position.copy(reindeerDani.basePos);
+        reindeerDani.group.rotation.y = reindeerDani.baseYaw;
+
+        pt.walkPhase += dt * 8.2;
+        const diagA = Math.sin(pt.walkPhase) * 0.36;
+        const diagB = -diagA;
+        reindeerDani.legFL.rotation.x = diagA;
+        reindeerDani.legBR.rotation.x = diagA;
+        reindeerDani.legFR.rotation.x = diagB;
+        reindeerDani.legBL.rotation.x = diagB;
+        reindeerDani.bodyGroup.position.y = Math.abs(Math.sin(pt.walkPhase)) * 0.032;
+        reindeerDani.bodyGroup.rotation.z = Math.sin(pt.walkPhase * 0.5) * 0.025;
+        reindeerDani.headPivot.rotation.x = Math.sin(pt.walkPhase) * 0.05;
+        reindeerDani.headPivot.rotation.y = Math.sin(timeSec * 0.9) * 0.08;
+      } else {
+        const lookYaw = Math.atan2(
+          targetWp.lookX - reindeerDani.basePos.x,
+          targetWp.lookZ - reindeerDani.basePos.z
+        );
+        reindeerDani.baseYaw = lerpAngle(reindeerDani.baseYaw, lookYaw, yawAlpha);
+        reindeerDani.group.rotation.y = reindeerDani.baseYaw;
+
+        const legSettle = 1 - Math.exp(-10 * dt);
+        reindeerDani.legFL.rotation.x *= (1 - legSettle);
+        reindeerDani.legFR.rotation.x *= (1 - legSettle);
+        reindeerDani.legBL.rotation.x *= (1 - legSettle);
+        reindeerDani.legBR.rotation.x *= (1 - legSettle);
+        reindeerDani.bodyGroup.position.y *= (1 - legSettle);
+        reindeerDani.bodyGroup.rotation.z *= (1 - legSettle);
+        reindeerDani.headPivot.rotation.y = Math.sin(timeSec * 1.1) * 0.14;
+        reindeerDani.headPivot.rotation.x = isRinging
+          ? -0.14 + Math.sin(timeSec * 20.0) * 0.06
+          : Math.sin(timeSec * 0.85) * 0.06;
+
+        pt.pauseLeft -= dt;
+        if (pt.pauseLeft <= 0) {
+          pt.wpIdx = (pt.wpIdx + 1) % wps.length;
+          pt.phase = 'walk';
+        }
+      }
+
+      if (isRinging) {
+        reindeerDani.bellPivot.rotation.z = Math.sin(timeSec * 28.0) * 0.42;
+        reindeerDani.bellPivot.rotation.x = -0.26 + Math.cos(timeSec * 22.0) * 0.14;
+      } else if (pt.phase === 'walk') {
+        reindeerDani.bellPivot.rotation.z = Math.sin(pt.walkPhase) * 0.16;
+        reindeerDani.bellPivot.rotation.x = -0.22 + Math.abs(Math.sin(pt.walkPhase)) * 0.06;
+      } else {
+        const bellSettle = Math.min(1, 8 * dt);
+        reindeerDani.bellPivot.rotation.z *= (1 - bellSettle);
+        reindeerDani.bellPivot.rotation.x = THREE.MathUtils.lerp(reindeerDani.bellPivot.rotation.x, -0.26, bellSettle);
+      }
     }
 
     // Active NPC click dialogue bubble (raised cleanly above head; no overhead NPC nameplates)
