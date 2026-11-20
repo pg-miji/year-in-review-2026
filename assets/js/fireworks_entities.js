@@ -3542,7 +3542,7 @@ export function createHillNpcs() {
     }
   });
 
-  // 2. 비트 (Dancing NPC in open left-center yard + Clean Non-Clipping Gold Collar Necklace & Pendant)
+  // 2. 비트 (Dancing NPC in open left-center yard + Over-Ear Studio Headphones & Gold Collar Chain)
   const beat = buildNpc({
     id: 'beat',
     name: '비트',
@@ -3551,7 +3551,7 @@ export function createHillNpcs() {
     x: -4.2,
     z: -1.4,
     yaw: 0.42,
-    accessoryFn: ({ bodyGroup }) => {
+    accessoryFn: ({ bodyGroup, headPivot }) => {
       const goldMat = new THREE.MeshStandardMaterial({ color: 0xf5d061, roughness: 0.22, metalness: 0.88 });
       const chain = new THREE.Mesh(new THREE.TorusGeometry(0.186, 0.015, 8, 22), goldMat);
       chain.rotation.x = Math.PI / 2 + 0.1;
@@ -3561,6 +3561,109 @@ export function createHillNpcs() {
       const pendant = new THREE.Mesh(new THREE.OctahedronGeometry(0.036, 0), goldMat);
       pendant.position.set(0, 0.96, 0.214);
       bodyGroup.add(pendant);
+
+      // Over-ear Studio Headphones (aligned cleanly over beanie & sides of head)
+      const hpGroup = new THREE.Group();
+      hpGroup.position.set(0, 0.022, -0.01);
+      hpGroup.rotation.x = -0.12;
+      headPivot.add(hpGroup);
+
+      const hpShellMat = new THREE.MeshStandardMaterial({ color: 0x1a202e, roughness: 0.34, metalness: 0.48 });
+      const hpPadMat = new THREE.MeshStandardMaterial({ color: 0x222530, roughness: 0.72 });
+      const hpLedMat = new THREE.MeshStandardMaterial({
+        color: 0x7ae2ff,
+        emissive: 0x38bdf8,
+        emissiveIntensity: 0.65,
+        roughness: 0.25
+      });
+
+      // Top headband outer arch & inner soft cushion pad
+      const headbandArch = new THREE.Mesh(
+        new THREE.TorusGeometry(0.205, 0.015, 10, 26, Math.PI * 0.8),
+        hpShellMat
+      );
+      headbandArch.rotation.z = Math.PI * 0.1;
+      hpGroup.add(headbandArch);
+
+      const headbandPad = new THREE.Mesh(
+        new THREE.TorusGeometry(0.194, 0.013, 8, 20, Math.PI * 0.54),
+        hpPadMat
+      );
+      headbandPad.rotation.z = Math.PI * 0.23;
+      hpGroup.add(headbandPad);
+
+      const headbandTrim = new THREE.Mesh(
+        new THREE.TorusGeometry(0.217, 0.0045, 6, 22, Math.PI * 0.56),
+        goldMat
+      );
+      headbandTrim.rotation.z = Math.PI * 0.22;
+      hpGroup.add(headbandTrim);
+
+      const UP = new THREE.Vector3(0, 1, 0);
+      [-1, 1].forEach((side) => {
+        // Metallic gold slider stem + swivel joint connecting arch end to earcup
+        const archEnd = new THREE.Vector3(side * 0.195, 0.063, 0);
+        const cupTop = new THREE.Vector3(side * 0.204, 0.008, 0);
+        const diff = new THREE.Vector3().subVectors(cupTop, archEnd);
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.0105, 0.0105, diff.length(), 8), goldMat);
+        stem.position.copy(archEnd).addScaledVector(diff, 0.5);
+        stem.quaternion.setFromUnitVectors(UP, diff.clone().normalize());
+        hpGroup.add(stem);
+
+        const clampCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.017, 0.016, 0.022, 10), goldMat);
+        clampCollar.position.copy(archEnd);
+        clampCollar.rotation.z = side * 0.28;
+        hpGroup.add(clampCollar);
+
+        // Earcup assembly positioned cleanly around ear zone
+        const cupGroup = new THREE.Group();
+        cupGroup.position.set(side * 0.184, -0.024, 0);
+        cupGroup.rotation.z = side * -0.08;
+        hpGroup.add(cupGroup);
+
+        // Plush memory-foam ear cushion hugging the head
+        const cushion = new THREE.Mesh(new THREE.TorusGeometry(0.062, 0.023, 10, 20), hpPadMat);
+        cushion.rotation.y = Math.PI / 2;
+        cushion.position.x = side * -0.004;
+        cupGroup.add(cushion);
+
+        // Acoustic housing cylinder + rounded outer dome
+        const cupBody = new THREE.Mesh(new THREE.CylinderGeometry(0.066, 0.075, 0.036, 18), hpShellMat);
+        cupBody.rotation.z = side * (-Math.PI / 2);
+        cupBody.position.x = side * 0.018;
+        cupBody.castShadow = true;
+        cupGroup.add(cupBody);
+
+        const cupCap = new THREE.Mesh(
+          new THREE.SphereGeometry(0.066, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.44),
+          hpShellMat
+        );
+        cupCap.rotation.z = side * (-Math.PI / 2);
+        cupCap.scale.set(1, 0.36, 1);
+        cupCap.position.x = side * 0.032;
+        cupGroup.add(cupCap);
+
+        // Swivel hinge joint where gold slider attaches to cup shell
+        const hingeCap = new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 8), goldMat);
+        hingeCap.position.set(side * 0.018, 0.062, 0);
+        cupGroup.add(hingeCap);
+
+        // Gold outer accent ring + subtle cyan beat ring + gold center medallion seated proud on dome
+        const goldRing = new THREE.Mesh(new THREE.TorusGeometry(0.059, 0.0055, 8, 20), goldMat);
+        goldRing.rotation.y = Math.PI / 2;
+        goldRing.position.x = side * 0.043;
+        cupGroup.add(goldRing);
+
+        const ledRing = new THREE.Mesh(new THREE.TorusGeometry(0.036, 0.0045, 6, 18), hpLedMat);
+        ledRing.rotation.y = Math.PI / 2;
+        ledRing.position.x = side * 0.053;
+        cupGroup.add(ledRing);
+
+        const centerBadge = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.006, 12), goldMat);
+        centerBadge.rotation.z = Math.PI / 2;
+        centerBadge.position.x = side * 0.055;
+        cupGroup.add(centerBadge);
+      });
     }
   });
 

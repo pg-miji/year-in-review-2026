@@ -59,6 +59,7 @@ html.fireworks-page body {
   background: rgba(13, 9, 24, 0.86);
   border: 1px solid rgba(212, 175, 55, 0.42);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.55);
+  z-index: 1;
   will-change: transform, opacity;
 }
 
@@ -84,6 +85,7 @@ html.fireworks-page body {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
   text-align: center;
   word-break: keep-all;
+  z-index: 2;
   will-change: transform, opacity;
 }
 
@@ -110,6 +112,7 @@ html.fireworks-page body {
   background: rgba(30, 58, 138, 0.92);
   border: 1px solid rgba(147, 197, 253, 0.72);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+  z-index: 4;
   will-change: transform, opacity;
 }
 
@@ -130,6 +133,7 @@ html.fireworks-page body {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
   pointer-events: auto;
   cursor: pointer;
+  z-index: 2;
   will-change: transform, opacity;
   transition: border-color 0.16s ease;
 }
@@ -153,6 +157,7 @@ html.fireworks-page body {
   background: rgba(255, 232, 163, 0.95);
   border: 1px solid rgba(212, 140, 32, 0.85);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  z-index: 4;
   will-change: transform, opacity;
 }
 
@@ -242,6 +247,7 @@ html.fireworks-page body {
   background: rgba(58, 34, 24, 0.94);
   border: 1px solid rgba(226, 174, 102, 0.78);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  z-index: 4;
   will-change: transform, opacity;
 }
 
@@ -260,6 +266,7 @@ html.fireworks-page body {
   background: rgba(165, 42, 42, 0.94);
   border: 1px solid rgba(255, 107, 107, 0.85);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  z-index: 4;
   will-change: transform, opacity;
 }
 
@@ -836,6 +843,7 @@ html.fireworks-page body {
   box-shadow: 0 5px 18px rgba(0, 0, 0, 0.62);
   text-align: center;
   word-break: keep-all;
+  z-index: 12;
   will-change: transform, opacity;
 }
 
