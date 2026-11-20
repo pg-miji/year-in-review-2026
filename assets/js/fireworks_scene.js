@@ -808,8 +808,9 @@ export async function initEunhajaeScene() {
     scene.add(npc.group);
     npcClickMeshes.push(npc.group);
   });
+  const gureumNpc = hillNpcs.find((n) => n.id === 'gureum') || null;
 
-  // Walking Rudolph Reindeer (단이) patrolling around Bosingak & Christmas Tree
+  // Walking Rudolph Reindeer (담이) patrolling around Bosingak & Christmas Tree
   const reindeerDani = createReindeerDani(5.8, 4.8);
   scene.add(reindeerDani.group);
 
@@ -3144,13 +3145,13 @@ export async function initEunhajaeScene() {
       return;
     }
 
-    // 2.5 Check Rudolph Reindeer (단이) -> Sleigh Bell Chime (No dialogue)
+    // 2.5 Check Rudolph Reindeer (담이) -> Sleigh Bell Chime (No dialogue)
     const daniHits = _raycaster.intersectObject(reindeerDani.group, true);
     if (daniHits.length > 0) {
       audio.ensureContext();
-      reindeerDani.bellRingUntilMs = performance.now() + 1400;
+      reindeerDani.bellRingUntilMs = performance.now() + 2150;
       reindeerDani.patrol.phase = 'pause';
-      reindeerDani.patrol.pauseLeft = Math.max(reindeerDani.patrol.pauseLeft, 1.8);
+      reindeerDani.patrol.pauseLeft = Math.max(reindeerDani.patrol.pauseLeft, 2.35);
       audio.playReindeerBell();
       clickRipple.trigger(reindeerDani.basePos.x, reindeerDani.basePos.z, 0xffd166);
       return;
@@ -3762,6 +3763,17 @@ export async function initEunhajaeScene() {
         0.88
       );
       audio.updateCampfireAudio(fireAudioDist, firePan);
+
+      if (gureumNpc) {
+        const gureumAudioDist = Math.hypot(selfEntry.curX - gureumNpc.basePos.x, selfEntry.curZ - gureumNpc.basePos.z);
+        _vFwd.set(gureumNpc.basePos.x - camera.position.x, 0, gureumNpc.basePos.z - camera.position.z);
+        const gureumPan = clamp(
+          (_vRight.z * _vFwd.x - _vRight.x * _vFwd.z) / Math.max(3.2, _vFwd.length()),
+          -0.88,
+          0.88
+        );
+        audio.updateGureumVoice(gureumAudioDist, gureumPan);
+      }
     }
 
     // 3.6 Update Named NPC Animations (Base Loops + Firework Sky Reaction + Head-Only Proximity Gaze)
@@ -4150,18 +4162,21 @@ export async function initEunhajaeScene() {
               if (elapsedPause >= 2.35 && !pt.shutterTriggered) {
                 pt.shutterTriggered = true;
                 const dCamPlayer = Math.hypot(npc.basePos.x - selfEntry.curX, npc.basePos.z - selfEntry.curZ);
-                const shutterDistScale = clamp(1 - Math.max(0, dCamPlayer - 5.5) / 22.0, 0.14, 1);
-                camera.getWorldDirection(_vRight);
-                _vRight.y = 0;
-                if (_vRight.lengthSq() < 0.0001) _vRight.set(0, 0, -1);
-                _vRight.normalize();
-                _vFwd.set(npc.basePos.x - camera.position.x, 0, npc.basePos.z - camera.position.z);
-                const shutterPan = clamp(
-                  (_vRight.z * _vFwd.x - _vRight.x * _vFwd.z) / Math.max(4, _vFwd.length()),
-                  -0.85,
-                  0.85
-                );
-                audio.playCameraShutter(shutterPan, Math.pow(shutterDistScale, 1.25));
+                const uShutter = clamp(1 - Math.max(0, dCamPlayer - 2.4) / 12.6, 0, 1);
+                const shutterDistScale = uShutter * uShutter;
+                if (shutterDistScale > 0.025) {
+                  camera.getWorldDirection(_vRight);
+                  _vRight.y = 0;
+                  if (_vRight.lengthSq() < 0.0001) _vRight.set(0, 0, -1);
+                  _vRight.normalize();
+                  _vFwd.set(npc.basePos.x - camera.position.x, 0, npc.basePos.z - camera.position.z);
+                  const shutterPan = clamp(
+                    (_vRight.z * _vFwd.x - _vRight.x * _vFwd.z) / Math.max(4, _vFwd.length()),
+                    -0.85,
+                    0.85
+                  );
+                  audio.playCameraShutter(shutterPan, shutterDistScale);
+                }
               }
               if (elapsedPause > 2.35 && elapsedPause < 2.52) {
                 flashGlow = 3.2; // crisp momentary shutter flash highlight
@@ -4242,7 +4257,7 @@ export async function initEunhajaeScene() {
       npc.headPivot.rotation.x = THREE.MathUtils.lerp(npc.headPivot.rotation.x, targetHeadPitch, headLerp);
     }
 
-    // 3.7 Update Rudolph Reindeer (단이) East-Meadow Patrol + Neck Sleigh Bell Jingle (yields calmly when path blocked)
+    // 3.7 Update Rudolph Reindeer (담이) East-Meadow Patrol + Neck Sleigh Bell Jingle (yields calmly when path blocked)
     {
       const pt = reindeerDani.patrol;
       const wps = pt.waypoints;

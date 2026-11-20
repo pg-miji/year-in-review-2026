@@ -3984,7 +3984,7 @@ export function createHillNpcs() {
 }
 
 // ===================================================================
-// Festive Walking Rudolph Reindeer (단이) Patrolling Bosingak & Christmas Tree
+// Festive Walking Rudolph Reindeer (담이) Patrolling Bosingak & Christmas Tree
 // ===================================================================
 export function createReindeerDani(x = 5.8, z = 4.8) {
   const g = new THREE.Group();
@@ -4168,7 +4168,7 @@ export function createReindeerDani(x = 5.8, z = 4.8) {
 
   return {
     id: 'dani',
-    name: '단이',
+    name: '담이',
     group: g,
     bodyGroup,
     headPivot,

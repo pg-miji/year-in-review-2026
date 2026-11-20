@@ -51,6 +51,10 @@ export class FireworksAudioEngine {
     this._fireCrackleBus = null;
     this._firePanner = null;
     this._fireProximity = 0;
+    this._gureumVoiceGain = null;
+    this._gureumVoicePanner = null;
+    this._gureumNextSpeakTime = 0;
+    this._gureumWasInRange = false;
     this._ambientStarted = false;
     this._ambientSources = [];
 
@@ -219,6 +223,17 @@ export class FireworksAudioEngine {
         this._fireGain.connect(this.ambientGain);
         this._fireCrackleBus.connect(this.ambientGain);
       }
+
+      // 4. 3D-attenuated Gureum Animalese Phone Chatter Bus (fades out smoothly with distance)
+      this._gureumVoiceGain = ctx.createGain();
+      this._gureumVoiceGain.gain.setValueAtTime(0, now);
+      this._gureumVoicePanner = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+      if (this._gureumVoicePanner) {
+        this._gureumVoiceGain.connect(this._gureumVoicePanner);
+        this._gureumVoicePanner.connect(this.sfxGain);
+      } else {
+        this._gureumVoiceGain.connect(this.sfxGain);
+      }
     } catch (e) {}
   }
 
@@ -301,6 +316,97 @@ export class FireworksAudioEngine {
           crackle.start(t0, offset, dur + 0.01);
         }
       }
+    } catch (e) {}
+  }
+
+  updateGureumVoice(gureumDist, gureumPan = 0) {
+    if (!this.ctx || !this._gureumVoiceGain) return;
+    try {
+      const now = this.ctx.currentTime;
+      if (this.ctx.state !== 'running' || this.muted || !this.sfxEnabled || document.hidden) {
+        this._gureumWasInRange = false;
+        this._gureumVoiceGain.gain.setTargetAtTime(0, now, 0.06);
+        return;
+      }
+
+      const dist = Math.max(0, Number(gureumDist) || 0);
+      // Full cute chatter within 1.8m; smooth quadratic fade-out over 1.8m -> 10.0m to silence
+      const u = Math.max(0, Math.min(1, 1 - Math.max(0, dist - 1.8) / 8.2));
+      const atten = u * u;
+
+      this._gureumVoiceGain.gain.setTargetAtTime(atten, now, 0.08);
+      if (this._gureumVoicePanner) {
+        this._gureumVoicePanner.pan.setTargetAtTime(Math.max(-0.88, Math.min(0.88, gureumPan)), now, 0.1);
+      }
+
+      if (atten <= 0.025) {
+        this._gureumWasInRange = false;
+        return;
+      }
+
+      if (!this._gureumWasInRange) {
+        this._gureumWasInRange = true;
+        this._gureumNextSpeakTime = Math.max(this._gureumNextSpeakTime, now + 0.14);
+        if (this._gureumNextSpeakTime > now + 0.6) {
+          this._gureumNextSpeakTime = now + 0.14;
+        }
+      }
+
+      if (now < this._gureumNextSpeakTime) return;
+
+      // Schedule a cute Animal Crossing-style ("동숲") Animalese phone-call phrase
+      const syllableCount = 4 + Math.floor(Math.random() * 5); // 4..8 bouncy syllables
+      const phraseMood = Math.random(); // <0.35 questioning lift, <0.75 cheerful bounce, else gentle nod
+      const phraseBaseHz = 435 + Math.random() * 75;
+      const vowelFormants = [980, 1260, 1560, 1860, 2180];
+      let cursor = now + 0.01;
+
+      for (let i = 0; i < syllableCount; i++) {
+        const sylDur = 0.056 + Math.random() * 0.024;
+        const gap = 0.018 + Math.random() * 0.016;
+        const progress = syllableCount > 1 ? i / (syllableCount - 1) : 0;
+
+        let contour = 1.0;
+        if (phraseMood < 0.35) {
+          contour = 0.96 + progress * 0.18; // curious upward question at phrase end
+        } else if (phraseMood < 0.75) {
+          contour = 1.0 + Math.sin(progress * Math.PI) * 0.11; // cheerful melodic arc
+        } else {
+          contour = 1.04 - progress * 0.10; // warm nodding cadence
+        }
+
+        const fStart = phraseBaseHz * contour * (0.94 + Math.random() * 0.12);
+        const fEnd = fStart * (i === syllableCount - 1 && phraseMood < 0.35 ? 1.12 : (0.95 + Math.random() * 0.1));
+        const formantHz = vowelFormants[Math.floor(Math.random() * vowelFormants.length)];
+
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(fStart, cursor);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(120, fEnd), cursor + sylDur);
+
+        const vowelFilter = this.ctx.createBiquadFilter();
+        vowelFilter.type = 'lowpass';
+        vowelFilter.frequency.setValueAtTime(formantHz, cursor);
+        vowelFilter.Q.value = 2.6;
+
+        const sylGain = this.ctx.createGain();
+        const peak = 0.145 + Math.random() * 0.035;
+        sylGain.gain.setValueAtTime(0.0005, cursor);
+        sylGain.gain.linearRampToValueAtTime(peak, cursor + 0.008);
+        sylGain.gain.setValueAtTime(peak * 0.88, cursor + sylDur * 0.58);
+        sylGain.gain.exponentialRampToValueAtTime(0.0004, cursor + sylDur);
+
+        osc.connect(vowelFilter);
+        vowelFilter.connect(sylGain);
+        sylGain.connect(this._gureumVoiceGain);
+
+        osc.start(cursor);
+        osc.stop(cursor + sylDur + 0.015);
+        cursor += sylDur + gap;
+      }
+
+      // Pause briefly to "listen" to the caller before next cute response
+      this._gureumNextSpeakTime = cursor + 0.95 + Math.random() * 1.15;
     } catch (e) {}
   }
 
@@ -815,46 +921,70 @@ export class FireworksAudioEngine {
 
     try {
       const now = ctx.currentTime;
-      // Festive sleigh-bell double ring ("딸랑-딸랑!") with crisp metallic overtones
-      const rings = [0.0, 0.13];
-      rings.forEach((offset, rIdx) => {
-        const t0 = now + offset;
-        const baseFreq = rIdx === 0 ? 1567.98 : 1760.0; // G6 -> A6 cheerful jingle
+      // Rich festive collar/sleigh-bell cadence ("딸랑~ 딸랑~ 딸라랑~~~") ~2.3s resonant chime
+      const rings = [
+        { offset: 0.00, freq: 987.77,  gainScale: 0.92, tailScale: 0.85 }, // B5
+        { offset: 0.22, freq: 1174.66, gainScale: 0.98, tailScale: 0.90 }, // D6
+        { offset: 0.44, freq: 1318.51, gainScale: 1.00, tailScale: 0.95 }, // E6
+        { offset: 0.68, freq: 1174.66, gainScale: 0.94, tailScale: 0.95 }, // D6
+        { offset: 0.94, freq: 1567.98, gainScale: 1.12, tailScale: 1.45 }  // G6 ringing finale
+      ];
+
+      rings.forEach((r) => {
+        const t0 = now + r.offset;
+        const baseFreq = r.freq;
         const partials = [
-          { ratio: 1.0, amp: 0.11, dur: 0.42 },
-          { ratio: 2.02, amp: 0.065, dur: 0.3 },
-          { ratio: 2.76, amp: 0.04, dur: 0.22 },
-          { ratio: 3.98, amp: 0.025, dur: 0.14 }
+          { ratio: 0.500, amp: 0.055 * r.gainScale, dur: 1.05 * r.tailScale },
+          { ratio: 1.000, amp: 0.165 * r.gainScale, dur: 0.98 * r.tailScale },
+          { ratio: 1.004, amp: 0.085 * r.gainScale, dur: 1.02 * r.tailScale },
+          { ratio: 2.000, amp: 0.095 * r.gainScale, dur: 0.72 * r.tailScale },
+          { ratio: 2.756, amp: 0.068 * r.gainScale, dur: 0.54 * r.tailScale },
+          { ratio: 3.980, amp: 0.036 * r.gainScale, dur: 0.34 * r.tailScale }
         ];
+
         partials.forEach((p) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(baseFreq * p.ratio, t0);
           gain.gain.setValueAtTime(0.0001, t0);
-          gain.gain.linearRampToValueAtTime(p.amp, t0 + 0.008);
-          gain.gain.exponentialRampToValueAtTime(0.0004, t0 + p.dur);
+          gain.gain.linearRampToValueAtTime(p.amp, t0 + 0.009);
+          gain.gain.exponentialRampToValueAtTime(0.00035, t0 + p.dur);
           osc.connect(gain);
           gain.connect(this.sfxGain);
           osc.start(t0);
-          osc.stop(t0 + p.dur + 0.03);
+          osc.stop(t0 + p.dur + 0.04);
         });
+
+        // Metallic clapper strike ("딩")
+        const clapper = ctx.createOscillator();
+        const cGain = ctx.createGain();
+        clapper.type = 'triangle';
+        clapper.frequency.setValueAtTime(baseFreq * 2.42, t0);
+        clapper.frequency.exponentialRampToValueAtTime(baseFreq * 1.98, t0 + 0.045);
+        cGain.gain.setValueAtTime(0.0001, t0);
+        cGain.gain.linearRampToValueAtTime(0.085 * r.gainScale, t0 + 0.003);
+        cGain.gain.exponentialRampToValueAtTime(0.0004, t0 + 0.065);
+        clapper.connect(cGain);
+        cGain.connect(this.sfxGain);
+        clapper.start(t0);
+        clapper.stop(t0 + 0.075);
 
         if (this.noiseBuffer) {
           const jingle = ctx.createBufferSource();
           jingle.buffer = this.noiseBuffer;
-          const hpf = ctx.createBiquadFilter();
-          hpf.type = 'highpass';
-          hpf.frequency.setValueAtTime(4800, t0);
+          const bpf = ctx.createBiquadFilter();
+          bpf.type = 'bandpass';
+          bpf.frequency.setValueAtTime(4200, t0);
+          bpf.Q.value = 1.6;
           const jGain = ctx.createGain();
           jGain.gain.setValueAtTime(0.0001, t0);
-          jGain.gain.linearRampToValueAtTime(0.045, t0 + 0.01);
-          jGain.gain.exponentialRampToValueAtTime(0.0004, t0 + 0.11);
-          jingle.connect(hpf);
-          hpf.connect(jGain);
+          jGain.gain.linearRampToValueAtTime(0.065 * r.gainScale, t0 + 0.008);
+          jGain.gain.exponentialRampToValueAtTime(0.0004, t0 + 0.14);
+          jingle.connect(bpf);
+          bpf.connect(jGain);
           jGain.connect(this.sfxGain);
-          jingle.start(t0);
-          jingle.stop(t0 + 0.12);
+          jingle.start(t0, Math.random() * 0.4, 0.16);
         }
       });
     } catch (e) {}
@@ -917,44 +1047,96 @@ export class FireworksAudioEngine {
       }
       const dest = panner || this.sfxGain;
 
-      // Crisp two-stage DSLR/film mechanical shutter click ("찰-칵!")
+      // Punchy, high-definition DSLR/film mechanical shutter click ("찰-칵!")
       const clicks = [
-        { offset: 0.0,   freq: 2700, q: 1.7, amp: 0.5 * scale,  dur: 0.032, thumpHz: 240 },
-        { offset: 0.056, freq: 3450, q: 1.9, amp: 0.42 * scale, dur: 0.036, thumpHz: 320 }
+        {
+          offset: 0.0,
+          hpFreq: 1650,
+          bpFreq: 3150,
+          hpAmp: 0.92 * scale,
+          bpAmp: 0.85 * scale,
+          dur: 0.040,
+          snapStart: 1450,
+          snapEnd: 420,
+          snapAmp: 0.24 * scale,
+          thumpHz: 340,
+          thumpAmp: 0.36 * scale
+        },
+        {
+          offset: 0.068,
+          hpFreq: 2150,
+          bpFreq: 4050,
+          hpAmp: 0.82 * scale,
+          bpAmp: 0.78 * scale,
+          dur: 0.045,
+          snapStart: 1900,
+          snapEnd: 520,
+          snapAmp: 0.20 * scale,
+          thumpHz: 420,
+          thumpAmp: 0.32 * scale
+        }
       ];
 
       clicks.forEach((c) => {
         const t0 = now + c.offset;
         if (this.noiseBuffer) {
-          const snap = ctx.createBufferSource();
-          snap.buffer = this.noiseBuffer;
+          // 1. Wideband crisp curtain air-snap (highpass preserves full upper energy)
+          const crisp = ctx.createBufferSource();
+          crisp.buffer = this.noiseBuffer;
+          const hpf = ctx.createBiquadFilter();
+          hpf.type = 'highpass';
+          hpf.frequency.setValueAtTime(c.hpFreq, t0);
+          const hGain = ctx.createGain();
+          hGain.gain.setValueAtTime(0.001, t0);
+          hGain.gain.linearRampToValueAtTime(c.hpAmp, t0 + 0.002);
+          hGain.gain.exponentialRampToValueAtTime(0.0005, t0 + c.dur);
+          crisp.connect(hpf);
+          hpf.connect(hGain);
+          hGain.connect(dest);
+          crisp.start(t0, Math.random() * 0.4, c.dur + 0.015);
+
+          // 2. Mechanical metal-leaf bite around 3-4 kHz
+          const bite = ctx.createBufferSource();
+          bite.buffer = this.noiseBuffer;
           const bpf = ctx.createBiquadFilter();
           bpf.type = 'bandpass';
-          bpf.frequency.setValueAtTime(c.freq, t0);
-          bpf.Q.value = c.q;
-
-          const nGain = ctx.createGain();
-          nGain.gain.setValueAtTime(0.0005, t0);
-          nGain.gain.linearRampToValueAtTime(c.amp, t0 + 0.002);
-          nGain.gain.exponentialRampToValueAtTime(0.0004, t0 + c.dur);
-
-          snap.connect(bpf);
-          bpf.connect(nGain);
-          nGain.connect(dest);
-          snap.start(t0, Math.random() * 0.4, c.dur + 0.01);
+          bpf.frequency.setValueAtTime(c.bpFreq, t0);
+          bpf.Q.value = 0.95;
+          const bGain = ctx.createGain();
+          bGain.gain.setValueAtTime(0.001, t0);
+          bGain.gain.linearRampToValueAtTime(c.bpAmp, t0 + 0.0015);
+          bGain.gain.exponentialRampToValueAtTime(0.0005, t0 + c.dur);
+          bite.connect(bpf);
+          bpf.connect(bGain);
+          bGain.connect(dest);
+          bite.start(t0, Math.random() * 0.4, c.dur + 0.015);
         }
 
+        // 3. Sharp mechanical latch snap transient
+        const snapOsc = ctx.createOscillator();
+        const sGain = ctx.createGain();
+        snapOsc.type = 'square';
+        snapOsc.frequency.setValueAtTime(c.snapStart, t0);
+        snapOsc.frequency.exponentialRampToValueAtTime(c.snapEnd, t0 + 0.014);
+        sGain.gain.setValueAtTime(c.snapAmp, t0);
+        sGain.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.016);
+        snapOsc.connect(sGain);
+        sGain.connect(dest);
+        snapOsc.start(t0);
+        snapOsc.stop(t0 + 0.02);
+
+        // 4. Camera body mirror slap resonance thump
         const thump = ctx.createOscillator();
         const tGain = ctx.createGain();
         thump.type = 'triangle';
         thump.frequency.setValueAtTime(c.thumpHz, t0);
-        thump.frequency.exponentialRampToValueAtTime(85, t0 + 0.022);
-        tGain.gain.setValueAtTime(0.15 * scale, t0);
-        tGain.gain.exponentialRampToValueAtTime(0.0004, t0 + 0.028);
+        thump.frequency.exponentialRampToValueAtTime(88, t0 + 0.028);
+        tGain.gain.setValueAtTime(c.thumpAmp, t0);
+        tGain.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.034);
         thump.connect(tGain);
         tGain.connect(dest);
         thump.start(t0);
-        thump.stop(t0 + 0.03);
+        thump.stop(t0 + 0.038);
       });
     } catch (e) {}
   }
